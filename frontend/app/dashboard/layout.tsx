@@ -46,7 +46,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/chatbots", label: "chatbots", icon: Bot },
     { href: "/dashboard/stats", label: "Statistiques", icon: BarChart3 },
-    { href: "/dashboard/chatbots/base-de-connaissance", label: "Base de connaisance", icon: Database    },
+   
     { href: "/dashboard/test", label: "Test", icon: FlaskConical  },
     { href: "/dashboard/deploi", label: "Deploiement", icon: Rocket  },
     { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
@@ -81,7 +81,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             {!sidebarCollapsed && (
               <span className="font-bold text-lg">
-                chatbottudio
+                ChatbotStudio
               </span>
             )}
           </Link>

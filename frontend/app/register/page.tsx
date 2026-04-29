@@ -295,7 +295,7 @@ export default function RegisterPage() {
             <div className="w-8 h-8 bg-white/20 rounded-xl backdrop-blur-sm flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-semibold text-lg">chatbottudio</span>
+            <span className="text-white font-semibold text-lg">ChatbotStudio</span>
           </div>
           
           <div className="space-y-6">
@@ -330,7 +330,7 @@ export default function RegisterPage() {
           </div>
           
           <div className="text-white/40 text-xs">
-            © 2024 chatbottudio. Tous droits réservés.
+            © 2024 ChatbotStudio. Tous droits réservés.
           </div>
         </div>
       </div>

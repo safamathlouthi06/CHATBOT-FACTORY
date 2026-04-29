@@ -74,7 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             {!sidebarCollapsed && (
               <span className="font-bold text-lg">
-                chatbottudio  
+                ChatbotStudio  
               </span>
             )}
           </Link>
