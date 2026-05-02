@@ -1,0 +1,628 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+2 0 obj
+<< /Length 3184 >>
+stream
+BT
+/F1 22 Tf
+0.39 0.4 0.95 rg
+50 742 Td
+(Test Report) Tj
+ET
+BT
+/F1 9 Tf
+0.4 0.45 0.53 rg
+50 706 Td
+(URL: http://localhost:3000/dashboard) Tj
+ET
+BT
+/F1 9 Tf
+0.4 0.45 0.53 rg
+50 693 Td
+(Generated: 29/04/2026 12:23:32) Tj
+ET
+BT
+/F1 9 Tf
+0.35 0.4 0.48 rg
+50 670 Td
+(Windows 10/11  |  Chrome 147.0  |  29/04/2026, 12:23:32) Tj
+ET
+BT
+/F1 12 Tf
+0.12 0.16 0.24 rg
+50 647 Td
+(SUMMARY) Tj
+ET
+BT
+/F1 11 Tf
+0.2 0.25 0.35 rg
+50 631 Td
+(Total: 46   |   Passed: 22   |   Failed: 13   |   Warnings: 11) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 596 Td
+(API/Network Failures \(6 errors, 0 warnings, 0 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 581 Td
+([FAIL] GET HTTP 401: http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 568 Td
+([FAIL] GET HTTP 401: http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 555 Td
+([FAIL] GET HTTP 401: http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 542 Td
+([FAIL] GET HTTP 401: http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 529 Td
+([FAIL] GET HTTP 401: http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 516 Td
+([FAIL] 10 total failed requests) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 493 Td
+(Button Functionality \(1 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 478 Td
+([FAIL] Button has no text/label) Tj
+ET
+BT
+/F1 8 Tf
+0.5 0.5 0.5 rg
+70 465 Td
+(button type="submit") Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 453 Td
+([PASS] 1 clickable buttons found) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 430 Td
+(Checkboxes & Radio \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 415 Td
+([N/A] N/A - No checkboxes or radio buttons on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 392 Td
+(Date Fields \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 377 Td
+([N/A] N/A - No date fields on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 354 Td
+(Dropdown Fields \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 339 Td
+([N/A] N/A - No dropdowns on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 316 Td
+(Email Field Validation \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 301 Td
+([N/A] N/A - No email fields on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 278 Td
+(Error Messages \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 263 Td
+([PASS] No errors visible) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 240 Td
+(Form Submission \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 225 Td
+([N/A] N/A - No forms on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 202 Td
+(Images \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 187 Td
+([N/A] N/A - No images on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 164 Td
+(Input Fields Status \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 149 Td
+([PASS] All inputs are enabled) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 126 Td
+(Input Placeholders \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 111 Td
+([N/A] N/A - No text inputs on page) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 4169 >>
+stream
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 742 Td
+(Links Check \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 727 Td
+([PASS] All 17 links have valid URLs) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 704 Td
+(Number Field Validation \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 689 Td
+([N/A] N/A - No number fields on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 666 Td
+(Page Loading \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 651 Td
+([PASS] Page fully loaded) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 628 Td
+(Password Fields \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 613 Td
+([N/A] N/A - No password fields on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 590 Td
+(Phone Number Validation \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 575 Td
+([N/A] N/A - No phone fields on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 552 Td
+(Required Fields \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 537 Td
+([N/A] N/A - No forms on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 514 Td
+(Resource Loading \(0 errors, 4 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 499 Td
+([PASS] All resources loaded successfully) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 486 Td
+([WARNING] Slow fetch \(674.7s\): http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 473 Td
+([WARNING] Slow fetch \(663.9s\): http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 460 Td
+([WARNING] Slow fetch \(663.9s\): http://127.0.0.1:8000/chatbot/) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 447 Td
+([WARNING] 16 total slow resources \(>5s\)) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 424 Td
+(SEO Meta Tags \(2 errors, 4 warnings, 2 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 409 Td
+([FAIL] Page is missing <title> tag or title is empty) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 396 Td
+([FAIL] Page is missing <meta name="description"> tag) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 383 Td
+([WARNING] No <meta name="keywords"> tag found \(optional but recommended\)) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 370 Td
+([WARNING] No <link rel="canonical"> tag found \(recommended for avoiding duplicate content\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 357 Td
+([N/A] N/A - No hreflang tags found \(only needed for multilingual sites\)) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 344 Td
+([WARNING] No Open Graph tags found \(recommended for social media sharing\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 331 Td
+([PASS] Viewport meta tag present) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 318 Td
+([WARNING] Page has 2 <h1> tags \(recommended: exactly 1\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 305 Td
+([PASS] HTML lang attribute set: "fr") Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 282 Td
+(Slow Network Requests \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 267 Td
+([PASS] All requests completed quickly) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 244 Td
+(Spelling Mistakes \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 229 Td
+([PASS] No spelling mistakes detected) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 206 Td
+(Text Areas \(0 errors, 0 warnings, 0 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 191 Td
+([N/A] N/A - No text areas on page) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 168 Td
+(♿ Accessibility \(4 errors, 3 warnings, 9 passed, N/A\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 153 Td
+([PASS] Page language declared: lang="fr") Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 140 Td
+([FAIL] Page is missing a <title> element — required by WCAG 2.4.2) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 127 Td
+([WARNING] No skip navigation link found — add "Skip to main content" as first link for key) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 114 Td
+([PASS] Page has a <main> landmark for screen reader navigation) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 101 Td
+([PASS] Navigation landmark <nav> detected) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 88 Td
+([FAIL] Multiple <main> landmarks found \(2\) — only one is allowed per page \(WCAG 1.3.1\)) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 2125 >>
+stream
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 742 Td
+([WARNING] Multiple <h1> headings found \(2\) — use only one H1 per page) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 729 Td
+([PASS] Heading hierarchy is correct across 4 heading\(s\)) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 716 Td
+([FAIL] Form input has no accessible label \(WCAG 1.3.1, 3.3.2\)) Tj
+ET
+BT
+/F1 8 Tf
+0.5 0.5 0.5 rg
+70 703 Td
+(input placeholder="Rechercher..." type="text") Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 691 Td
+([PASS] No elements with tabindex > 0 found — keyboard tab order follows DOM order) Tj
+ET
+BT
+/F1 9 Tf
+0.94 0.27 0.27 rg
+60 678 Td
+([FAIL] Button has no accessible name — add text content or aria-label \(WCAG 4.1.2\)) Tj
+ET
+BT
+/F1 8 Tf
+0.5 0.5 0.5 rg
+70 665 Td
+(button type="submit") Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 653 Td
+([PASS] All 17 links have accessible text) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 640 Td
+([PASS] No obvious low-contrast inline color styles detected) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 627 Td
+([PASS] No CSS rules found that remove focus indicators without replacement) Tj
+ET
+BT
+/F1 9 Tf
+0.96 0.62 0.04 rg
+60 614 Td
+([WARNING] Animations/transitions detected but no @media \(prefers-reduced-motion\) rule foun) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 601 Td
+([PASS] No duplicate IDs found across 1 element ID\(s\)) Tj
+ET
+BT
+/F1 9 Tf
+0.58 0.64 0.72 rg
+60 588 Td
+([N/A] Accessibility audit complete — 9 passed, 4 failed, 3 warnings across 16 checks) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 565 Td
+(📊 Dashboard \(0 errors, 0 warnings, 2 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 550 Td
+([PASS] Navigation found with 9 link\(s\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 537 Td
+([PASS] No stuck loading indicators detected) Tj
+ET
+BT
+/F1 11 Tf
+0.12 0.16 0.24 rg
+50 514 Td
+(🧠 Smart Tests \(0 errors, 0 warnings, 1 passed\)) Tj
+ET
+BT
+/F1 9 Tf
+0.13 0.77 0.37 rg
+60 499 Td
+([PASS] Page classified as: Dashboard / Admin \(50%\)) Tj
+ET
+BT
+/F1 9 Tf
+0.5 0.5 0.5 rg
+50 466 Td
+(Note: 3 screenshot\(s\) captured. Export as HTML to view screenshots.) Tj
+ET
+BT
+/F1 8 Tf
+0.6 0.6 0.6 rg
+50 433 Td
+(Generated by Exploratory Tester) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Contents 2 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Contents 3 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+8 0 obj
+<< /Type /Pages /Kids [5 0 R 6 0 R 7 0 R] /Count 3 >>
+endobj
+9 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000015 00000 n 
+0000000112 00000 n 
+0000003347 00000 n 
+0000007567 00000 n 
+0000009743 00000 n 
+0000009869 00000 n 
+0000009995 00000 n 
+0000010121 00000 n 
+0000010190 00000 n 
+trailer
+<< /Size 10 /Root 9 0 R >>
+startxref
+10239
+%%EOF

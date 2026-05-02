@@ -47,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard/chatbots", label: "chatbots", icon: Bot },
     { href: "/dashboard/stats", label: "Statistiques", icon: BarChart3 },
    
-    { href: "/dashboard/test", label: "Test", icon: FlaskConical  },
+   
     { href: "/dashboard/deploi", label: "Deploiement", icon: Rocket  },
     { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
   ];

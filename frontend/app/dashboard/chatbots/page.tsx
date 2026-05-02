@@ -8,9 +8,10 @@ import {
   MoreVertical,
   Pencil,
   Play,
+  Database,
 } from "lucide-react";
 
-// 👉 TYPE
+// ✅ TYPE
 type Chatbot = {
   id: string;
   nom: string;
@@ -24,7 +25,7 @@ export default function ChatbotListPage() {
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH SECURE (JWT)
+  // ✅ FETCH API
   useEffect(() => {
     const fetchChatbots = async () => {
       try {
@@ -33,17 +34,12 @@ export default function ChatbotListPage() {
         const token = localStorage.getItem("token");
 
         const res = await fetch("http://127.0.0.1:8000/chatbot/", {
-          method: "GET",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
         const data = await res.json();
-
-        console.log("CHATBOTS API RESPONSE:", data);
-
         setChatbots(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Erreur API:", error);
@@ -56,7 +52,7 @@ export default function ChatbotListPage() {
     fetchChatbots();
   }, []);
 
-  // 🔎 SEARCH FILTER SAFE
+  // ✅ SEARCH
   const filtered = chatbots.filter((c) =>
     (c.nom || "").toLowerCase().includes(search.toLowerCase())
   );
@@ -86,7 +82,7 @@ export default function ChatbotListPage() {
       <div className="relative">
         <Search className="absolute left-3 top-3 w-4 h-4 text-zinc-400" />
         <input
-          className="w-full pl-10 pr-4 py-2 rounded-lg border bg-zinc-100 dark:bg-zinc-800"
+          className="w-full pl-10 pr-4 py-2 rounded-lg border bg-zinc-100"
           placeholder="Rechercher un chatbot..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -94,9 +90,7 @@ export default function ChatbotListPage() {
       </div>
 
       {/* LOADING */}
-      {loading && (
-        <p className="text-zinc-500">Chargement des chatbots...</p>
-      )}
+      {loading && <p className="text-zinc-500">Chargement...</p>}
 
       {/* EMPTY */}
       {!loading && chatbots.length === 0 && (
@@ -109,19 +103,16 @@ export default function ChatbotListPage() {
         {filtered.map((bot) => (
           <div
             key={bot.id}
-            className="border rounded-xl p-4 bg-white dark:bg-zinc-950 hover:shadow-md transition"
+            className="border rounded-xl p-4 bg-white hover:shadow-md transition"
           >
-
-            {/* HEADER CARD */}
+            {/* HEADER */}
             <div className="flex justify-between">
               <div>
                 <h2 className="font-semibold">{bot.nom}</h2>
                 <p className="text-sm text-zinc-500">{bot.domaine}</p>
               </div>
 
-              <button>
-                <MoreVertical className="w-5 h-5 text-zinc-500" />
-              </button>
+              <MoreVertical className="w-5 h-5 text-zinc-500" />
             </div>
 
             {/* STATUS */}
@@ -137,26 +128,43 @@ export default function ChatbotListPage() {
               </span>
             </div>
 
-            {/* ACTIONS */}
+            {/* ✅ ACTIONS */}
             <div className="flex gap-2 mt-4">
 
-              <button className="flex-1 flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-zinc-100">
+              {/* ✅ Base de connaissance */}
+              <Link
+                href={`/dashboard/chatbots/${bot.id}/base-de-connaissance`}
+                className="flex-1 flex items-center justify-center gap-2 border rounded-lg py-2 text-blue-600 hover:bg-blue-50 text-sm"
+              >
+                <Database className="w-4 h-4" />
+                Base
+              </Link>
+
+              {/* ✅ Tester */}
+              <Link
+            
+                href={`/dashboard/chatbots/${bot.id}/test`}
+                className="flex-1 flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-zinc-100 text-sm"
+              >
                 <Play className="w-4 h-4" />
                 Tester
-              </button>
+              </Link>
 
-              <button className="flex-1 flex items-center justify-center gap-2 bg-black text-white rounded-lg py-2">
+              {/* ✅ Editer */}
+              <Link
+                href={`/dashboard/chatbots/${bot.id}/edit`}
+                
+                className="flex-1 flex items-center justify-center gap-2 bg-black text-white rounded-lg py-2 text-sm"
+              >
                 <Pencil className="w-4 h-4" />
                 Éditer
-              </button>
+              </Link>
 
             </div>
-
           </div>
         ))}
 
       </div>
-
     </div>
   );
 }

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.rag_service import retrieve_relevant_chunks
+from core.config import supabase  # ✅ IMPORT IMPORTANT
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -34,13 +35,12 @@ def chat(data: ChatRequest):
             "answer": "Je n'ai pas assez d'informations pour répondre."
         }
 
-    # ✅ nettoyage texte
+    # ✅ nettoyage
     context = context.replace("\n", " ")
 
-    # ✅ découper intelligemment
+    # ✅ découper
     sentences = context.split(".")
 
-    # ✅ scorer chaque phrase
     best_sentence = ""
     best_score = 0
 
@@ -51,10 +51,28 @@ def chat(data: ChatRequest):
             best_score = score
             best_sentence = sentence
 
-    # ✅ fallback si rien trouvé
     if not best_sentence:
         best_sentence = sentences[0]
 
+    # ✅ ✅ définir réponse
+    answer = best_sentence.strip()
+
+    # ✅ ✅ SAUVEGARDE HISTORIQUE
+
+    # User message
+    supabase.table("conversations").insert({
+        "chatbot_id": data.chatbot_id,
+        "role": "user",
+        "message": data.question
+    }).execute()
+
+    # Bot message
+    supabase.table("conversations").insert({
+        "chatbot_id": data.chatbot_id,
+        "role": "bot",
+        "message": answer
+    }).execute()
+
     return {
-        "answer": best_sentence.strip()
+        "answer": answer
     }

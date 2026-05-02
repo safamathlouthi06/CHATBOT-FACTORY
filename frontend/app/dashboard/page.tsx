@@ -16,127 +16,109 @@ import {
   Database,
 } from "lucide-react";
 import Link from "next/link";
-
-/* =========================
-   MOCK CHATBOTS (à remplacer plus tard par API)
-========================= */
-const recentChatbots = [
-  {
-    id: "chatbot-1",
-    name: "Conseiller Commercial",
-    desc: "Assistant pour la conversion et les ventes",
-    status: "draft",
-    lastEdited: "Il y a 2 heures",
-  },
-  {
-    id: "chatbot-2",
-    name: "Assistant Client Pro",
-    desc: "Assistant de support client disponible 24/7",
-    status: "active",
-    lastEdited: "Il y a 5 heures",
-  },
-  {
-    id: "chatbot-3",
-    name: "Recruteur RH",
-    desc: "Assistant pour les candidats et employés",
-    status: "active",
-    lastEdited: "Hier",
-  },
-];
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
+  const [chatbots, setChatbots] = useState([]);
+  const [stats, setStats] = useState({
+    chatbots: 0,
+    conversations: 0,
+    messages: 0,
+    users: 0,
+  });
+
+  // ✅ Charger données depuis backend
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:8000/dashboard", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+
+        setChatbots(data.chatbots || []);
+        setStats(data.stats || {});
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* TITLE */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur-3xl" />
-        <div className="relative">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            Tableau de bord
-          </h1>
-          <p className="text-gray-500 mt-2 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Bienvenue sur votre plateforme de création de chatbots intelligents
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Tableau de bord</h1>
+        <p className="text-gray-500 mt-2 flex items-center gap-2">
+          <Sparkles className="w-4 h-4" />
+          Bienvenue sur votre plateforme
+        </p>
       </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <StatCard title="Chatbots actifs" value="2" total="3" icon={<Bot />} />
-        <StatCard title="Conversations" value="1,247" icon={<MessageSquare />} />
-        <StatCard title="Messages" value="8.2k" icon={<TrendingUp />} />
-        <StatCard title="Utilisateurs" value="342" icon={<Users />} />
+      {/* ✅ STATS DYNAMIQUES */}
+      <div className="grid md:grid-cols-4 gap-5">
+        <StatCard title="Chatbots" value={stats.chatbots} icon={<Bot />} />
+        <StatCard title="Conversations" value={stats.conversations} icon={<MessageSquare />} />
+        <StatCard title="Messages" value={stats.messages} icon={<TrendingUp />} />
+        <StatCard title="Utilisateurs" value={stats.users} icon={<Users />} />
       </div>
 
-      {/* QUICK ACTIONS */}
+      {/* ACTIONS */}
       <div className="bg-white border rounded-2xl p-6">
         <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
           <Zap className="w-5 h-5 text-yellow-500" />
           Actions rapides
         </h2>
+
         <div className="grid md:grid-cols-3 gap-4">
           <ActionCard
             title="Nouveau Chatbot"
-            desc="Créer un nouvel assistant"
+            desc="Créer un assistant"
             icon={<Plus />}
             href="/dashboard/chatbots/create"
           />
           <ActionCard
-            title="Gérer les chatbots"
-            desc="Voir tous vos assistants"
+            title="Chatbots"
+            desc="Voir vos assistants"
             icon={<Bot />}
             href="/dashboard/chatbots"
           />
           <ActionCard
             title="Statistiques"
-            desc="Analyser les performances"
+            desc="Voir les performances"
             icon={<BarChart3 />}
             href="/dashboard/stats"
           />
         </div>
       </div>
 
-      {/* RECENT CHATBOTS */}
+      {/* ✅ CHATBOTS DYNAMIQUES */}
       <div className="bg-white border rounded-2xl p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold">Chatbots récents</h2>
-          <Link
-            href="/dashboard/chatbots"
-            className="text-sm flex items-center gap-2"
-          >
-            Voir tout <ArrowRight className="w-4 h-4" />
-          </Link>
+        <div className="flex justify-between mb-6">
+          <h2 className="font-semibold">Chatbots récents</h2>
         </div>
 
-        <div className="space-y-3">
-          {recentChatbots.map((bot) => (
-            <ChatbotRow
-              key={bot.id}
-              chatbotId={bot.id}
-              name={bot.name}
-              desc={bot.desc}
-              status={bot.status}
-              lastEdited={bot.lastEdited}
-            />
-          ))}
-        </div>
+        {chatbots.length === 0 ? (
+          <p className="text-gray-400">Aucun chatbot</p>
+        ) : (
+          <div className="space-y-3">
+            {chatbots.map((bot: any) => (
+              <ChatbotRow key={bot.id} bot={bot} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* =========================
-   COMPONENTS
-========================= */
-
-function StatCard({ title, value, total, icon }: any) {
+function StatCard({ title, value, icon }: any) {
   return (
     <div className="bg-white border rounded-xl p-5">
       <p className="text-sm text-gray-500">{title}</p>
-      <p className="text-3xl font-bold">
-        {value} {total && <span className="text-sm">/ {total}</span>}
-      </p>
+      <p className="text-3xl font-bold">{value}</p>
       <div className="mt-2 text-gray-400">{icon}</div>
     </div>
   );
@@ -146,7 +128,7 @@ function ActionCard({ title, desc, icon, href }: any) {
   return (
     <Link href={href}>
       <div className="bg-gray-50 border rounded-xl p-5 hover:shadow cursor-pointer">
-        <div className="mb-2">{icon}</div>
+        {icon}
         <p className="font-semibold">{title}</p>
         <p className="text-sm text-gray-500">{desc}</p>
       </div>
@@ -154,56 +136,39 @@ function ActionCard({ title, desc, icon, href }: any) {
   );
 }
 
-function ChatbotRow({
-  chatbotId,
-  name,
-  desc,
-  status,
-  lastEdited,
-}: any) {
+function ChatbotRow({ bot }: any) {
   return (
-    <div className="flex justify-between items-center border rounded-xl p-4 hover:shadow">
+    <div className="flex justify-between border rounded-xl p-4">
       <div className="flex gap-4">
-        <Bot className="w-6 h-6 text-gray-500" />
+        <Bot className="w-6 h-6" />
         <div>
-          <p className="font-semibold">{name}</p>
-          <p className="text-sm text-gray-500">{desc}</p>
-          <p className="text-xs text-gray-400">
-            Modifié {lastEdited}
-          </p>
+          <p className="font-semibold">{bot.nom}</p>
+          <p className="text-sm text-gray-500">{bot.description}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex gap-3 items-center">
         <Link
-          href={`/dashboard/chatbots/${chatbotId}/base-de-connaissance`}
-          className="text-sm flex items-center gap-1 text-blue-600 hover:underline"
+          href={`/dashboard/chatbots/${bot.id}/base-de-connaissance`}
+          className="text-blue-600 text-sm"
         >
           <Database className="w-4 h-4" />
-          Base de connaissance
         </Link>
 
-        <StatusBadge status={status} />
-
-        <MoreHorizontal className="w-5 h-5 text-gray-400" />
+        <StatusBadge status={bot.status} />
       </div>
     </div>
   );
 }
 
 function StatusBadge({ status }: any) {
-  if (status === "active") {
-    return (
-      <span className="flex items-center gap-1 text-green-600 text-xs">
-        <CheckCircle2 className="w-4 h-4" />
-        Actif
-      </span>
-    );
-  }
-  return (
-    <span className="flex items-center gap-1 text-yellow-600 text-xs">
-      <Clock className="w-4 h-4" />
-      Brouillon
+  return status === "active" ? (
+    <span className="text-green-600 text-xs flex gap-1">
+      <CheckCircle2 className="w-4 h-4" /> Actif
+    </span>
+  ) : (
+    <span className="text-yellow-600 text-xs flex gap-1">
+      <Clock className="w-4 h-4" /> Brouillon
     </span>
   );
 }

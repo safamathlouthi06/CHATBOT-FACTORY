@@ -104,3 +104,5 @@ def delete_chatbot(chatbot_id: str, current_user=Depends(get_current_user)):
         .execute()
 
     return {"message": "Chatbot supprimé"}
+
+
