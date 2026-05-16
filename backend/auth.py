@@ -23,6 +23,7 @@ security = HTTPBearer()
 
 # =========================
 # GET CURRENT USER (JWT)
+#visible uniquement backend pour sécuriser routes et récupérer infos entreprise
 # =========================
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
@@ -167,3 +168,32 @@ def validate(id: str, authorization: str = Header(None)):
         .execute()
 
     return {"message": "Entreprise validée"}
+
+
+
+
+# =========================
+# GET CURRENT ENTREPRISE
+#visible cote frontend pour afficher infos entreprise
+# =========================
+# =========================
+# GET ME (ENTREPRISE CONNECTÉE)
+# =========================
+@router.get("/me")
+def get_me(user=Depends(get_current_user)):
+
+    response = supabase.table("entreprise") \
+        .select("id, nomentreprise, email") \
+        .eq("id", user["entreprise_id"]) \
+        .single() \
+        .execute()
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+
+    return {
+        "id": response.data["id"],
+        "nomentreprise": response.data["nomentreprise"],
+        "email": response.data["email"],
+        #"role": user["role"]
+    }

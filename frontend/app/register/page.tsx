@@ -3,7 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, Building2, Briefcase, UserPlus, ArrowRight, Sparkles, CheckCircle } from "lucide-react";
+import { 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
+  Building2, 
+  Briefcase, 
+  ArrowRight, 
+  CheckCircle,
+  Shield,
+  Zap,
+  Star,
+  Rocket,
+  Users,
+  MessageSquare,
+  Crown,
+  Gift,
+  AlertCircle,
+  Bot
+} from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -59,281 +78,291 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
-      {/* LEFT SECTION - REGISTER FORM */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-gray-900 overflow-y-auto">
+    <div className="min-h-screen flex">
+      {/* LEFT SECTION - FORM */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-10 bg-white dark:bg-zinc-900">
         <div className="w-full max-w-md">
-          {/* Mobile logo */}
-          <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold text-xl mb-3">
-              CB
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg mb-4">
+              <Bot className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Créer un compte
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Commencez votre essai gratuit
-            </p>
-          </div>
-
-          {/* Desktop title */}
-          <div className="hidden lg:block mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Inscription
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
-              Créez votre compte en quelques secondes
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">REGISTER</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">SIGN UP</p>
           </div>
 
           {/* FORM */}
-          <form onSubmit={handleRegister} className="space-y-5">
-            {/* ERROR MESSAGE */}
+          <form onSubmit={handleRegister} className="space-y-4">
             {error && (
-              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center mt-0.5">
-                    <span className="text-white text-xs font-bold">!</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                      Erreur d'inscription
-                    </p>
-                    <p className="text-sm text-red-700 dark:text-red-400 mt-0.5">
-                      {error}
-                    </p>
-                  </div>
-                </div>
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
               </div>
             )}
 
-            {/* COMPANY NAME FIELD */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nom de l'entreprise
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Company Name
               </label>
-              <div className="group relative">
-                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   value={nomentreprise}
                   onChange={(e) => setNomEntreprise(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-800 transition-all"
-                  placeholder="Ma Super Entreprise"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  placeholder="Your company name"
                 />
               </div>
             </div>
 
-            {/* SECTOR FIELD */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Secteur d'activité
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Industry
               </label>
-              <div className="group relative">
-                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   value={secteurd_activite}
                   onChange={(e) => setSecteur(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-800 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
                   placeholder="Tech, E-commerce, Service..."
                 />
               </div>
             </div>
 
-            {/* EMAIL FIELD */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email professionnel
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email
               </label>
-              <div className="group relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-800 transition-all"
-                  placeholder="contact@entreprise.com"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  placeholder="your@email.com"
                 />
               </div>
             </div>
 
-            {/* PASSWORD FIELD */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Mot de passe
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Password
               </label>
-              <div className="group relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-12 pr-12 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-800 transition-all"
-                  placeholder="Mot de passe sécurisé"
+                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {password && (
+                <div className="flex gap-2 mt-2 text-xs">
+                  <span className={`px-2 py-0.5 rounded ${password.length >= 6 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    ✓ 6+ chars
+                  </span>
+                  <span className={`px-2 py-0.5 rounded ${/[A-Z]/.test(password) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    ✓ Uppercase
+                  </span>
+                  <span className={`px-2 py-0.5 rounded ${/[0-9]/.test(password) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    ✓ Number
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* PASSWORD REQUIREMENTS */}
-            {password && (
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className={`px-2 py-1 rounded ${password.length >= 6 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800'}`}>
-                  ✓ 6+ caractères
-                </span>
-                <span className={`px-2 py-1 rounded ${/[A-Z]/.test(password) ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800'}`}>
-                  ✓ Majuscule
-                </span>
-                <span className={`px-2 py-1 rounded ${/[0-9]/.test(password) ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800'}`}>
-                  ✓ Chiffre
-                </span>
-              </div>
-            )}
-
-            {/* TERMS AND CONDITIONS */}
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="terms"
                 checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
               />
-              <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400">
-                J'accepte les{" "}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                  conditions d'utilisation
+              <label htmlFor="terms" className="text-xs text-gray-500 dark:text-gray-400">
+                I accept the{" "}
+                <Link href="/terms" className="text-emerald-600 hover:text-emerald-700">
+                  Terms
                 </Link>{" "}
-                et la{" "}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                  politique de confidentialité
+                and{" "}
+                <Link href="/privacy" className="text-emerald-600 hover:text-emerald-700">
+                  Privacy Policy
                 </Link>
               </label>
             </div>
 
-            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
+              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Création du compte...
+                  <div className="w-4 h-4 border-2 border-white dark:border-gray-900 border-t-transparent rounded-full animate-spin" />
+                  REGISTER...
                 </>
               ) : (
                 <>
-                  S'inscrire
-                  <UserPlus className="w-4 h-4" />
+                  REGISTER
+                  <Rocket className="w-4 h-4" />
                 </>
               )}
             </button>
-
-            {/* DIVIDER */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white dark:bg-gray-900 text-gray-500">
-                  Déjà inscrit ?
-                </span>
-              </div>
-            </div>
-
-            {/* LOGIN LINK */}
-            <Link 
-              href="/login" 
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-            >
-              Se connecter
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </form>
 
-          {/* FEATURES */}
-          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { label: "Gratuit 14 jours", icon: "🎁" },
-                { label: "Sans engagement", icon: "💳" },
-                { label: "Support inclus", icon: "🎧" },
-              ].map((feature) => (
-                <div key={feature.label} className="text-center">
-                  <div className="text-lg mb-1">{feature.icon}</div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{feature.label}</p>
-                </div>
-              ))}
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-white dark:bg-gray-900 text-gray-400">Already have an account?</span>
+            </div>
+          </div>
+
+          {/* Login Link */}
+          <Link 
+            href="/login" 
+            className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+          >
+            SIGN IN
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          {/* Features */}
+          <div className="grid grid-cols-3 gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <div className="text-center">
+              <div className="w-8 h-8 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-1">
+                <Gift className="w-4 h-4 text-emerald-600" />
+              </div>
+              <p className="text-xs text-gray-500">14 days free</p>
+            </div>
+            <div className="text-center">
+              <div className="w-8 h-8 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-1">
+                <Shield className="w-4 h-4 text-emerald-600" />
+              </div>
+              <p className="text-xs text-gray-500">Secure</p>
+            </div>
+            <div className="text-center">
+              <div className="w-8 h-8 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-1">
+                <Headphones className="w-4 h-4 text-emerald-600" />
+              </div>
+              <p className="text-xs text-gray-500">24/7 Support</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT SECTION - ILLUSTRATION (même que le login) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
+      {/* RIGHT SECTION - ILLUSTRATION */}
+      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600 relative">
+        {/* Simple background pattern without SVG */}
+        <div className="absolute inset-0 bg-white/5" />
         
-        {/* Animated background patterns */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-3xl" />
+        {/* Animated elements */}
+        <div className="absolute top-20 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse delay-1000" />
         
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/20 rounded-xl backdrop-blur-sm flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg">ChatbotStudio</span>
-          </div>
-          
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white/80 text-xs">Inscription gratuite</span>
-              </div>
-              <h2 className="text-4xl font-bold text-white leading-tight">
-                Rejoignez l'aventure<br />
-                <span className="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent">
-                  et boostez votre entreprise
-                </span>
-              </h2>
-              <p className="text-white/70 text-lg">
-                Créez votre espace, développez des chatbot intelligents et offrez un service client exceptionnel.
-              </p>
+        <div className="relative z-10 flex flex-col justify-center h-full p-12 text-white">
+          <div className="max-w-md mx-auto">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 mb-6">
+              <span className="text-xs">10,000+ companies</span>
             </div>
             
-            <div className="space-y-3 pt-8">
-              {[
-                "Interface intuitive et moderne",
-                "Support client 24/7 inclus",
-                "Essai gratuit de 14 jours"
-              ].map((feature) => (
-                <div key={feature} className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-blue-300" />
-                  <span className="text-white/80 text-sm">{feature}</span>
+            <h2 className="text-3xl font-bold mb-4">
+              Create intelligent chatbots
+              <span className="block text-emerald-200">in minutes</span>
+            </h2>
+            
+            <p className="text-white/80 text-sm mb-8">
+              No code needed. Launch your AI assistant today and provide exceptional customer service 24/7.
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 rounded-full p-1">
+                  <CheckCircle className="w-4 h-4" />
                 </div>
-              ))}
+                <span className="text-sm">Intuitive interface</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 rounded-full p-1">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+                <span className="text-sm">Multiple AI models (GPT-4, Claude, Llama)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 rounded-full p-1">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+                <span className="text-sm">Advanced analytics & reports</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 rounded-full p-1">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+                <span className="text-sm">Easy API integrations</span>
+              </div>
             </div>
-          </div>
-          
-          <div className="text-white/40 text-xs">
-            © 2024 ChatbotStudio. Tous droits réservés.
+
+            {/* Testimonial */}
+            <div className="mt-8 pt-6 border-t border-white/20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <span className="font-bold text-sm">SM</span>
+                </div>
+                <div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-white/70 text-xs mt-1">
+                    "Customer satisfaction increased by 40%"
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Composant Headphones
+function Headphones(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 12h3a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7Z" />
+      <path d="M21 12h-3a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-7Z" />
+      <path d="M9 12V7a3 3 0 0 1 6 0v5" />
+    </svg>
   );
 }

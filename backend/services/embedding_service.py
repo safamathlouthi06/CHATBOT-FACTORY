@@ -1,23 +1,29 @@
-"""
-Service de génération d'embeddings GRATUIT (local).
-Utilise Sentence-Transformers (aucun appel externe).
-"""
+from transformers import AutoTokenizer, AutoModel
+import torch
 
-from sentence_transformers import SentenceTransformer
+# Charger FLAN-T5
+tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
+model = AutoModel.from_pretrained("google/flan-t5-base")
 
-# Modèle gratuit local
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+model.eval()  # important en inference
 
 
 def create_embedding(text: str) -> list:
     """
-    Génère un embedding local gratuit à partir d'un texte.
-
-    Args:
-        text (str): Texte à vectoriser
-
-    Returns:
-        list: Vecteur de 384 dimensions
+    Génère un embedding local à partir de FLAN-T5.
     """
-    embedding = model.encode(text)
-    return embedding.tolist()
+
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        padding=True
+    )
+
+    with torch.no_grad():
+        outputs = model.encoder(**inputs)
+
+    # mean pooling (standard simple)
+    embeddings = outputs.last_hidden_state.mean(dim=1)
+
+    return embeddings[0].tolist()

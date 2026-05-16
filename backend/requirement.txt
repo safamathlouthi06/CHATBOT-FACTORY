@@ -1,0 +1,51 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# requirements.txt — ChatBot Factory Backend
+# FastAPI + RAG Pipeline + Supabase + Auth
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── Framework principal ──────────────────────────────────────────────────────
+fastapi==0.111.0          # Framework API REST asynchrone (ASGI)
+uvicorn[standard]==0.29.0 # Serveur ASGI pour exécuter FastAPI
+
+# ── Validation des données ───────────────────────────────────────────────────
+pydantic==2.7.1           # Schémas de validation (utilisé par FastAPI)
+pydantic-settings==2.2.1  # Gestion des settings via .env avec Pydantic v2
+
+# ── Base de données — Supabase ───────────────────────────────────────────────
+supabase==2.4.2           # Client Python officiel Supabase (REST + RPC)
+postgrest==0.16.6         # Client PostgREST (dépendance de supabase-py)
+gotrue==2.4.2             # Auth Supabase (dépendance de supabase-py)
+realtime==1.0.6           # Temps réel Supabase (dépendance de supabase-py)
+storage3==0.7.4           # Stockage fichiers Supabase (dépendance de supabase-py)
+httpx==0.27.0             # Client HTTP async (requis par supabase-py)
+
+# ── Authentification & Sécurité ──────────────────────────────────────────────
+PyJWT==2.8.0              # Génération et validation des tokens JWT (HS256)
+bcrypt==4.1.3             # Hachage sécurisé des mots de passe (avec salt)
+passlib[bcrypt]==1.7.4    # Wrapper passlib pour bcrypt (optionnel mais pratique)
+python-multipart==0.0.9   # Requis pour recevoir les fichiers (UploadFile / Form)
+
+# ── Intelligence Artificielle — Pipeline RAG ─────────────────────────────────
+sentence-transformers==2.7.0  # Modèle all-MiniLM-L6-v2 → embeddings 384D
+torch==2.3.0                  # PyTorch (backend de SentenceTransformers)
+transformers==4.41.0          # HuggingFace Transformers (dépendance sentence-transformers)
+tokenizers==0.19.1            # Tokenisation rapide (dépendance transformers)
+huggingface-hub==0.23.0       # Téléchargement des modèles HuggingFace
+numpy==1.26.4                 # Calculs vectoriels (arrays d'embeddings)
+scikit-learn==1.4.2           # Similarité cosinus (optionnel si pgvector suffit)
+
+# ── Extraction documentaire ──────────────────────────────────────────────────
+PyPDF2==3.0.1             # Extraction de texte depuis les fichiers PDF
+python-pptx==0.6.23       # Extraction de texte depuis les fichiers PPTX
+
+# ── Variables d'environnement ────────────────────────────────────────────────
+python-dotenv==1.0.1      # Chargement du fichier .env au démarrage
+
+# ── Utilitaires HTTP / CORS ──────────────────────────────────────────────────
+starlette==0.37.2         # Base ASGI de FastAPI (CORS, routing, middleware)
+anyio==4.3.0              # Compatibilité async (dépendance de starlette)
+
+# ── Optionnel — Tests ────────────────────────────────────────────────────────
+pytest==8.2.0             # Framework de tests unitaires
+httpx==0.27.0             # Client HTTP pour tester les endpoints FastAPI
+pytest-asyncio==0.23.6    # Support async pour pytest

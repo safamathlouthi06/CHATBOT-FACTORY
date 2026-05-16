@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.rag_service import retrieve_relevant_chunks
-from database import supabase  # ✅ import unifié
+from database import supabase
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -11,27 +11,40 @@ class ChatRequest(BaseModel):
     question: str
 
 
-def score_sentence(sentence: str, question: str) -> int:
-    score = 0
-    q_words = question.lower().split()
-    for word in q_words:
-        if len(word) > 3 and word in sentence.lower():
-            score += 1
-    return score
+def clean_faq(context: str) -> str:
+    """
+    Nettoyer une réponse FAQ
+    """
+    if "Réponse :" in context:
+        return context.split("Réponse :")[-1].replace("\n", "").strip()
+    return context.strip()
 
 
 @router.post("/")
 def chat(data: ChatRequest):
 
+    # ✅ 1. récupérer contexte RAG
     context = retrieve_relevant_chunks(
         data.chatbot_id,
         data.question
     )
 
-    if not context:
-        answer = "Je n'ai pas assez d'informations pour répondre à cette question."
+    print("✅ CONTEXT:", context)
 
-        # sauvegarde même si pas de contexte
+    if not context:
+        answer = "Je n'ai pas assez d'informations pour répondre."
+
+    else:
+        # ✅ 2. si FAQ → nettoyer
+        if "Réponse :" in context:
+            answer = clean_faq(context)
+
+        else:
+            # ✅ sinon document → renvoyer texte simple
+            answer = context.strip()
+
+    # ✅ 3. sauvegarde
+    try:
         supabase.table("conversations").insert({
             "chatbot_id": data.chatbot_id,
             "role": "user",
@@ -44,41 +57,7 @@ def chat(data: ChatRequest):
             "message": answer
         }).execute()
 
-        return {"answer": answer}
-
-    # nettoyage
-    context = context.replace("\n", " ")
-
-    # découper en phrases
-    sentences = [s.strip() for s in context.split(".") if s.strip()]
-
-    best_sentence = ""
-    best_score = 0
-
-    for sentence in sentences:
-        score = score_sentence(sentence, data.question)
-        if score > best_score:
-            best_score = score
-            best_sentence = sentence
-
-    if not best_sentence and sentences:
-        best_sentence = sentences[0]
-
-    answer = best_sentence.strip()
-    if answer and not answer.endswith("."):
-        answer += "."
-
-    # sauvegarde historique
-    supabase.table("conversations").insert({
-        "chatbot_id": data.chatbot_id,
-        "role": "user",
-        "message": data.question
-    }).execute()
-
-    supabase.table("conversations").insert({
-        "chatbot_id": data.chatbot_id,
-        "role": "bot",
-        "message": answer
-    }).execute()
+    except Exception as e:
+        print("❌ ERREUR save:", e)
 
     return {"answer": answer}
