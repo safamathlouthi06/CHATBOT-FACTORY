@@ -32,7 +32,7 @@ export default function AppLayout({
   const [user, setUser] = useState({
     name: "Chargement...",
     email: "",
-    role: "Administrateur",
+    
     plan: "Pro",
     avatar: "...",
   });
@@ -61,7 +61,7 @@ export default function AppLayout({
         setUser({
           name: finalName,
           email: data?.email || "",
-          role: data?.role || "Administrateur",
+         
           plan: "Pro",
           avatar: finalName
             .split(" ")

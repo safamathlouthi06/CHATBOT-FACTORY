@@ -13,10 +13,27 @@ TABLE = "chatbots"  # ✅ FIX ICI
 # CREATE CHATBOT
 # =========================
 @router.post("/")
-def create_chatbot(data: ChatbotCreate, current_user=Depends(get_current_user)):
+def create_chatbot(
+    data: ChatbotCreate,
+    current_user=Depends(get_current_user)
+):
     try:
         entreprise_id = current_user["entreprise_id"]
 
+        # Vérifier doublon
+        existing = supabase.table(TABLE) \
+            .select("id") \
+            .eq("entreprise_id", entreprise_id) \
+            .eq("nom", data.nom) \
+            .execute()
+
+        if existing.data:
+            raise HTTPException(
+                status_code=400,
+                detail="Nom déjà existe"
+            )
+
+        # Création chatbot
         response = supabase.table(TABLE).insert({
             "nom": data.nom,
             "domaine": data.domaine,
@@ -24,12 +41,22 @@ def create_chatbot(data: ChatbotCreate, current_user=Depends(get_current_user)):
             "entreprise_id": entreprise_id
         }).execute()
 
-        return {"message": "Chatbot créé", "data": response.data}
+        return {
+            "message": "Chatbot créé",
+            "data": response.data
+        }
+
+    # IMPORTANT
+    except HTTPException:
+        raise
 
     except Exception:
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Erreur création chatbot")
 
+        raise HTTPException(
+            status_code=500,
+            detail="Erreur création chatbot"
+        )
 
 # =========================
 # GET MY CHATBOTS (SECURE)

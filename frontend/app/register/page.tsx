@@ -84,11 +84,11 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-[#008080] to-[#00A8A8] shadow-lg mb-4">
               <Bot className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">REGISTER</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">SIGN UP</p>
+            <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">INSCRIPTION</h1>
+            <p className="text-sm text-[#008080] dark:text-gray-400 mt-1">CRÉEZ VOTRE COMPTE</p>
           </div>
 
           {/* FORM */}
@@ -100,74 +100,74 @@ export default function RegisterPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Company Name
+              <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1">
+                Nom de l'entreprise
               </label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#008080]" />
                 <input
                   type="text"
                   value={nomentreprise}
                   onChange={(e) => setNomEntreprise(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                  placeholder="Your company name"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#D0EAE8] dark:border-gray-700 rounded-lg bg-[#F0FDFC] dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-transparent transition"
+                  placeholder="Nom de votre entreprise"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Industry
+              <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1">
+                Secteur d'activité
               </label>
               <div className="relative">
-                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#008080]" />
                 <input
                   type="text"
                   value={secteurd_activite}
                   onChange={(e) => setSecteur(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                  placeholder="Tech, E-commerce, Service..."
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#D0EAE8] dark:border-gray-700 rounded-lg bg-[#F0FDFC] dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-transparent transition"
+                  placeholder="Tech, E-commerce, Service, ..."
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1">
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#008080]" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                  placeholder="your@email.com"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[#D0EAE8] dark:border-gray-700 rounded-lg bg-[#F0FDFC] dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-transparent transition"
+                  placeholder="votre@email.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Password
+              <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1">
+                Mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#008080]" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  className="w-full pl-10 pr-10 py-2.5 border border-[#D0EAE8] dark:border-gray-700 rounded-lg bg-[#F0FDFC] dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-transparent transition"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#008080] hover:text-[#00A8A8]"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -175,13 +175,13 @@ export default function RegisterPage() {
               {password && (
                 <div className="flex gap-2 mt-2 text-xs">
                   <span className={`px-2 py-0.5 rounded ${password.length >= 6 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    ✓ 6+ chars
+                    ✓ 6+ caractères
                   </span>
                   <span className={`px-2 py-0.5 rounded ${/[A-Z]/.test(password) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    ✓ Uppercase
+                    ✓ Majuscule
                   </span>
                   <span className={`px-2 py-0.5 rounded ${/[0-9]/.test(password) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    ✓ Number
+                    ✓ Chiffre
                   </span>
                 </div>
               )}
@@ -193,16 +193,16 @@ export default function RegisterPage() {
                 id="terms"
                 checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+                className="w-4 h-4 rounded border-[#D0EAE8] text-[#008080] focus:ring-[#008080]"
               />
-              <label htmlFor="terms" className="text-xs text-gray-500 dark:text-gray-400">
-                I accept the{" "}
-                <Link href="/terms" className="text-emerald-600 hover:text-emerald-700">
-                  Terms
+              <label htmlFor="terms" className="text-xs text-[#0B3C3C] dark:text-gray-400">
+                J'accepte les{" "}
+                <Link href="/terms" className="text-[#008080] hover:text-[#00A8A8] font-medium">
+                  Conditions d'utilisation
                 </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="text-emerald-600 hover:text-emerald-700">
-                  Privacy Policy
+                et la{" "}
+                <Link href="/privacy" className="text-[#008080] hover:text-[#00A8A8] font-medium">
+                  Politique de confidentialité
                 </Link>
               </label>
             </div>
@@ -210,16 +210,16 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-[#008080] to-[#00A8A8] text-white font-semibold py-2.5 rounded-lg hover:from-[#005F5F] hover:to-[#008080] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white dark:border-gray-900 border-t-transparent rounded-full animate-spin" />
-                  REGISTER...
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  INSCRIPTION...
                 </>
               ) : (
                 <>
-                  REGISTER
+                  S'INSCRIRE
                   <Rocket className="w-4 h-4" />
                 </>
               )}
@@ -229,68 +229,70 @@ export default function RegisterPage() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+              <div className="w-full border-t border-[#D0EAE8] dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-3 bg-white dark:bg-gray-900 text-gray-400">Already have an account?</span>
+              <span className="px-3 bg-white dark:bg-zinc-900 text-[#008080]">Déjà un compte ?</span>
             </div>
           </div>
 
           {/* Login Link */}
           <Link 
             href="/login" 
-            className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#D0EAE8] dark:border-gray-700 rounded-lg text-[#0B3C3C] dark:text-gray-300 font-medium hover:bg-[#F0FDFC] dark:hover:bg-gray-800 transition"
           >
-            SIGN IN
+            SE CONNECTER
             <ArrowRight className="w-4 h-4" />
           </Link>
 
           {/* Features */}
-          <div className="grid grid-cols-3 gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <div className="grid grid-cols-3 gap-3 mt-8 pt-6 border-t border-[#D0EAE8] dark:border-gray-800">
             <div className="text-center">
-              <div className="w-8 h-8 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-1">
-                <Gift className="w-4 h-4 text-emerald-600" />
+              <div className="w-8 h-8 mx-auto bg-[#D9F3F3] dark:bg-[#008080]/20 rounded-lg flex items-center justify-center mb-1">
+                <Gift className="w-4 h-4 text-[#008080]" />
               </div>
-              <p className="text-xs text-gray-500">14 days free</p>
+              <p className="text-xs text-[#008080]">14 jours gratuits</p>
             </div>
             <div className="text-center">
-              <div className="w-8 h-8 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-1">
-                <Shield className="w-4 h-4 text-emerald-600" />
+              <div className="w-8 h-8 mx-auto bg-[#D9F3F3] dark:bg-[#008080]/20 rounded-lg flex items-center justify-center mb-1">
+                <Shield className="w-4 h-4 text-[#008080]" />
               </div>
-              <p className="text-xs text-gray-500">Secure</p>
+              <p className="text-xs text-[#008080]">Sécurisé</p>
             </div>
             <div className="text-center">
-              <div className="w-8 h-8 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-1">
-                <Headphones className="w-4 h-4 text-emerald-600" />
+              <div className="w-8 h-8 mx-auto bg-[#D9F3F3] dark:bg-[#008080]/20 rounded-lg flex items-center justify-center mb-1">
+                <Headphones className="w-4 h-4 text-[#008080]" />
               </div>
-              <p className="text-xs text-gray-500">24/7 Support</p>
+              <p className="text-xs text-[#008080]">Support 24/7</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT SECTION - ILLUSTRATION */}
-      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600 relative">
-        {/* Simple background pattern without SVG */}
+      {/* RIGHT SECTION - ILLUSTRATION INSOMEA STYLE */}
+      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-[#008080] via-[#00A8A8] to-[#0B3C3C] relative">
+        {/* Pattern overlay */}
         <div className="absolute inset-0 bg-white/5" />
         
         {/* Animated elements */}
         <div className="absolute top-20 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse" />
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
         
         <div className="relative z-10 flex flex-col justify-center h-full p-12 text-white">
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 mb-6">
-              <span className="text-xs">10,000+ companies</span>
+              <Bot className="w-4 h-4" />
+              <span className="text-xs">10 000+ entreprises nous font confiance</span>
             </div>
             
             <h2 className="text-3xl font-bold mb-4">
-              Create intelligent chatbots
-              <span className="block text-emerald-200">in minutes</span>
+              Créez des chatbots intelligents
+              <span className="block text-[#D0EAE8] mt-2">en quelques minutes</span>
             </h2>
             
             <p className="text-white/80 text-sm mb-8">
-              No code needed. Launch your AI assistant today and provide exceptional customer service 24/7.
+              Pas de code requis. Lancez votre assistant IA dès aujourd'hui et offrez un service client exceptionnel 24h/24 et 7j/7.
             </p>
             
             <div className="space-y-3">
@@ -298,25 +300,25 @@ export default function RegisterPage() {
                 <div className="bg-white/20 rounded-full p-1">
                   <CheckCircle className="w-4 h-4" />
                 </div>
-                <span className="text-sm">Intuitive interface</span>
+                <span className="text-sm">Interface intuitive</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 rounded-full p-1">
                   <CheckCircle className="w-4 h-4" />
                 </div>
-                <span className="text-sm">Multiple AI models (GPT-4, Claude, Llama)</span>
+                <span className="text-sm">Multiples modèles IA (GPT-4, Claude, Llama)</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 rounded-full p-1">
                   <CheckCircle className="w-4 h-4" />
                 </div>
-                <span className="text-sm">Advanced analytics & reports</span>
+                <span className="text-sm">Analytique avancée et rapports</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 rounded-full p-1">
                   <CheckCircle className="w-4 h-4" />
                 </div>
-                <span className="text-sm">Easy API integrations</span>
+                <span className="text-sm">Intégrations API faciles</span>
               </div>
             </div>
 
@@ -333,9 +335,25 @@ export default function RegisterPage() {
                     ))}
                   </div>
                   <p className="text-white/70 text-xs mt-1">
-                    "Customer satisfaction increased by 40%"
+                    "La satisfaction client a augmenté de 40%"
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white/20">
+              <div className="text-center">
+                <div className="text-xl font-bold">99.9%</div>
+                <div className="text-xs text-white/70">Disponibilité</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold">24/7</div>
+                <div className="text-xs text-white/70">Support</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold">500k+</div>
+                <div className="text-xs text-white/70">Conversations/mois</div>
               </div>
             </div>
           </div>

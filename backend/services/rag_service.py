@@ -1,26 +1,56 @@
-"""
-services/rag_service.py
-
-RAG avec :
-- embeddings locaux
-- recherche vectorielle
-- priorité FAQ > documents
-- filtre similarité (anti faux réponses)
-"""
-
 from core.config import supabase
 from services.embedding_service import create_embedding
 
 
+def clean_faq(content: str) -> str:
+    """
+    Extraire uniquement la réponse d'une FAQ
+    """
+
+    # ✅ gérer plusieurs formats
+    if "Réponse :" in content:
+        return content.split("Réponse :")[-1].strip()
+
+    if "Réponse:" in content:
+        return content.split("Réponse:")[-1].strip()
+
+    return content.strip()
+
+
+def clean_document(context: str, question: str) -> str:
+    """
+    Extraire la phrase la plus pertinente du document
+    """
+
+    sentences = context.split(".")
+
+    best_sentence = ""
+    score_max = 0
+
+    q_words = [w.lower() for w in question.split() if len(w) > 3]
+
+    for sentence in sentences:
+        score = sum(1 for w in q_words if w in sentence.lower())
+
+        if score > score_max:
+            score_max = score
+            best_sentence = sentence
+
+    if best_sentence:
+        return best_sentence.strip() + "."
+
+    return context.strip()
+
+
 def retrieve_relevant_chunks(chatbot_id: str, question: str, limit: int = 5):
     try:
-        # ✅ 1. Embedding de la question
+        # ✅ 1. embedding question
         question_embedding = create_embedding(question)
 
-        print("\n🟡 QUESTION :", question)
-        print("🟡 EMBEDDING SAMPLE :", question_embedding[:5])
+        if not question_embedding:
+            return ""
 
-        # ✅ 2. Recherche vectorielle (Supabase RPC)
+        # ✅ 2. appel Supabase
         response = supabase.rpc(
             "match_knowledge_chunks",
             {
@@ -31,48 +61,58 @@ def retrieve_relevant_chunks(chatbot_id: str, question: str, limit: int = 5):
         ).execute()
 
         if not response.data:
-            print("⚠️ Aucun chunk trouvé")
             return ""
 
-        # ✅ 3. DEBUG
+        # ✅ 3. tri
+        results = sorted(
+            response.data,
+            key=lambda x: x.get("similarity", 0),
+            reverse=True
+        )
+
         print("\n========= DEBUG RAG =========")
-        for row in response.data:
-            print("Similarity:", row.get("similarity"))
-            print("Source:", row.get("source_type"))
-            print("Content:", row["content"][:120])
+        for r in results:
+            print("Similarity:", r["similarity"])
+            print("Source:", r["source_type"])
+            print("Content:", r["content"])
             print("----------------------")
 
-        # ✅ 4. Séparer FAQ et documents
-        faq_chunks = [r for r in response.data if r.get("source_type") == "faq"]
-        doc_chunks = [r for r in response.data if r.get("source_type") == "document"]
+        # ✅ 4. meilleur chunk
+        best = results[0]
+        best_score = best.get("similarity", 0)
 
-        # ✅ 5. Priorité : FAQ > Document
-        if faq_chunks:
-            best = faq_chunks[0]
-            print("✅ Chunk choisi : FAQ")
-        elif doc_chunks:
-            best = doc_chunks[0]
-            print("✅ Chunk choisi : DOCUMENT")
-        else:
-            print("⚠️ Aucun chunk valide après filtrage")
+        print("✅ BEST SCORE:", best_score)
+
+        # ✅ 5. seuil
+        THRESHOLD = 0.25  # ⚠️ plus flexible
+
+        if best_score < THRESHOLD:
+            print("❌ Similarité trop faible")
             return ""
 
-        similarity = best.get("similarity", 0)
-        content = best["content"]
+        # ✅ 6. FAQ (PRIORITÉ PROPRE)
+        if best.get("source_type") == "faq":
+            print("✅ CHOIX FINAL: FAQ")
 
-        print("✅ Meilleur score:", similarity)
+            cleaned = clean_faq(best["content"])
 
-        # ✅ 6. Seuil anti hors-contexte
-        THRESHOLD = 0.45
-        if similarity < THRESHOLD:
-            print("❌ Similarité trop faible → hors contexte")
-            return ""
+            # ✅ sécurité : éviter réponse vide
+            if not cleaned:
+                return ""
 
-        # ✅ 7. Nettoyage du texte
-        content = content.replace("\n", " ").strip()
+            return cleaned
 
-        return content
+        # ✅ 7. DOCUMENT
+        if best.get("source_type") == "document":
+            print("✅ CHOIX FINAL: DOCUMENT")
+
+            cleaned = clean_document(best["content"], question)
+
+            return cleaned
+
+        # ✅ fallback sécurité
+        return best["content"].strip()
 
     except Exception as e:
-        print("\n❌ ERREUR RAG :", e)
+        print("❌ RAG ERROR:", e)
         return ""

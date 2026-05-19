@@ -10,23 +10,30 @@ from services.file_service import (
     extract_text_from_ppt
 )
 
-
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 def chunk_text(text: str, size: int = 300, overlap: int = 50):
+    """
+    Découpe le texte avec overlap
+    """
     chunks = []
 
-    for i in range(0, len(text), size - overlap):
+    step = size - overlap
+
+    for i in range(0, len(text), step):
         chunk = text[i:i + size]
-        chunks.append(chunk)
+
+        if chunk.strip():
+            chunks.append(chunk)
 
     return chunks
 
+
 def create_document(chatbot_id: str, titre: str, file_path: str):
 
-    # ✅ 1 extraction
+    # ✅ 1. extraction texte
     if file_path.endswith(".pdf"):
         content = extract_text_from_pdf(file_path)
 
@@ -36,7 +43,7 @@ def create_document(chatbot_id: str, titre: str, file_path: str):
     else:
         raise Exception("Format non supporté")
 
-    # ✅ 2 save document
+    # ✅ 2. sauvegarde document
     doc = supabase.table("documents").insert({
         "chatbot_id": chatbot_id,
         "titre": titre,
@@ -45,9 +52,14 @@ def create_document(chatbot_id: str, titre: str, file_path: str):
 
     doc_id = doc.data[0]["id"]
 
-    # ✅ 3 chunking + embedding
+    print("✅ Document ID:", doc_id)
+
+    # ✅ 3. chunking avec overlap
     chunks = chunk_text(content)
 
+    print("✅ Nombre de chunks:", len(chunks))
+
+    # ✅ 4. embedding + insertion
     for chunk in chunks:
         embedding = create_embedding(chunk)
 
@@ -58,3 +70,8 @@ def create_document(chatbot_id: str, titre: str, file_path: str):
             "source_type": "document",
             "source_id": doc_id
         }).execute()
+
+    return {
+        "message": "Document traité avec succès",
+        "chunks": len(chunks)
+    }

@@ -1,29 +1,12 @@
-from transformers import AutoTokenizer, AutoModel
-import torch
+from sentence_transformers import SentenceTransformer
 
-# Charger FLAN-T5
-tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
-model = AutoModel.from_pretrained("google/flan-t5-base")
-
-model.eval()  # important en inference
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def create_embedding(text: str) -> list:
-    """
-    Génère un embedding local à partir de FLAN-T5.
-    """
+    if not text:
+        return []
 
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        truncation=True,
-        padding=True
-    )
+    embedding = model.encode(text, normalize_embeddings=True)
 
-    with torch.no_grad():
-        outputs = model.encoder(**inputs)
-
-    # mean pooling (standard simple)
-    embeddings = outputs.last_hidden_state.mean(dim=1)
-
-    return embeddings[0].tolist()
+    return embedding.tolist()

@@ -190,7 +190,7 @@ export default function BaseConnaissancePage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* ── Toast notification ── */}
       {notif && (
         <div

@@ -148,7 +148,7 @@ export default function TestPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#D9F3F3]">
+    <div className="flex flex-col h-screen bg-[#D9F3F3] max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* HEADER */}
       <div className="flex items-center justify-between p-4 border-b border-[#B8E0E0] bg-white">
         <div className="flex items-center gap-3">

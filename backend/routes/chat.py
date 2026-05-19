@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.rag_service import retrieve_relevant_chunks
+from services.generation_service import generate_answer, is_valid_answer
 from database import supabase
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -11,19 +12,38 @@ class ChatRequest(BaseModel):
     question: str
 
 
-def clean_faq(context: str) -> str:
-    """
-    Nettoyer une réponse FAQ
-    """
-    if "Réponse :" in context:
-        return context.split("Réponse :")[-1].replace("\n", "").strip()
-    return context.strip()
+# ✅ nettoyage texte généré
+def clean_generated_answer(answer: str) -> str:
+    patterns = [
+        "Question:",
+        "Réponse:",
+        "bot",
+        "Cette réponse correspond",
+        "à la question posée"
+    ]
+
+    for p in patterns:
+        answer = answer.replace(p, "")
+
+    return answer.strip()
+
+
+# ✅ filtre réponses inutiles
+def is_bad_answer(answer: str) -> bool:
+    bad_patterns = [
+        "cette réponse correspond",
+        "selon le contexte",
+        "basé sur le contexte",
+        "la réponse est dans le contexte",
+        "à la question posée"
+    ]
+
+    return any(p in answer.lower() for p in bad_patterns)
 
 
 @router.post("/")
 def chat(data: ChatRequest):
 
-    # ✅ 1. récupérer contexte RAG
     context = retrieve_relevant_chunks(
         data.chatbot_id,
         data.question
@@ -35,15 +55,27 @@ def chat(data: ChatRequest):
         answer = "Je n'ai pas assez d'informations pour répondre."
 
     else:
-        # ✅ 2. si FAQ → nettoyer
-        if "Réponse :" in context:
-            answer = clean_faq(context)
+        generated = generate_answer(context, data.question)
+
+        print("✅ GENERATED:", generated)
+
+        # ✅ nettoyage
+        generated = clean_generated_answer(generated)
+
+        # ✅ anti-hallucination
+        if (
+            not generated
+            or len(generated.strip()) < 5
+            or is_bad_answer(generated)
+            or "Je n'ai pas assez d'informations" in generated
+            or not is_valid_answer(generated, context)
+        ):
+            print("⚠️ Fallback utilisé")
+            answer = context
 
         else:
-            # ✅ sinon document → renvoyer texte simple
-            answer = context.strip()
+            answer = generated.strip()
 
-    # ✅ 3. sauvegarde
     try:
         supabase.table("conversations").insert({
             "chatbot_id": data.chatbot_id,

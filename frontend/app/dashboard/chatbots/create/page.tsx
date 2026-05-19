@@ -157,10 +157,24 @@ export default function CreateChatbotPage() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.detail || `Erreur ${res.status}`);
-        return;
-      }
+if (!res.ok) {
+
+  // Erreur nom déjà utilisé
+  if (res.status === 400) {
+    setError(data.detail || "Nom du chatbot déjà utilisé");
+    return;
+  }
+
+  // Non autorisé
+  if (res.status === 401) {
+    setError("Session expirée. Reconnectez-vous.");
+    return;
+  }
+
+  // Autres erreurs
+  setError(data.detail || `Erreur ${res.status}`);
+  return;
+}
 
       // ✅ CORRECTION: Extraire l'ID de la structure correcte
       // La réponse a cette structure: { message: "...", data: [{ id: "...", ... }] }
@@ -436,19 +450,31 @@ export default function CreateChatbotPage() {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
-                  Nom du chatbot <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="nom"
-                  value={form.nom}
-                  onChange={handleChange}
-                  placeholder="Ex: Assistant Client Pro"
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition"
-                />
-              </div>
+<div>
+  <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
+    Nom du chatbot <span className="text-red-500">*</span>
+  </label>
+
+  <input
+    type="text"
+    name="nom"
+    value={form.nom}
+    onChange={handleChange}
+    placeholder="Ex: Assistant Client Pro"
+    className={`w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 transition
+      ${
+        error
+          ? "border-red-400 focus:ring-red-400"
+          : "border-[#B8E0E0] focus:ring-[#008080]"
+      }`}
+  />
+
+  {error && (
+    <p className="text-sm text-red-500 mt-1">
+      {error}
+    </p>
+  )}
+</div>
 
               <div>
                 <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
