@@ -5,6 +5,7 @@ Document service (PDF / PPT)
 import os
 from core.config import supabase
 from services.embedding_service import create_embedding
+from services.chunking_service import chunk_text  # ✅ IMPORT CORRECT
 from services.file_service import (
     extract_text_from_pdf,
     extract_text_from_ppt
@@ -12,23 +13,6 @@ from services.file_service import (
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-
-def chunk_text(text: str, size: int = 300, overlap: int = 50):
-    """
-    Découpe le texte avec overlap
-    """
-    chunks = []
-
-    step = size - overlap
-
-    for i in range(0, len(text), step):
-        chunk = text[i:i + size]
-
-        if chunk.strip():
-            chunks.append(chunk)
-
-    return chunks
 
 
 def create_document(chatbot_id: str, titre: str, file_path: str):
@@ -54,7 +38,7 @@ def create_document(chatbot_id: str, titre: str, file_path: str):
 
     print("✅ Document ID:", doc_id)
 
-    # ✅ 3. chunking avec overlap
+    # ✅ 3. chunking (depuis service externe ✅)
     chunks = chunk_text(content)
 
     print("✅ Nombre de chunks:", len(chunks))

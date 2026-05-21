@@ -38,13 +38,15 @@ export default function RootLayout({
 
   // Fonction pour scroller vers une section
   const scrollToSection = (sectionId: string) => {
-    setIsMobileMenuOpen(false);
+    setIsMobileMenuOpen(false); // Fermer le menu mobile
     if (pathname !== "/") {
+      // Si on n'est pas sur la page d'accueil, rediriger d'abord
       window.location.href = `/#${sectionId}`;
     } else {
+      // Sinon scroller directement
       const element = document.getElementById(sectionId);
       if (element) {
-        const offset = 80;
+        const offset = 80; // Hauteur de la navbar fixe
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - offset;
         
@@ -115,6 +117,7 @@ export default function RootLayout({
     ],
   };
 
+ 
   return (
     <html lang="fr">
       <head>
@@ -123,7 +126,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-gradient-to-br from-[#F0FDFC] via-[#E6F7F5] to-[#DCF5F2] dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900">
         
-     
+        {/* Decorative background elements - Insomea colors */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#008080] rounded-full mix-blend-multiply filter blur-3xl opacity-10 dark:opacity-5 "></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#00A8A8] rounded-full mix-blend-multiply filter blur-3xl opacity-10 dark:opacity-5  delay-1000"></div>
+        </div>
 
         {/* NAVBAR PUBLIC - INSOMEA STYLE */}
         {!isDashboard && !isAuthPage && (
@@ -140,7 +147,7 @@ export default function RootLayout({
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                   
-                  {/* Logo - Insomea colors */}
+                  {/* Logo */}
                   <Link href="/" className="flex items-center gap-2 group">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#008080] to-[#00A8A8] flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform duration-300">
                       <Bot className="w-4 h-4" strokeWidth={1.5} />
@@ -150,7 +157,7 @@ export default function RootLayout({
                     </span>
                   </Link>
 
-                  {/* Desktop Navigation */}
+                  {/* Desktop Navigation - avec scroll */}
                   <div className="hidden md:flex items-center gap-6">
                     {navLinks.map((link) => (
                       <button
@@ -192,7 +199,7 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* Mobile Menu */}
+              {/* Mobile Menu - avec scroll */}
               {isMobileMenuOpen && (
                 <div className="md:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-[#D0EAE8] dark:border-zinc-800">
                   <div className="px-4 py-4 space-y-3">
