@@ -118,7 +118,7 @@ export default function DashboardPage() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse flex items-center gap-3">
+              <div key={i} className=" flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-gray-800" />
                 <div className="flex-1">
                   <div className="h-4 w-32 bg-[#D9F3F3] dark:bg-gray-800 rounded" />

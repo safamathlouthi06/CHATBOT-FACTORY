@@ -196,7 +196,7 @@ export default function ChatbotListPage() {
       {loading && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse border border-[#B8E0E0] dark:border-gray-700 rounded-lg p-4">
+            <div key={i} className=" border border-[#B8E0E0] dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-gray-700" />
                 <div className="flex-1">
