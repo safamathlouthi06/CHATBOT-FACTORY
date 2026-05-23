@@ -365,7 +365,7 @@ Ce projet a été développé selon la méthode **Scrum Lean** en 7 sprints de 2
 
 ## 👥 Auteurs
 
-Projet de Fin d'Études — 2024/2025
+Projet de Fin d'Études — 2025/2026
 
 ---
 
