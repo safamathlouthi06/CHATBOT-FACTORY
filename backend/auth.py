@@ -82,6 +82,11 @@ def register(entreprise: Entreprise):
 
     raise HTTPException(status_code=400, detail="Erreur register")
 
+    return {
+        "message": "Entreprise créée (en attente de validation)",
+        "data": response.data[0]
+    }
+
 
 # =========================
 # LOGIN (ADMIN + ENTREPRISE)
@@ -112,16 +117,25 @@ def login(data: LoginData):
     user = response.data
 
     if not user:
-        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
 
     user = user[0]
 
+     # 🔒 BLOQUAGE PENDING / NON APPROUVÉ
+    if user["statut"] != "approved":
+        raise HTTPException(
+            status_code=403,
+            detail="Compte en attente de validation par l'administrateur"
+        )
+
+     # 🔑 PASSWORD CHECK
     if not bcrypt.checkpw(
         data.password.encode("utf-8"),
         user["password"].encode("utf-8")
     ):
         raise HTTPException(status_code=401, detail="Mot de passe incorrect")
 
+    # 🔐 TOKEN
     token = jwt.encode({
         "role": "entreprise",
         "email": user["email"],
