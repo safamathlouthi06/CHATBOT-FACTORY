@@ -1,45 +1,52 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import re
+import os
+from openai import AzureOpenAI
 
-# ✅ modèle
-tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
-model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-base")
-
+client = AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version="2024-02-15-preview",
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+)
 
 def generate_answer(context: str, question: str) -> str:
+    
+    prompt = f"""
+    Tu es un assistant basé sur une base de connaissances.
+
+    Ta tâche :
+    - Utilise le contexte pour répondre à la question
+    - Reformule la réponse si nécessaire (même si le texte n'est pas parfait)
+    - Si tu peux déduire la réponse à partir du contexte, fais-le
+
+    Seulement si aucune information pertinente n'existe, dis :
+    "Je n'ai pas assez d'informations pour répondre."
+
+    Contexte :
+    {context}
+
+    Question :
+    {question}
+
+    Réponse :
     """
-    Génération propre et contrôlée
-    """
 
-    # ✅ prompt plus clair et court
-    prompt = f"""Réponds à la question en utilisant uniquement le contexte.
-
-Context: {context}
-
-Question: {question}
-
-Réponse courte:
-"""
-
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
-
-    outputs = model.generate(
-        inputs["input_ids"],
-        max_length=50,
-        do_sample=False,        # ✅ déterministe
-        num_beams=4,            # ✅ meilleur résultat
-        early_stopping=True
+    response = client.chat.completions.create(
+        model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        messages=[
+            {"role": "system", "content": "Assistant utile."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.2,
+        max_tokens=150
     )
 
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-    return answer.strip()
+    return response.choices[0].message.content.strip()
 
 
 def is_valid_answer(answer: str, context: str) -> bool:
     """
-    Validation stricte anti-hallucination
+    Vérifie que la réponse existe dans le contexte
     """
+
     words = [w for w in answer.lower().split() if len(w) > 3]
     context_lower = context.lower()
 
@@ -51,25 +58,3 @@ def is_valid_answer(answer: str, context: str) -> bool:
     return match >= len(words) * 0.7
 
 
-def clean_generated_answer(answer: str) -> str:
-    """
-    Nettoyage renforcé
-    """
-
-    # ✅ supprimer tout bruit courant
-    patterns = [
-        r"question.*",
-        r"réponse.*",
-        r"this answer.*",
-        r"cette réponse.*",
-        r"à la question.*",
-        r"\bbot\b"
-    ]
-
-    for p in patterns:
-        answer = re.sub(p, "", answer, flags=re.IGNORECASE)
-
-    # ✅ enlever espaces multiples
-    answer = re.sub(r"\s+", " ", answer)
-
-    return answer.strip()

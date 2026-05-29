@@ -43,53 +43,75 @@ def is_bad_answer(answer: str) -> bool:
 
 @router.post("/")
 def chat(data: ChatRequest):
+    try:
+        # ✅ 1. récupérer contexte
+        context = retrieve_relevant_chunks(
+            data.chatbot_id,
+            data.question
+        )
 
-    context = retrieve_relevant_chunks(
-        data.chatbot_id,
-        data.question
-    )
+        print("✅ CONTEXT:", context)
 
-    print("✅ CONTEXT:", context)
-
-    if not context:
-        answer = "Je n'ai pas assez d'informations pour répondre."
-
-    else:
-        generated = generate_answer(context, data.question)
-
-        print("✅ GENERATED:", generated)
-
-        # ✅ nettoyage
-        generated = clean_generated_answer(generated)
-
-        # ✅ anti-hallucination
-        if (
-            not generated
-            or len(generated.strip()) < 5
-            or is_bad_answer(generated)
-            or "Je n'ai pas assez d'informations" in generated
-            or not is_valid_answer(generated, context)
-        ):
-            print("⚠️ Fallback utilisé")
-            answer = context
+        if not context:
+            answer = "Je n'ai pas assez d'informations pour répondre."
 
         else:
-            answer = generated.strip()
+            # ✅ 2. génération
+            generated = generate_answer(context, data.question)
 
-    try:
-        supabase.table("conversations").insert({
-            "chatbot_id": data.chatbot_id,
-            "role": "user",
-            "message": data.question
-        }).execute()
+            print("✅ GENERATED:", generated)
 
-        supabase.table("conversations").insert({
-            "chatbot_id": data.chatbot_id,
-            "role": "bot",
-            "message": answer
-        }).execute()
+            # ✅ nettoyage
+            generated = clean_generated_answer(generated)
+
+            # ✅ anti-hallucination
+            if (
+                not generated
+                or len(generated.strip()) < 5
+                or is_bad_answer(generated)
+                or "Je n'ai pas assez d'informations" in generated
+                or not is_valid_answer(generated, context)
+            ):
+                print("⚠️ Fallback utilisé")
+                answer = context
+            else:
+                answer = generated.strip()
+
+        # ✅ 3. sauvegarde conversation
+        try:
+            supabase.table("conversations").insert({
+                "chatbot_id": data.chatbot_id,
+                "role": "user",
+                "message": data.question
+            }).execute()
+
+            supabase.table("conversations").insert({
+                "chatbot_id": data.chatbot_id,
+                "role": "bot",
+                "message": answer
+            }).execute()
+
+        except Exception as e:
+            print("❌ ERREUR save:", e)
+
+        # ✅ 4. récupérer historique complet ✅
+        history_res = supabase.table("conversations") \
+            .select("*") \
+            .eq("chatbot_id", data.chatbot_id) \
+            .order("created_at", desc=False) \
+            .execute()
+
+        history = history_res.data if history_res.data else []
+
+        # ✅ 5. retourner réponse + historique
+        return {
+            "answer": answer,
+            "history": history
+        }
 
     except Exception as e:
-        print("❌ ERREUR save:", e)
-
-    return {"answer": answer}
+        print("❌ ERROR:", e)
+        return {
+            "answer": "Erreur serveur",
+            "history": []
+        }
