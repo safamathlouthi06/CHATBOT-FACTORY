@@ -1,21 +1,22 @@
 """
 core/config.py
 
-Ce module contient la configuration globale de l'application :
-- Connexion à Supabase
-- Configuration du client OpenAI
-- Gestion des variables d'environnement
+Configuration globale :
+- Supabase
+- Azure OpenAI
+- Variables d'environnement
 """
 
 import os
 from supabase import create_client
-from openai import OpenAI
 from dotenv import load_dotenv
 
-# Charger les variables d'environnement depuis .env
+# ✅ charger .env
 load_dotenv()
 
-# Supabase configuration
+# =========================
+# SUPABASE
+# =========================
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -24,10 +25,21 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# OpenAI configuration
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-if not OPENAI_API_KEY:
-    raise ValueError("OpenAI API key is not defined")
+# =========================
+# AZURE OPENAI
+# =========================
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+if not AZURE_OPENAI_API_KEY:
+    raise ValueError("AZURE_OPENAI_API_KEY is not defined")
+
+if not AZURE_OPENAI_ENDPOINT:
+    raise ValueError("AZURE_OPENAI_ENDPOINT is not defined")
+
+if not AZURE_OPENAI_DEPLOYMENT:
+    raise ValueError("AZURE_OPENAI_DEPLOYMENT is not defined")
+
+
