@@ -34,7 +34,8 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         return {
             "email": decoded.get("email"),
             "role": decoded.get("role"),
-            "entreprise_id": decoded.get("entreprise_id")
+            "entreprise_id": decoded.get("entreprise_id"),
+            "employe_id": decoded.get("employe_id")
         }
 
     except Exception:
@@ -94,7 +95,9 @@ def register(entreprise: Entreprise):
 @router.post("/login")
 def login(data: LoginData):
 
+    # =========================
     # 👑 ADMIN LOGIN
+    # =========================
     if data.email == ADMIN_EMAIL and data.password == ADMIN_PASSWORD:
 
         token = jwt.encode({
@@ -108,38 +111,73 @@ def login(data: LoginData):
             "role": "admin"
         }
 
-    # 🏢 ENTREPRISE LOGIN
+    # =========================
+    # 👨‍💻 EMPLOYÉ LOGIN (FIRST CHECK)
+    # =========================
+    emp = supabase.table("employe") \
+        .select("*") \
+        .eq("email", data.email) \
+        .execute()
+
+    if emp.data:
+        emp_user = emp.data[0]
+
+        if not bcrypt.checkpw(
+            data.password.encode("utf-8"),
+            emp_user["password"].encode("utf-8")
+        ):
+            raise HTTPException(status_code=401, detail="Mot de passe incorrect")
+
+        if emp_user["statut"] != "actif":
+            raise HTTPException(status_code=403, detail="Compte désactivé")
+
+        token = jwt.encode({
+            "role": "employe",
+            "email": emp_user["email"],
+            "entreprise_id": emp_user["entreprise_id"],
+            "employe_id": emp_user["id"],
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        }, SECRET_KEY, algorithm="HS256")
+
+        return {
+            "access_token": token,
+            "role": "employe",
+            "user": {
+                "email": emp_user["email"],
+                "nom": emp_user["nom"],
+                "prenom": emp_user["prenom"]
+            }
+        }
+
+    # =========================
+    # 🏢 ENTREPRISE LOGIN (SECOND CHECK)
+    # =========================
     response = supabase.table("entreprise") \
         .select("*") \
         .eq("email", data.email) \
         .execute()
 
-    user = response.data
-
-    if not user:
+    if not response.data:
         raise HTTPException(status_code=404, detail="Entreprise introuvable")
 
-    user = user[0]
+    user = response.data[0]
 
-     # 🔒 BLOQUAGE PENDING / NON APPROUVÉ
     if user["statut"] != "approved":
         raise HTTPException(
             status_code=403,
-            detail="Compte en attente de validation par l'administrateur"
+            detail="Compte en attente de validation"
         )
 
-     # 🔑 PASSWORD CHECK
     if not bcrypt.checkpw(
         data.password.encode("utf-8"),
         user["password"].encode("utf-8")
     ):
         raise HTTPException(status_code=401, detail="Mot de passe incorrect")
 
-    # 🔐 TOKEN
     token = jwt.encode({
         "role": "entreprise",
         "email": user["email"],
-        "entreprise_id": user["id"],  # 🔥 IMPORTANT
+        "entreprise_id": user["id"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }, SECRET_KEY, algorithm="HS256")
 
@@ -151,7 +189,6 @@ def login(data: LoginData):
             "nomentreprise": user["nomentreprise"]
         }
     }
-
 
 # =========================
 # ADMIN - GET ENTREPRISES
