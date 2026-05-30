@@ -48,7 +48,7 @@ export default function AppLayout({
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await fetch("http://127.0.0.1:8000/me", {
+        const res=await fetch("http://127.0.0.1:8000/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -82,6 +82,7 @@ export default function AppLayout({
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/chatbots", label: "Chatbots", icon: Bot },
     { href: "/dashboard/stats", label: "Statistiques", icon: BarChart3 },
+    { href: "/dashboard/employes", label: "Employes", icon: FileText },
     
   ];
 
