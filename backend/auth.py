@@ -230,7 +230,7 @@ def validate(id: str, authorization: str = Header(None)):
 # =========================
 # GET ME (ENTREPRISE CONNECTÉE)
 # =========================
-@router.get("/me")
+@router.get("/meEntreprise")
 def get_me(user=Depends(get_current_user)):
 
     response = supabase.table("entreprise") \
@@ -247,4 +247,38 @@ def get_me(user=Depends(get_current_user)):
         "nomentreprise": response.data["nomentreprise"],
         "email": response.data["email"],
         #"role": user["role"]
+    }
+
+
+
+# =========================
+# GET CURRENT EMPLOYE
+#visible cote frontend pour afficher infos entreprise
+# =========================
+# =========================
+# GET ME (EMPLOYE CONNECTÉE)
+# =========================
+@router.get("/meEmploye")
+def get_me_employe(user=Depends(get_current_user)):
+
+    if user["role"] != "employe":
+        raise HTTPException(status_code=403, detail="Accès réservé aux employés")
+
+    response = supabase.table("employe") \
+        .select("id, nom, prenom, email, email_personnel, entreprise_id, statut") \
+        .eq("id", user["employe_id"]) \
+        .single() \
+        .execute()
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Employé introuvable")
+
+    return {
+        "id": response.data["id"],
+        "nom": response.data["nom"],
+        "prenom": response.data["prenom"],
+        "email": response.data["email"],
+        "email_personnel": response.data["email_personnel"],
+        "entreprise_id": response.data["entreprise_id"],
+        "statut": response.data["statut"]
     }

@@ -55,30 +55,37 @@ def create_chatbot(
     try:
         role = current_user.get("role")
 
-        if role not in ("entreprise", "employe"):
-            raise HTTPException(status_code=403, detail="Accès refusé")
+        # ✅ SEUL EMPLOYÉ AUTORISÉ
+        if role != "employe":
+            raise HTTPException(
+                status_code=403,
+                detail="Seuls les employés peuvent créer des chatbots"
+            )
 
         entreprise_id = current_user.get("entreprise_id")
         employe_id = current_user.get("employe_id")
 
-        if not entreprise_id:
-            raise HTTPException(status_code=403, detail="Entreprise manquante")
+        if not entreprise_id or not employe_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Token employé invalide"
+            )
 
         # =========================
-        # CHECK DUPLICATE
+        # CHECK DUPLICATE (par employé)
         # =========================
-        query = supabase.table(TABLE) \
+        existing = supabase.table(TABLE) \
             .select("id") \
             .eq("entreprise_id", entreprise_id) \
-            .eq("nom", data.nom)
-
-        if role == "employe":
-            query = query.eq("employe_id", employe_id)
-
-        existing = query.execute()
+            .eq("employe_id", employe_id) \
+            .eq("nom", data.nom) \
+            .execute()
 
         if existing.data:
-            raise HTTPException(status_code=400, detail="Nom déjà utilisé")
+            raise HTTPException(
+                status_code=400,
+                detail="Nom déjà utilisé"
+            )
 
         # =========================
         # INSERT
@@ -88,7 +95,7 @@ def create_chatbot(
             "domaine": data.domaine,
             "statut": data.statut,
             "entreprise_id": entreprise_id,
-            "employe_id": employe_id if role == "employe" else None
+            "employe_id": employe_id
         }).execute()
 
         return {
@@ -101,8 +108,6 @@ def create_chatbot(
     except Exception:
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Erreur création chatbot")
-
-
 # =========================
 # GET CHATBOTS
 # =========================
@@ -111,23 +116,50 @@ def get_chatbots(current_user=Depends(get_current_user)):
 
     role = current_user.get("role")
 
-    # 🧠 SUPER ADMIN → tout voir
+    # =========================
+    # SUPER ADMIN → tout voir
+    # =========================
     if role == "super_admin":
         res = supabase.table(TABLE).select("*").execute()
         return res.data or []
 
-    # filtrage normal
-    f = get_chatbot_filter(current_user)
+    # =========================
+    # ENTREPRISE → tous ses employés
+    # =========================
+    if role == "entreprise":
+        entreprise_id = current_user.get("entreprise_id")
 
-    res = supabase.table(TABLE) \
-        .select("*") \
-        .eq(f["field"], f["value"]) \
-        .order("created_at", desc=True) \
-        .execute()
+        if not entreprise_id:
+            raise HTTPException(status_code=403, detail="Entreprise manquante")
 
-    return res.data or []
+        res = (
+            supabase.table(TABLE)
+            .select("*, employe(nom, prenom)")
+            .eq("entreprise_id", entreprise_id)
+            .execute()
+        )
 
+        return res.data or []
 
+    # =========================
+    # EMPLOYE → UNIQUEMENT SES CHATBOTS
+    # =========================
+    if role == "employe":
+        employe_id = current_user.get("employe_id")
+
+        if not employe_id:
+            raise HTTPException(status_code=403, detail="Employe manquant")
+
+        res = (
+            supabase.table(TABLE)
+            .select("*, employe(nom, prenom)")
+            .eq("employe_id", employe_id)   # 🔐 IMPORTANT: isolation totale
+            .execute()
+        )
+
+        return res.data or []
+
+    raise HTTPException(status_code=403, detail="Rôle non autorisé")
 # =========================
 # GET BY ID
 # =========================
@@ -199,3 +231,6 @@ def delete_chatbot(chatbot_id: str, current_user=Depends(get_current_user)):
     query.execute()
 
     return {"message": "Chatbot supprimé"}
+
+
+

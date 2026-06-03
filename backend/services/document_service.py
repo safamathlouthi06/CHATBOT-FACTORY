@@ -58,4 +58,42 @@ def create_document(chatbot_id: str, titre: str, file_path: str):
     return {
         "message": "Document traité avec succès",
         "chunks": len(chunks)
-    }
+    }    
+
+
+def delete_document(document_id: str):
+    
+    # récupérer le document
+    doc = (
+        supabase.table("documents")
+        .select("*")
+        .eq("id", document_id)
+        .single()
+        .execute()
+    )
+
+    if not doc.data:
+        raise ValueError("Document introuvable")
+
+    document = doc.data
+
+    # supprimer les chunks RAG
+    supabase.table("knowledge_chunks") \
+        .delete() \
+        .eq("source_type", "document") \
+        .eq("source_id", document_id) \
+        .execute()
+
+    # supprimer le fichier physique si stocké
+    file_path = document.get("file_path")
+
+    if file_path and os.path.exists(file_path):
+        os.remove(file_path)
+
+    # supprimer le document
+    supabase.table("documents") \
+        .delete() \
+        .eq("id", document_id) \
+        .execute()
+
+    return True

@@ -46,7 +46,7 @@ export default function EmployeDashboard() {
         if (!token || role !== "employe") { router.push("/login"); return; }
 
         // Charger le profil
-        const meRes = await fetch(`${API}/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const meRes = await fetch(`${API}/meEmploye`, { headers: { Authorization: `Bearer ${token}` } });
         if (!meRes.ok) { router.push("/login"); return; }
         const meData = await meRes.json();
         setMe(meData);
@@ -71,85 +71,7 @@ export default function EmployeDashboard() {
   return (
     <div className="min-h-screen bg-[#F5F7F8] dark:bg-[#0B1120]">
 
-      {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-xl border-b border-[#D9E3E5] dark:border-[#1E293B]">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between h-16">
-
-          {/* Logo */}
-          <Link href="/employe" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#007A80] to-[#00C7D1] flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-black text-xl bg-gradient-to-r from-[#005C61] to-[#00C7D1] bg-clip-text text-transparent">
-              Chatbot Factory
-            </span>
-          </Link>
-
-          {/* Nav desktop */}
-          <div className="hidden md:flex items-center gap-1">
-            <Link href="/employe" className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-gradient-to-r from-[#007A80] to-[#00B7C2] text-white text-sm font-semibold">
-              <BarChart3 className="w-4 h-4" />Dashboard
-            </Link>
-            <Link href="/dashboard/chatbots" className="flex items-center gap-2 px-3 py-2 rounded-2xl text-[#134E52] hover:bg-[#E8FAFB] text-sm font-semibold transition">
-              <Bot className="w-4 h-4" />Chatbots
-            </Link>
-          </div>
-
-          {/* User menu */}
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 p-1.5 rounded-2xl hover:bg-[#E8FAFB] transition">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#007A80] to-[#00D5DF] flex items-center justify-center text-white text-sm font-bold">
-                  
-                </div>
-                <div className="hidden lg:block text-left">
-                  <p className="text-sm font-semibold text-[#134E52] dark:text-white">
-                    {me ? `${me.prenom} ${me.nom}` : "..."}
-                  </p>
-                  <p className="text-xs text-[#6CAFB4]">Employé</p>
-                </div>
-                <ChevronDown className="hidden lg:block w-4 h-4 text-[#6CAFB4]" />
-              </button>
-
-              {menuOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-[#D7F3F5] z-20 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-800">
-                      <p className="font-bold text-[#0B3C3C] dark:text-white text-sm">{me?.prenom} {me?.nom}</p>
-                      <p className="text-xs text-gray-500">{me?.email}</p>
-                      <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-[#D9F3F3] text-[#008080]">Employé</span>
-                    </div>
-                    <div className="p-2">
-                      <hr className="my-1 border-gray-100 dark:border-gray-800" />
-                      <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-red-500 hover:bg-red-50 transition">
-                        <LogOut className="w-4 h-4" />Déconnexion
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <button className="md:hidden p-2 rounded-xl hover:bg-[#E8FAFB]" onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X /> : <Menu />}
-            </button>
-          </div>
-        </div>
-
-        {mobileOpen && (
-          <div className="md:hidden border-t border-[#D9E3E5] bg-white dark:bg-[#0F172A] p-4 space-y-2">
-            <Link href="/employe" className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-[#007A80] to-[#00B7C2] text-white font-semibold" onClick={() => setMobileOpen(false)}>
-              <BarChart3 className="w-5 h-5" />Dashboard
-            </Link>
-            <Link href="/dashboard/chatbots" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[#134E52] hover:bg-[#E8FAFB] font-semibold transition" onClick={() => setMobileOpen(false)}>
-              <Bot className="w-5 h-5" />Chatbots
-            </Link>
-            <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 font-semibold transition">
-              <LogOut className="w-5 h-5" />Déconnexion
-            </button>
-          </div>
-        )}
-      </nav>
+    
 
       {/* ── Contenu ── */}
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
@@ -166,7 +88,7 @@ export default function EmployeDashboard() {
               Gérez vos chatbots et construisez votre base de connaissances.
             </p>
             <Link
-              href="/dashboard/chatbots/create"
+              href="/employe/chatbots/create"
               className="inline-flex items-center gap-2 bg-white text-[#008080] px-5 py-2.5 rounded-xl font-semibold text-sm hover:shadow-lg transition"
             >
               <Plus className="w-4 h-4" />Créer un chatbot
@@ -197,7 +119,7 @@ export default function EmployeDashboard() {
             <h2 className="font-bold text-lg text-[#0B3C3C] dark:text-white flex items-center gap-2">
               <Bot className="w-5 h-5 text-[#008080]" />Mes chatbots
             </h2>
-            <Link href="/dashboard/chatbots" className="text-sm text-[#008080] hover:underline font-medium">
+            <Link href="/employe/chatbots" className="text-sm text-[#008080] hover:underline font-medium">
               Voir tous
             </Link>
           </div>
@@ -208,7 +130,7 @@ export default function EmployeDashboard() {
             <div className="text-center py-10">
               <Bot className="w-12 h-12 mx-auto text-[#00A8A8] mb-3" />
               <p className="text-[#2F6F6F] text-sm mb-3">Aucun chatbot encore</p>
-              <Link href="/dashboard/chatbots/create" className="inline-flex items-center gap-2 bg-[#008080] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005F5F] transition">
+              <Link href="/employe/chatbots/create" className="inline-flex items-center gap-2 bg-[#008080] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005F5F] transition">
                 <Plus className="w-4 h-4" />Créer mon premier chatbot
               </Link>
             </div>
@@ -230,13 +152,13 @@ export default function EmployeDashboard() {
                       {bot.statut}
                     </span>
                     <div className="flex gap-1">
-                      <Link href={`/dashboard/chatbots/${bot.id}/base-de-connaissance`} className="p-1.5 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Base de connaissances">
+                      <Link href={`/employe/chatbots/${bot.id}/base-de-connaissance`} className="p-1.5 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Base de connaissances">
                         <Database size={14} />
                       </Link>
-                      <Link href={`/dashboard/chatbots/${bot.id}/test`} className="p-1.5 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Tester">
+                      <Link href={`/employe/chatbots/${bot.id}/test`} className="p-1.5 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Tester">
                         <Play size={14} />
                       </Link>
-                      <Link href={`/dashboard/chatbots/${bot.id}/deployment`} className="p-1.5 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Déployer">
+                      <Link href={`/employe/chatbots/${bot.id}/deployment`} className="p-1.5 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Déployer">
                         <Rocket size={14} />
                       </Link>
                     </div>
@@ -244,7 +166,7 @@ export default function EmployeDashboard() {
                 </div>
               ))}
             </div>
-          )}
+          )} 
         </div>
 
         {/* Actions rapides */}
@@ -254,9 +176,9 @@ export default function EmployeDashboard() {
           </h2>
           <div className="grid sm:grid-cols-3 gap-3">
             {[
-              { href: "/dashboard/chatbots/create", icon: Plus, label: "Créer un chatbot", desc: "Nouveau projet" },
-              { href: "/dashboard/chatbots", icon: Bot, label: "Mes chatbots", desc: "Gérer les existants" },
-              { href: "/dashboard/stats", icon: BarChart3, label: "Statistiques", desc: "Performances" },
+              { href: "/employe/chatbots/create", icon: Plus, label: "Créer un chatbot", desc: "Nouveau projet" },
+              { href: "/employe/chatbots", icon: Bot, label: "Mes chatbots", desc: "Gérer les existants" },
+              { href: "/employe/stats", icon: BarChart3, label: "Statistiques", desc: "Performances" },
             ].map(a => (
               <Link key={a.href} href={a.href} className="flex items-center gap-3 p-4 border border-[#B8E0E0] rounded-xl hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition group">
                 <div className="w-9 h-9 rounded-xl bg-[#D9F3F3] dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700 flex items-center justify-center transition">

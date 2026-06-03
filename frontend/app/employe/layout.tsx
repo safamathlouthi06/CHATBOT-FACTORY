@@ -48,28 +48,26 @@ export default function AppLayout({
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res=await fetch("http://127.0.0.1:8000/meEntreprise", {
+        const res=await fetch("http://127.0.0.1:8000/meEmploye", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const data = await res.json();
+const data = await res.json();
 
-        const finalName = data?.nomentreprise ?? "Entreprise inconnue";
+const finalName =
+  data?.prenom && data?.nom
+    ? `${data.prenom} ${data.nom}`
+    : "Employé inconnu";
 
-        setUser({
-          name: finalName,
-          email: data?.email || "",
-         
-          plan: "Pro",
-          avatar: finalName
-            .split(" ")
-            .map((w: string) => w[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase(),
-        });
+setUser({
+  name: finalName,
+  email: data?.email || "",
+  plan: "Pro",
+  avatar:
+    `${data?.prenom?.[0] || ""}${data?.nom?.[0] || ""}`.toUpperCase(),
+});
       } catch (error) {
         console.error("Erreur chargement entreprise:", error);
       }
@@ -79,10 +77,10 @@ export default function AppLayout({
   }, []);
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/employes", label: "Employes", icon: FileText },
-    { href: "/dashboard/chatbots", label: "Chatbots", icon: Bot },
-    { href: "/dashboard/stats", label: "Statistiques", icon: BarChart3 },
+    { href: "/employe", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/employe/chatbots", label: "Chatbots", icon: Bot },
+   
+   
     
   ];
 
@@ -101,7 +99,7 @@ export default function AppLayout({
           <div className="flex items-center justify-between h-16">
 
             {/* LOGO */}
-            <Link href="/dashboard" className="flex items-center gap-3">
+            <Link href="/employe" className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#007A80] via-[#009CA6] to-[#00C7D1] flex items-center justify-center">
                 <Bot className="w-4 h-4 text-white" />
               </div>
@@ -188,7 +186,7 @@ export default function AppLayout({
                         </button>
 
                         <Link
-                          href="/dashboard/settings"
+                          href="/employe/settings"
                           className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl hover:bg-gray-100"
                         >
                           <Settings className="w-4 h-4" />
