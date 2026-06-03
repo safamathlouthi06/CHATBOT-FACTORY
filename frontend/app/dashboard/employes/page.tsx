@@ -31,31 +31,33 @@ export default function EmployesPage() {
   const tk = () => localStorage.getItem("token") ?? "";
   const toast_ = (type:"success"|"error", msg:string) => { setToast({type,msg}); setTimeout(()=>setToast(null),4000); };
 
-    // ✅ FIX IMPORTANT : gestion erreurs FastAPI
+  // ✅ FIX IMPORTANT : gestion erreurs FastAPI
   const getErrorMessage = (detail: any): string => {
     if (!detail) return "Erreur inconnue";
-
     if (typeof detail === "string") return detail;
-
     if (Array.isArray(detail)) {
       return detail.map((e) => e.msg || JSON.stringify(e)).join(", ");
     }
-
     if (typeof detail === "object") {
       return detail.msg || JSON.stringify(detail);
     }
-
     return "Erreur inconnue";
   };
 
-
   const fetchEmployes = async () => {
-    try { setLoading(true);
+    try { 
+      setLoading(true);
       const r = await fetch(`${API}/employes/`,{headers:{Authorization:`Bearer ${tk()}`}});
       if(r.status===403){router.push("/dashboard");return;}
-      const d = await r.json(); setEmployes(Array.isArray(d)?d:[]);
-    } catch { toast_("error","Impossible de charger"); } finally { setLoading(false); }
+      const d = await r.json(); 
+      setEmployes(Array.isArray(d)?d:[]);
+    } catch { 
+      toast_("error","Impossible de charger"); 
+    } finally { 
+      setLoading(false); 
+    }
   };
+  
   useEffect(()=>{fetchEmployes();},[]);
 
   useEffect(()=>{
@@ -77,8 +79,16 @@ export default function EmployesPage() {
         return;
       }
       toast_("success",`Employé créé — identifiants envoyés à ${emailP}`);
-      setShowForm(false); setNom(""); setPrenom(""); setEmailP(""); fetchEmployes();
-    } catch { toast_("error","Erreur réseau"); } finally { setSaving(false); }
+      setShowForm(false); 
+      setNom(""); 
+      setPrenom(""); 
+      setEmailP(""); 
+      fetchEmployes();
+    } catch { 
+      toast_("error","Erreur réseau"); 
+    } finally { 
+      setSaving(false); 
+    }
   };
 
   const handleToggle = async (emp:Employe) => {
@@ -86,16 +96,23 @@ export default function EmployesPage() {
       const r = await fetch(`${API}/employes/${emp.id}/statut`,{method:"PATCH",headers:{Authorization:`Bearer ${tk()}`}});
       const d = await r.json();
       if(!r.ok){toast_("error",d.detail);return;}
-      toast_("success",`Compte ${d.statut==="actif"?"activé":"désactivé"}`); fetchEmployes();
-    } catch { toast_("error","Erreur"); }
+      toast_("success",`Compte ${d.statut==="actif"?"activé":"désactivé"}`); 
+      fetchEmployes();
+    } catch { 
+      toast_("error","Erreur"); 
+    }
   };
 
   const handleDelete = async () => {
     if(!deleteTarget)return;
     try {
       await fetch(`${API}/employes/${deleteTarget.id}`,{method:"DELETE",headers:{Authorization:`Bearer ${tk()}`}});
-      toast_("success","Employé supprimé"); setDeleteTarget(null); fetchEmployes();
-    } catch { toast_("error","Erreur suppression"); }
+      toast_("success","Employé supprimé"); 
+      setDeleteTarget(null); 
+      fetchEmployes();
+    } catch { 
+      toast_("error","Erreur suppression"); 
+    }
   };
 
   const handleResend = async (id:string) => {
@@ -105,7 +122,23 @@ export default function EmployesPage() {
       const d = await r.json();
       if(!r.ok){toast_("error",d.detail);return;}
       toast_("success","Nouveaux identifiants envoyés");
-    } catch { toast_("error","Erreur"); } finally { setResendTarget(null); }
+    } catch { 
+      toast_("error","Erreur"); 
+    } finally { 
+      setResendTarget(null); 
+    }
+  };
+
+  const resetForm = () => {
+    setNom("");
+    setPrenom("");
+    setEmailP("");
+    setPreview("");
+  };
+
+  const closeModal = () => {
+    setShowForm(false);
+    resetForm();
   };
 
   const filtered = employes.filter(e=>`${e.nom} ${e.prenom} ${e.email} ${e.email_personnel}`.toLowerCase().includes(search.toLowerCase()));
@@ -128,43 +161,6 @@ export default function EmployesPage() {
           <Plus size={16}/>Ajouter un employé
         </button>
       </div>
-
-      {showForm&&(
-        <div className="bg-white dark:bg-gray-900 border border-[#B8E0E0] rounded-2xl p-6 shadow-lg space-y-5">
-          <div className="flex justify-between items-center">
-            <h2 className="font-bold text-lg text-[#0B3C3C] dark:text-white">Nouvel employé</h2>
-            <button onClick={()=>{setShowForm(false);setNom("");setPrenom("");setEmailP("");}} className="text-gray-400 hover:text-gray-600"><X size={20}/></button>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">Prénom <span className="text-red-500">*</span></label>
-              <input className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" placeholder="Marie" value={prenom} onChange={e=>setPrenom(e.target.value)}/>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">Nom <span className="text-red-500">*</span></label>
-              <input className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" placeholder="Dupont" value={nom} onChange={e=>setNom(e.target.value)}/>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">Email personnel <span className="text-red-500">*</span></label>
-            <input type="email" className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" placeholder="marie.dupont@gmail.com" value={emailP} onChange={e=>setEmailP(e.target.value)}/>
-            <p className="text-xs text-[#2F6F6F] mt-1.5">Les identifiants de connexion seront envoyés à cette adresse.</p>
-          </div>
-          {preview&&(
-            <div className="bg-[#D9F3F3] border border-[#B8E0E0] rounded-xl px-4 py-3">
-              <p className="text-xs text-[#2F6F6F] mb-1">Email de connexion qui sera créé :</p>
-              <p className="text-sm font-mono font-bold text-[#005F5F]">{preview}</p>
-            </div>
-          )}
-          <div className="flex gap-3 pt-1">
-            <button onClick={handleCreate} disabled={saving} className="flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 transition shadow-md">
-              {saving?<Loader2 size={15} className="animate-spin"/>:<Mail size={15}/>}
-              {saving?"Création en cours...":"Créer et envoyer les accès"}
-            </button>
-            <button onClick={()=>{setShowForm(false);setNom("");setPrenom("");setEmailP("");}} className="px-4 py-2.5 border border-[#B8E0E0] rounded-xl text-sm hover:bg-[#D9F3F3] transition">Annuler</button>
-          </div>
-        </div>
-      )}
 
       <div className="relative">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00A8A8]"/>
@@ -237,6 +233,94 @@ export default function EmployesPage() {
         </div>
       )}
 
+      {/* MODAL AJOUT EMPLOYÉ */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="font-bold text-xl text-[#0B3C3C] dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#008080]" />
+                Nouvel employé
+              </h2>
+              <button 
+                onClick={closeModal} 
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <X size={20}/>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">
+                    Prénom <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" 
+                    placeholder="Marie" 
+                    value={prenom} 
+                    onChange={e=>setPrenom(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">
+                    Nom <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" 
+                    placeholder="Dupont" 
+                    value={nom} 
+                    onChange={e=>setNom(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">
+                  Email personnel <span className="text-red-500">*</span>
+                </label>
+                <input 
+                  type="email" 
+                  className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" 
+                  placeholder="marie.dupont@gmail.com" 
+                  value={emailP} 
+                  onChange={e=>setEmailP(e.target.value)}
+                />
+                <p className="text-xs text-[#2F6F6F] mt-1.5">
+                  Les identifiants de connexion seront envoyés à cette adresse.
+                </p>
+              </div>
+              
+              {preview && (
+                <div className="bg-[#D9F3F3] border border-[#B8E0E0] rounded-xl px-4 py-3">
+                  <p className="text-xs text-[#2F6F6F] mb-1">Email de connexion qui sera créé :</p>
+                  <p className="text-sm font-mono font-bold text-[#005F5F]">{preview}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <button 
+                onClick={closeModal} 
+                className="px-4 py-2.5 border border-[#B8E0E0] rounded-xl text-sm hover:bg-[#D9F3F3] transition"
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={handleCreate} 
+                disabled={saving} 
+                className="flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 transition shadow-md"
+              >
+                {saving?<Loader2 size={15} className="animate-spin"/>:<Mail size={15}/>}
+                {saving?"Création en cours...":"Créer et envoyer les accès"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SUPPRESSION */}
       {deleteTarget&&(
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4">

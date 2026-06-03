@@ -36,6 +36,10 @@ export default function RootLayout({
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/admin");
 
+  const isEmploye =
+    pathname?.startsWith("/employe") ||
+    pathname === "/employe/profile" ;
+
   // Fonction pour scroller vers une section
   const scrollToSection = (sectionId: string) => {
     setIsMobileMenuOpen(false); // Fermer le menu mobile
@@ -133,7 +137,7 @@ export default function RootLayout({
         </div>
 
         {/* NAVBAR PUBLIC - INSOMEA STYLE */}
-        {!isDashboard && !isAuthPage && (
+        {!isDashboard && !isAuthPage && !isEmploye &&(
           <>
             <nav 
               className={`
@@ -242,7 +246,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
 
         {/* FOOTER PUBLIC - INSOMEA STYLE */}
-        {!isDashboard && !isAuthPage && (
+        {!isDashboard && !isAuthPage && !isEmploye && (
           <footer className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-[#D0EAE8] dark:border-zinc-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               

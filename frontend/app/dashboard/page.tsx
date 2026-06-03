@@ -57,12 +57,7 @@ export default function DashboardPage() {
             Gérez vos assistants IA
           </p>
         </div>
-        <Link href="/dashboard/chatbots/create">
-          <button className="inline-flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-4 py-2 rounded-lg transition">
-            <Plus className="w-4 h-4" />
-            Nouveau Chatbot
-          </button>
-        </Link>
+
       </div>
 
       {/* STATS */}
@@ -81,9 +76,9 @@ export default function DashboardPage() {
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
           <ActionCard
-            title="Créer un chatbot"
-            icon={Plus}
-            href="/dashboard/chatbots/create"
+            title="Gérer les employés"
+            icon={Users}
+            href="/dashboard/employes"
           />
           <ActionCard
             title="Gérer les chatbots"

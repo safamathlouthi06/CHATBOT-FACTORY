@@ -14,25 +14,65 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @router.get("/")
 def dashboard(user=Depends(get_current_user)):
+
     try:
-        # 🔥 récupérer company_id depuis user
-        entreprise_id = user["entreprise_id"]
+        role = user.get("role")
 
-        response = supabase \
-            .table("chatbots") \
-            .select("*") \
-            .eq("entreprise_id", entreprise_id) \
-            .execute()
+        # =========================
+        # SUPER ADMIN → tout
+        # =========================
+        if role == "super_admin":
+            response = supabase.table("chatbots").select("*").execute()
+            chatbots = response.data or []
 
-        chatbots = response.data if response.data else []
+        # =========================
+        # ENTREPRISE → ses chatbots
+        # =========================
+        elif role == "entreprise":
+            entreprise_id = user.get("entreprise_id")
 
+            if not entreprise_id:
+                raise HTTPException(status_code=403, detail="Entreprise manquante")
+
+            response = (
+                supabase.table("chatbots")
+                .select("*")
+                .eq("entreprise_id", entreprise_id)
+                .execute()
+            )
+
+            chatbots = response.data or []
+
+        # =========================
+        # EMPLOYÉ → ses chatbots
+        # =========================
+        elif role == "employe":
+            employe_id = user.get("employe_id")
+
+            if not employe_id:
+                raise HTTPException(status_code=403, detail="Employé manquant")
+
+            response = (
+                supabase.table("chatbots")
+                .select("*")
+                .eq("employe_id", employe_id)
+                .execute()
+            )
+
+            chatbots = response.data or []
+
+        else:
+            raise HTTPException(status_code=403, detail="Rôle non autorisé")
+
+        # =========================
+        # STATS RÉELLES
+        # =========================
         return {
             "chatbots": chatbots,
             "stats": {
                 "chatbots": len(chatbots),
-                "conversations": 120,
-                "messages": 500,
-                "users": 50
+                "actifs": len([c for c in chatbots if c.get("statut") == "actif"]),
+                "brouillons": len([c for c in chatbots if c.get("statut") == "brouillon"]),
             }
         }
 
