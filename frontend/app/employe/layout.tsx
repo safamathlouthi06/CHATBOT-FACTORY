@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Menu,
   X,
+
 } from "lucide-react";
 
 export default function AppLayout({
@@ -79,6 +80,8 @@ setUser({
   const navItems = [
     { href: "/employe", label: "Dashboard", icon: LayoutDashboard },
     { href: "/employe/chatbots", label: "Chatbots", icon: Bot },
+    { href: "/employe/profile", label: "Profile", icon: User },
+    
    
    
     
