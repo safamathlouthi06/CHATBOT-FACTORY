@@ -21,6 +21,7 @@ import {
   Rocket,
   AlertCircle
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -89,7 +90,7 @@ export default function CreateChatbotPage() {
       if (activeChatbotId && !chatbotName) {
         try {
           const token = localStorage.getItem("token");
-          const res = await fetch(`http://127.0.0.1:8000/chatbot/${activeChatbotId}`, {
+          const res = await fetch(`${API_URL}/chatbot/${activeChatbotId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.ok) {
@@ -142,7 +143,7 @@ export default function CreateChatbotPage() {
         return;
       }
 
-      const res = await fetch("http://127.0.0.1:8000/chatbot/", {
+      const res = await fetch(`${API_URL}/chatbot/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -223,7 +224,7 @@ else if (data.chatbot_id) {
         formData.append("titre", file.name);
         formData.append("file", file);
 
-        const res = await fetch("http://localhost:8000/documents/", {
+        const res = await fetch(`${API_URL}/documents/`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
@@ -236,7 +237,7 @@ else if (data.chatbot_id) {
       }
 
       for (const faq of faqs) {
-        const res = await fetch("http://localhost:8000/faq/", {
+        const res = await fetch(`${API_URL}/faq/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -280,7 +281,7 @@ else if (data.chatbot_id) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:8000/chat/", {
+      const res = await fetch(`${API_URL}/chat/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -313,7 +314,7 @@ else if (data.chatbot_id) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`http://127.0.0.1:8000/chatbot/${activeChatbotId}`, {
+      const res = await fetch(`${API_URL}/chatbot/${activeChatbotId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -361,9 +362,9 @@ else if (data.chatbot_id) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D9F3F3] via-white to-[#E8FFFF]">
+    <div className="min-h-screen bg-gradient-to-br from-[#D9F3F3] via-white to-[#E8FFFF] dark:from-[#0B1120] dark:via-[#0B1120] dark:to-[#0B1120]">
       <div className="max-w-5xl mx-auto px-4 py-8">
-        
+
         {/* Header */}
         <div className="mb-8">
           <button
@@ -373,14 +374,14 @@ else if (data.chatbot_id) {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm">Retour</span>
           </button>
-          
+
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#008080] to-[#00A8A8] flex items-center justify-center shadow-lg">
               <Bot className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#0B3C3C]">Créer un chatbot</h1>
-              <p className="text-sm text-[#2F6F6F] mt-0.5">Créez votre assistant IA en 4 étapes simples</p>
+              <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">Créer un chatbot</h1>
+              <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 mt-0.5">Créez votre assistant IA en 4 étapes simples</p>
             </div>
           </div>
         </div>
@@ -399,25 +400,25 @@ else if (data.chatbot_id) {
                     className={`
                       w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
                       transition-all duration-300 z-10 relative
-                      ${currentStep >= step.id 
-                        ? "bg-[#008080] text-white shadow-lg" 
-                        : "bg-gray-200 text-gray-500"}
+                      ${currentStep >= step.id
+                        ? "bg-[#008080] text-white shadow-lg"
+                        : "bg-gray-200 text-gray-500 dark:bg-zinc-800 dark:text-zinc-400"}
                     `}
                   >
                     {currentStep > step.id ? <Check className="w-5 h-5" /> : step.id}
                   </div>
                   <div className="text-center mt-2">
-                    <p className={`text-xs font-medium ${currentStep >= step.id ? "text-[#008080]" : "text-gray-400"}`}>
+                    <p className={`text-xs font-medium ${currentStep >= step.id ? "text-[#008080]" : "text-gray-400 dark:text-zinc-500"}`}>
                       {step.title}
                     </p>
-                    <p className="text-[10px] text-gray-400 hidden sm:block">{step.description}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-zinc-500 hidden sm:block">{step.description}</p>
                   </div>
                 </div>
                 {idx < steps.length - 1 && (
                   <div
                     className={`
                       absolute top-5 left-1/2 w-full h-0.5 -translate-y-1/2
-                      ${currentStep > step.id ? "bg-[#008080]" : "bg-gray-200"}
+                      ${currentStep > step.id ? "bg-[#008080]" : "bg-gray-200 dark:bg-zinc-800"}
                     `}
                   />
                 )}
@@ -428,11 +429,11 @@ else if (data.chatbot_id) {
 
         {/* Affichage des erreurs */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-800">Erreur</p>
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">Erreur</p>
+              <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
             <button onClick={() => setError("")} className="text-red-500 hover:text-red-700">
               <X className="w-4 h-4" />
@@ -442,15 +443,15 @@ else if (data.chatbot_id) {
 
         {/* STEP 1 - Informations */}
         {currentStep === 1 && (
-          <div className="bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
               <Bot className="w-5 h-5 text-[#008080]" />
-              <h2 className="font-semibold text-[#0B3C3C]">Informations générales</h2>
+              <h2 className="font-semibold text-[#0B3C3C] dark:text-white">Informations générales</h2>
             </div>
-            
+
             <div className="space-y-4">
 <div>
-  <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
+  <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
     Nom du chatbot <span className="text-red-500">*</span>
   </label>
 
@@ -460,11 +461,11 @@ else if (data.chatbot_id) {
     value={form.nom}
     onChange={handleChange}
     placeholder="Ex: Assistant Client Pro"
-    className={`w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 transition
+    className={`w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 transition bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100
       ${
         error
           ? "border-red-400 focus:ring-red-400"
-          : "border-[#B8E0E0] focus:ring-[#008080]"
+          : "border-[#B8E0E0] dark:border-zinc-700 focus:ring-[#008080]"
       }`}
   />
 
@@ -476,7 +477,7 @@ else if (data.chatbot_id) {
 </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
+                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Domaine d'activité <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -485,19 +486,19 @@ else if (data.chatbot_id) {
                   value={form.domaine}
                   onChange={handleChange}
                   placeholder="Ex: E-commerce, Support client, RH..."
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition"
+                  className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
+                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Rôle du chatbot
                 </label>
                 <select
                   name="role"
                   value={form.role}
                   onChange={handleChange}
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition"
+                  className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 >
                   <option>Support Client</option>
                   <option>Assistant Commercial</option>
@@ -508,14 +509,14 @@ else if (data.chatbot_id) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
+                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Ton de la conversation
                 </label>
                 <select
                   name="tone"
                   value={form.tone}
                   onChange={handleChange}
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition"
+                  className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 >
                   <option>Professionnel</option>
                   <option>Amical</option>
@@ -525,7 +526,7 @@ else if (data.chatbot_id) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] mb-1">
+                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Message d'accueil
                 </label>
                 <textarea
@@ -533,7 +534,7 @@ else if (data.chatbot_id) {
                   value={form.welcomeMessage}
                   onChange={handleChange}
                   rows={2}
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition resize-none"
+                  className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition resize-none bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 />
               </div>
             </div>
@@ -554,30 +555,30 @@ else if (data.chatbot_id) {
         {/* STEP 2 - Base de connaissances */}
         {currentStep === 2 && activeChatbotId && (
           <div className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
               <div>
-                <p className="text-sm font-medium text-green-700">
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">
                   Chatbot "{chatbotName}" créé avec succès !
                 </p>
-                <p className="text-xs text-green-600">ID: {activeChatbotId}</p>
+                <p className="text-xs text-green-600 dark:text-green-400">ID: {activeChatbotId}</p>
               </div>
             </div>
 
             {/* Upload documents */}
-            <div className="bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
                 <Upload className="w-5 h-5 text-[#008080]" />
-                <h2 className="font-semibold text-[#0B3C3C]">Documents</h2>
+                <h2 className="font-semibold text-[#0B3C3C] dark:text-white">Documents</h2>
               </div>
 
               <div
                 onClick={() => fileRef.current?.click()}
-                className="border-2 border-dashed border-[#B8E0E0] rounded-lg p-6 text-center cursor-pointer hover:border-[#008080] transition"
+                className="border-2 border-dashed border-[#B8E0E0] dark:border-zinc-700 rounded-lg p-6 text-center cursor-pointer hover:border-[#008080] transition"
               >
                 <Upload className="w-8 h-8 mx-auto text-[#00A8A8] mb-2" />
-                <p className="text-sm text-[#2F6F6F]">Cliquez pour ajouter des documents</p>
-                <p className="text-xs text-gray-400">PDF, PPTX, TXT - Max 20 Mo</p>
+                <p className="text-sm text-[#2F6F6F] dark:text-zinc-400">Cliquez pour ajouter des documents</p>
+                <p className="text-xs text-gray-400 dark:text-zinc-500">PDF, PPTX, TXT - Max 20 Mo</p>
                 <input
                   ref={fileRef}
                   type="file"
@@ -595,10 +596,10 @@ else if (data.chatbot_id) {
               {documents.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 bg-[#D9F3F3] rounded-lg">
+                    <div key={idx} className="flex items-center justify-between p-2 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-[#008080]" />
-                        <span className="text-sm text-[#0B3C3C]">{doc.name}</span>
+                        <span className="text-sm text-[#0B3C3C] dark:text-zinc-200">{doc.name}</span>
                       </div>
                       <button onClick={() => removeDocument(idx)} className="text-red-500">
                         <X className="w-4 h-4" />
@@ -610,10 +611,10 @@ else if (data.chatbot_id) {
             </div>
 
             {/* FAQ */}
-            <div className="bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
                 <HelpCircle className="w-5 h-5 text-[#008080]" />
-                <h2 className="font-semibold text-[#0B3C3C]">FAQ personnalisées</h2>
+                <h2 className="font-semibold text-[#0B3C3C] dark:text-white">FAQ personnalisées</h2>
               </div>
 
               <div className="space-y-3">
@@ -622,14 +623,14 @@ else if (data.chatbot_id) {
                   placeholder="Question"
                   value={newFaq.question}
                   onChange={(e) => setNewFaq({ ...newFaq, question: e.target.value })}
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#008080]"
+                  className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#008080] bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 />
                 <textarea
                   placeholder="Réponse"
                   value={newFaq.reponse}
                   onChange={(e) => setNewFaq({ ...newFaq, reponse: e.target.value })}
                   rows={2}
-                  className="w-full border border-[#B8E0E0] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#008080] resize-none"
+                  className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#008080] resize-none bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 />
                 <button onClick={addFaq} className="text-sm text-[#008080] hover:text-[#005F5F]">
                   + Ajouter une FAQ
@@ -639,9 +640,9 @@ else if (data.chatbot_id) {
               {faqs.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {faqs.map((faq, idx) => (
-                    <div key={idx} className="p-3 bg-[#D9F3F3] rounded-lg">
-                      <p className="text-sm font-medium text-[#0B3C3C]">Q: {faq.question}</p>
-                      <p className="text-xs text-[#2F6F6F] mt-1">R: {faq.reponse}</p>
+                    <div key={idx} className="p-3 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
+                      <p className="text-sm font-medium text-[#0B3C3C] dark:text-zinc-100">Q: {faq.question}</p>
+                      <p className="text-xs text-[#2F6F6F] dark:text-zinc-400 mt-1">R: {faq.reponse}</p>
                     </div>
                   ))}
                 </div>
@@ -649,7 +650,7 @@ else if (data.chatbot_id) {
             </div>
 
             <div className="flex justify-between gap-3">
-              <button onClick={() => goToStep(1)} className="px-6 py-2.5 border border-[#B8E0E0] rounded-lg">
+              <button onClick={() => goToStep(1)} className="px-6 py-2.5 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg text-[#0B3C3C] dark:text-zinc-200">
                 Précédent
               </button>
               <div className="flex gap-3">
@@ -667,22 +668,22 @@ else if (data.chatbot_id) {
 
         {/* STEP 3 - Test */}
         {currentStep === 3 && activeChatbotId && (
-          <div className="bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
               <Play className="w-5 h-5 text-[#008080]" />
-              <h2 className="font-semibold text-[#0B3C3C]">Testez votre chatbot</h2>
+              <h2 className="font-semibold text-[#0B3C3C] dark:text-white">Testez votre chatbot</h2>
             </div>
 
-            <div className="h-96 bg-[#D9F3F3] rounded-lg p-4 overflow-y-auto mb-4">
+            <div className="h-96 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg p-4 overflow-y-auto mb-4">
               {testMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <Bot className="w-12 h-12 text-[#00A8A8] mb-3" />
-                  <p className="text-[#2F6F6F]">Commencez une conversation</p>
+                  <p className="text-[#2F6F6F] dark:text-zinc-400">Commencez une conversation</p>
                 </div>
               ) : (
                 testMessages.map((msg, idx) => (
                   <div key={idx} className={`mb-3 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[70%] px-4 py-2 rounded-lg ${msg.role === "user" ? "bg-[#008080] text-white" : "bg-white border"}`}>
+                    <div className={`max-w-[70%] px-4 py-2 rounded-lg ${msg.role === "user" ? "bg-[#008080] text-white" : "bg-white dark:bg-zinc-900 dark:text-zinc-100 border dark:border-zinc-700"}`}>
                       {msg.content}
                     </div>
                   </div>
@@ -696,7 +697,7 @@ else if (data.chatbot_id) {
                 onChange={(e) => setTestMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleTestMessage()}
                 placeholder="Tapez votre message..."
-                className="flex-1 border rounded-lg px-4 py-2"
+                className="flex-1 border dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
               />
               <button onClick={handleTestMessage} className="px-4 py-2 bg-[#008080] text-white rounded-lg">
                 Envoyer
@@ -704,7 +705,7 @@ else if (data.chatbot_id) {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => goToStep(2)} className="px-6 py-2.5 border rounded-lg">
+              <button onClick={() => goToStep(2)} className="px-6 py-2.5 border dark:border-zinc-700 rounded-lg text-[#0B3C3C] dark:text-zinc-200">
                 Précédent
               </button>
               <button onClick={() => goToStep(4)} className="px-6 py-2.5 bg-[#008080] text-white rounded-lg">
@@ -716,22 +717,22 @@ else if (data.chatbot_id) {
 
         {/* STEP 4 - Déploiement */}
         {currentStep === 4 && activeChatbotId && (
-          <div className="bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
             {!deployed ? (
               <div className="text-center py-8">
                 <Rocket className="w-16 h-16 mx-auto text-[#00A8A8] mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Votre chatbot est prêt !</h3>
+                <h3 className="text-lg font-semibold mb-2 text-[#0B3C3C] dark:text-white">Votre chatbot est prêt !</h3>
                 <button onClick={handleDeploy} disabled={deploying} className="px-6 py-3 bg-[#008080] text-white rounded-lg">
                   {deploying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Déployer"}
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-green-700">✅ Chatbot déployé avec succès !</p>
+                <div className="bg-green-50 dark:bg-green-950/40 p-4 rounded-lg">
+                  <p className="text-green-700 dark:text-green-300">✅ Chatbot déployé avec succès !</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Code d'intégration</label>
+                  <label className="block text-sm font-medium mb-2 text-[#0B3C3C] dark:text-zinc-200">Code d'intégration</label>
                   <pre className="bg-gray-900 text-white p-4 rounded-lg text-xs overflow-x-auto">
                     {embedCode}
                   </pre>

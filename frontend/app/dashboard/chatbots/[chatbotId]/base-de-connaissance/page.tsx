@@ -15,6 +15,7 @@ import {
   Presentation,
   ArrowLeft,
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Doc = { id: string; titre: string; contenu_extrait: string };
@@ -56,7 +57,7 @@ export default function BaseConnaissancePage() {
   // ─── Fetch ──────────────────────────────────────────────────────────────────
   const fetchData = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/base/${chatbotId}`);
+      const res = await fetch(`${API_URL}/base/${chatbotId}`);
       const json = await res.json();
       setData(json);
     } catch {
@@ -91,7 +92,7 @@ export default function BaseConnaissancePage() {
       formData.append("titre", fileTitre.trim());
       formData.append("file", file);
 
-      const res = await fetch("http://localhost:8000/documents/", {
+      const res = await fetch(`${API_URL}/documents/`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -128,7 +129,7 @@ export default function BaseConnaissancePage() {
       formData.append("titre", docTitre.trim());
       formData.append("file", txtFile);
 
-      const res = await fetch("http://localhost:8000/documents/", {
+      const res = await fetch(`${API_URL}/documents/`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -154,7 +155,7 @@ export default function BaseConnaissancePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/faq/", {
+      const res = await fetch(`${API_URL}/faq/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -208,14 +209,14 @@ export default function BaseConnaissancePage() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#008080] hover:bg-[#D9F3F3] transition"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#008080] hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition"
         >
           <ArrowLeft className="w-5 h-5" />
           Retour
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-[#0B3C3C]">Base de connaissances</h1>
-          <p className="text-[#2F6F6F] text-sm mt-1">
+          <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">Base de connaissances</h1>
+          <p className="text-[#2F6F6F] dark:text-zinc-400 text-sm mt-1">
             Ajoutez des documents ou des FAQ pour alimenter votre chatbot
           </p>
         </div>
@@ -226,23 +227,23 @@ export default function BaseConnaissancePage() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {/* Documents */}
-        <div className="bg-white border border-[#B8E0E0] rounded-xl p-5 shadow-sm">
-          <h2 className="font-semibold text-[#0B3C3C] flex items-center gap-2 mb-4">
+        <div className="bg-white dark:bg-zinc-900 border border-[#B8E0E0] dark:border-zinc-700 rounded-xl p-5 shadow-sm">
+          <h2 className="font-semibold text-[#0B3C3C] dark:text-white flex items-center gap-2 mb-4">
             <FileText size={18} className="text-[#008080]" />
             Documents
-            <span className="ml-auto text-xs bg-[#D9F3F3] text-[#008080] px-2 py-0.5 rounded-full font-medium">
+            <span className="ml-auto text-xs bg-[#D9F3F3] dark:bg-zinc-800 text-[#008080] dark:text-teal-300 px-2 py-0.5 rounded-full font-medium">
               {data?.documents?.length ?? 0}
             </span>
           </h2>
 
           {!data?.documents?.length ? (
-            <p className="text-sm text-[#2F6F6F] text-center py-8">Aucun document ajouté</p>
+            <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 text-center py-8">Aucun document ajouté</p>
           ) : (
             <div className="space-y-3">
               {data.documents.map(d => (
-                <div key={d.id} className="border border-[#B8E0E0] rounded-xl p-3 bg-[#F7FFFF]">
-                  <p className="font-medium text-sm text-[#0B3C3C]">{d.titre}</p>
-                  <p className="text-xs text-[#2F6F6F] mt-1 line-clamp-2">{d.contenu_extrait}</p>
+                <div key={d.id} className="border border-[#B8E0E0] dark:border-zinc-700 rounded-xl p-3 bg-[#F7FFFF] dark:bg-zinc-800">
+                  <p className="font-medium text-sm text-[#0B3C3C] dark:text-zinc-100">{d.titre}</p>
+                  <p className="text-xs text-[#2F6F6F] dark:text-zinc-400 mt-1 line-clamp-2">{d.contenu_extrait}</p>
                 </div>
               ))}
             </div>
@@ -250,23 +251,23 @@ export default function BaseConnaissancePage() {
         </div>
 
         {/* FAQ */}
-        <div className="bg-white border border-[#B8E0E0] rounded-xl p-5 shadow-sm">
-          <h2 className="font-semibold text-[#0B3C3C] flex items-center gap-2 mb-4">
-            <HelpCircle size={18} className="text-[#005F5F]" />
+        <div className="bg-white dark:bg-zinc-900 border border-[#B8E0E0] dark:border-zinc-700 rounded-xl p-5 shadow-sm">
+          <h2 className="font-semibold text-[#0B3C3C] dark:text-white flex items-center gap-2 mb-4">
+            <HelpCircle size={18} className="text-[#005F5F] dark:text-teal-400" />
             FAQ
-            <span className="ml-auto text-xs bg-[#D9F3F3] text-[#008080] px-2 py-0.5 rounded-full font-medium">
+            <span className="ml-auto text-xs bg-[#D9F3F3] dark:bg-zinc-800 text-[#008080] dark:text-teal-300 px-2 py-0.5 rounded-full font-medium">
               {data?.faq?.length ?? 0}
             </span>
           </h2>
 
           {!data?.faq?.length ? (
-            <p className="text-sm text-[#2F6F6F] text-center py-8">Aucune FAQ ajoutée</p>
+            <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 text-center py-8">Aucune FAQ ajoutée</p>
           ) : (
             <div className="space-y-3">
               {data.faq.map(f => (
-                <div key={f.id} className="border border-[#B8E0E0] rounded-xl p-3 bg-[#F7FFFF]">
-                  <p className="font-medium text-sm text-[#005F5F]">Q : {f.question}</p>
-                  <p className="text-xs text-[#2F6F6F] mt-1">R : {f.reponse}</p>
+                <div key={f.id} className="border border-[#B8E0E0] dark:border-zinc-700 rounded-xl p-3 bg-[#F7FFFF] dark:bg-zinc-800">
+                  <p className="font-medium text-sm text-[#005F5F] dark:text-teal-300">Q : {f.question}</p>
+                  <p className="text-xs text-[#2F6F6F] dark:text-zinc-400 mt-1">R : {f.reponse}</p>
                 </div>
               ))}
             </div>

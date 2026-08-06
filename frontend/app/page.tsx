@@ -31,6 +31,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { API_URL } from "@/services/api";
 
 export default function Home() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function Home() {
         return;
       }
 
-      const res = await fetch("http://localhost:8000/protected", {
+      const res = await fetch(`${API_URL}/protected`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

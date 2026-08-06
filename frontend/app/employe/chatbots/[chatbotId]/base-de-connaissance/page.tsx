@@ -17,6 +17,7 @@ import {
   Trash2,
   Edit2,
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Doc = { id: string; titre: string; contenu_extrait: string };
@@ -130,7 +131,7 @@ export default function BaseConnaissancePage() {
   // ─── Fetch ──────────────────────────────────────────────────────────────────
   const fetchData = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/base/${chatbotId}`);
+      const res = await fetch(`${API_URL}/base/${chatbotId}`);
       const json = await res.json();
       setData(json);
     } catch {
@@ -166,7 +167,7 @@ export default function BaseConnaissancePage() {
       formData.append("titre", fileTitre.trim());
       formData.append("file", file);
 
-      const res = await fetch("http://localhost:8000/documents/", {
+      const res = await fetch(`${API_URL}/documents/`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -203,7 +204,7 @@ export default function BaseConnaissancePage() {
       formData.append("titre", docTitre.trim());
       formData.append("file", txtFile);
 
-      const res = await fetch("http://localhost:8000/documents/", {
+      const res = await fetch(`${API_URL}/documents/`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -226,7 +227,7 @@ export default function BaseConnaissancePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8000/documents/${docId}`, {
+      const res = await fetch(`${API_URL}/documents/${docId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -250,7 +251,7 @@ export default function BaseConnaissancePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/faq/", {
+      const res = await fetch(`${API_URL}/faq/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -284,7 +285,7 @@ export default function BaseConnaissancePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8000/faq/${editingFaq.id}`, {
+      const res = await fetch(`${API_URL}/faq/${editingFaq.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -313,7 +314,7 @@ export default function BaseConnaissancePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8000/faq/${faqId}`, {
+      const res = await fetch(`${API_URL}/faq/${faqId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

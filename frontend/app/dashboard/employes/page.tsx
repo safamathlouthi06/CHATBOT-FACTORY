@@ -6,6 +6,7 @@ import {
   Users, Plus, Trash2, X, CheckCircle, AlertCircle,
   Loader2, UserCheck, UserX, Search, RefreshCw, Mail,
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 type Employe = {
   id: string; nom: string; prenom: string;
@@ -13,7 +14,6 @@ type Employe = {
   email_personnel: string;
   statut: "actif" | "inactif"; created_at: string;
 };
-const API = "http://127.0.0.1:8000";
 
 export default function EmployesPage() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function EmployesPage() {
   const fetchEmployes = async () => {
     try { 
       setLoading(true);
-      const r = await fetch(`${API}/employes/`,{headers:{Authorization:`Bearer ${tk()}`}});
+      const r = await fetch(`${API_URL}/employes/`,{headers:{Authorization:`Bearer ${tk()}`}});
       if(r.status===403){router.push("/dashboard");return;}
       const d = await r.json(); 
       setEmployes(Array.isArray(d)?d:[]);
@@ -92,7 +92,7 @@ export default function EmployesPage() {
     setEmailError(""); // Réinitialiser l'erreur avant l'envoi
 
     try {
-      const response = await fetch(`${API}/employes/`, {
+      const response = await fetch(`${API_URL}/employes/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +146,7 @@ export default function EmployesPage() {
   
   const handleToggle = async (emp:Employe) => {
     try {
-      const r = await fetch(`${API}/employes/${emp.id}/statut`,{method:"PATCH",headers:{Authorization:`Bearer ${tk()}`}});
+      const r = await fetch(`${API_URL}/employes/${emp.id}/statut`,{method:"PATCH",headers:{Authorization:`Bearer ${tk()}`}});
       const d = await r.json();
       if(!r.ok){toast_("error",d.detail);return;}
       toast_("success",`Compte ${d.statut==="actif"?"activé":"désactivé"}`); 
@@ -159,7 +159,7 @@ export default function EmployesPage() {
   const handleDelete = async () => {
     if(!deleteTarget)return;
     try {
-      await fetch(`${API}/employes/${deleteTarget.id}`,{method:"DELETE",headers:{Authorization:`Bearer ${tk()}`}});
+      await fetch(`${API_URL}/employes/${deleteTarget.id}`,{method:"DELETE",headers:{Authorization:`Bearer ${tk()}`}});
       toast_("success","Employé supprimé"); 
       setDeleteTarget(null); 
       fetchEmployes();
@@ -171,7 +171,7 @@ export default function EmployesPage() {
   const handleResend = async (id:string) => {
     setResendTarget(id);
     try {
-      const r = await fetch(`${API}/employes/${id}/resend`,{method:"POST",headers:{Authorization:`Bearer ${tk()}`}});
+      const r = await fetch(`${API_URL}/employes/${id}/resend`,{method:"POST",headers:{Authorization:`Bearer ${tk()}`}});
       const d = await r.json();
       if(!r.ok){toast_("error",d.detail);return;}
       toast_("success","Nouveaux identifiants envoyés");

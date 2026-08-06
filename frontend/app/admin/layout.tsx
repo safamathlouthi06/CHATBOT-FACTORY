@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  Rocket,
 } from "lucide-react";
 
 export default function AppLayout({
@@ -37,7 +38,7 @@ export default function AppLayout({
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/entreprise", label: "Entreprise", icon: Bot },
-    
+    { href: "/admin/widget-preview", label: "Test déploiement", icon: Rocket },
   ];
 
   return (
@@ -69,8 +70,9 @@ export default function AppLayout({
                 const Icon = item.icon;
 
                 const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(item.href + "/");
+                  item.href === "/admin"
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(item.href + "/");
 
                 return (
                   <Link
@@ -188,8 +190,9 @@ export default function AppLayout({
                 const Icon = item.icon;
 
                 const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(item.href + "/");
+                  item.href === "/admin"
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(item.href + "/");
 
                 return (
                   <Link

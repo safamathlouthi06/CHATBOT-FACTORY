@@ -8,6 +8,7 @@ import {
   Database, Rocket, LogOut, User, Settings,
   ChevronDown, Menu, X, Zap, BarChart3,
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 type Chatbot = {
   id: string; nom: string; domaine: string;
@@ -19,7 +20,6 @@ type Me = {
   entreprise_id: string;
 };
 
-const API = "http://127.0.0.1:8000";
 
 export default function EmployeDashboard() {
   const router = useRouter();
@@ -46,13 +46,13 @@ export default function EmployeDashboard() {
         if (!token || role !== "employe") { router.push("/login"); return; }
 
         // Charger le profil
-        const meRes = await fetch(`${API}/meEmploye`, { headers: { Authorization: `Bearer ${token}` } });
+        const meRes = await fetch(`${API_URL}/meEmploye`, { headers: { Authorization: `Bearer ${token}` } });
         if (!meRes.ok) { router.push("/login"); return; }
         const meData = await meRes.json();
         setMe(meData);
 
         // Charger le dashboard
-        const dashRes = await fetch(`${API}/dashboard/`, { headers: { Authorization: `Bearer ${token}` } });
+        const dashRes = await fetch(`${API_URL}/dashboard/`, { headers: { Authorization: `Bearer ${token}` } });
         const dashData = await dashRes.json();
         const bots = dashData.chatbots || [];
         setChatbots(bots);

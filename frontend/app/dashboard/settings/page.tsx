@@ -59,82 +59,82 @@ export default function SettingsPage() {
           <Sparkles className="w-4 h-4" />
           <span>Préférences</span>
         </div>
-        <h1 className="text-2xl font-bold text-[#0B3C3C]">Paramètres</h1>
-        <p className="text-sm text-[#2F6F6F] mt-1">
+        <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">Paramètres</h1>
+        <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 mt-1">
           Gérez vos préférences et la sécurité de votre compte
         </p>
       </div>
 
       {/* SUCCESS MESSAGE */}
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-green-600" />
-          <p className="text-sm text-green-700">Paramètres enregistrés avec succès !</p>
+        <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg p-3 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+          <p className="text-sm text-green-700 dark:text-green-300">Paramètres enregistrés avec succès !</p>
         </div>
       )}
 
       {/* SETTINGS GRID */}
       <div className="grid md:grid-cols-2 gap-6">
-        
+
         {/* PROFIL */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
-            <div className="p-1.5 bg-[#D9F3F3] rounded-lg">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <User className="w-4 h-4 text-[#008080]" />
             </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C]">Profil</h2>
+            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Profil</h2>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-[#0B3C3C] mb-1">Nom</label>
+              <label className="block text-sm text-[#0B3C3C] dark:text-zinc-200 mb-1">Nom</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 text-sm border border-[#B8E0E0] rounded-lg bg-white text-[#0B3C3C] focus:outline-none focus:ring-2 focus:ring-[#008080]"
+                className="w-full p-2 text-sm border border-[#B8E0E0] dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#008080]"
               />
             </div>
             <div>
-              <label className="block text-sm text-[#0B3C3C] mb-1">Email</label>
+              <label className="block text-sm text-[#0B3C3C] dark:text-zinc-200 mb-1">Email</label>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 text-sm border border-[#B8E0E0] rounded-lg bg-white text-[#0B3C3C] focus:outline-none focus:ring-2 focus:ring-[#008080]"
+                className="w-full p-2 text-sm border border-[#B8E0E0] dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#008080]"
               />
             </div>
           </div>
         </div>
 
         {/* SÉCURITÉ */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
-            <div className="p-1.5 bg-[#D9F3F3] rounded-lg">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <Shield className="w-4 h-4 text-[#008080]" />
             </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C]">Sécurité</h2>
+            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Sécurité</h2>
           </div>
 
           <div className="space-y-3">
-            <button className="w-full flex items-center justify-between p-3 border border-[#B8E0E0] rounded-lg hover:bg-[#D9F3F3] transition group">
+            <button className="w-full flex items-center justify-between p-3 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition group">
               <div className="flex items-center gap-3">
                 <Lock className="w-4 h-4 text-[#008080]" />
-                <span className="text-sm text-[#0B3C3C]">Changer le mot de passe</span>
+                <span className="text-sm text-[#0B3C3C] dark:text-zinc-200">Changer le mot de passe</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#2F6F6F] group-hover:translate-x-1 transition" />
+              <ChevronRight className="w-4 h-4 text-[#2F6F6F] dark:text-zinc-400 group-hover:translate-x-1 transition" />
             </button>
 
-            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] rounded-lg">
+            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg">
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#008080]" />
                 <div>
-                  <p className="text-sm text-[#0B3C3C]">Authentification à deux facteurs</p>
-                  <p className="text-xs text-[#2F6F6F]">Sécurisez votre compte</p>
+                  <p className="text-sm text-[#0B3C3C] dark:text-zinc-200">Authentification à deux facteurs</p>
+                  <p className="text-xs text-[#2F6F6F] dark:text-zinc-400">Sécurisez votre compte</p>
                 </div>
               </div>
               <button
                 onClick={() => setTwoFactor(!twoFactor)}
                 className={`relative w-10 h-5 rounded-full transition ${
-                  twoFactor ? "bg-[#008080]" : "bg-gray-300"
+                  twoFactor ? "bg-[#008080]" : "bg-gray-300 dark:bg-zinc-700"
                 }`}
               >
                 <span
@@ -147,11 +147,11 @@ export default function SettingsPage() {
 
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-between p-3 border border-red-200 rounded-lg hover:bg-red-50 transition group"
+              className="w-full flex items-center justify-between p-3 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition group"
             >
               <div className="flex items-center gap-3">
                 <LogOut className="w-4 h-4 text-red-500" />
-                <span className="text-sm text-red-600">Déconnexion</span>
+                <span className="text-sm text-red-600 dark:text-red-400">Déconnexion</span>
               </div>
               <ChevronRight className="w-4 h-4 text-red-400" />
             </button>
@@ -159,24 +159,24 @@ export default function SettingsPage() {
         </div>
 
         {/* NOTIFICATIONS */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
-            <div className="p-1.5 bg-[#D9F3F3] rounded-lg">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <Bell className="w-4 h-4 text-[#008080]" />
             </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C]">Notifications</h2>
+            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Notifications</h2>
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] rounded-lg">
+            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg">
               <div>
-                <p className="text-sm text-[#0B3C3C]">Notifications email</p>
-                <p className="text-xs text-[#2F6F6F]">Recevez des alertes par email</p>
+                <p className="text-sm text-[#0B3C3C] dark:text-zinc-200">Notifications email</p>
+                <p className="text-xs text-[#2F6F6F] dark:text-zinc-400">Recevez des alertes par email</p>
               </div>
               <button
                 onClick={() => setNotifications({ ...notifications, email: !notifications.email })}
                 className={`relative w-10 h-5 rounded-full transition ${
-                  notifications.email ? "bg-[#008080]" : "bg-gray-300"
+                  notifications.email ? "bg-[#008080]" : "bg-gray-300 dark:bg-zinc-700"
                 }`}
               >
                 <span
@@ -187,15 +187,15 @@ export default function SettingsPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] rounded-lg">
+            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg">
               <div>
-                <p className="text-sm text-[#0B3C3C]">Offres et nouveautés</p>
-                <p className="text-xs text-[#2F6F6F]">Recevez nos actualités</p>
+                <p className="text-sm text-[#0B3C3C] dark:text-zinc-200">Offres et nouveautés</p>
+                <p className="text-xs text-[#2F6F6F] dark:text-zinc-400">Recevez nos actualités</p>
               </div>
               <button
                 onClick={() => setNotifications({ ...notifications, marketing: !notifications.marketing })}
                 className={`relative w-10 h-5 rounded-full transition ${
-                  notifications.marketing ? "bg-[#008080]" : "bg-gray-300"
+                  notifications.marketing ? "bg-[#008080]" : "bg-gray-300 dark:bg-zinc-700"
                 }`}
               >
                 <span
@@ -206,15 +206,15 @@ export default function SettingsPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] rounded-lg">
+            <div className="flex items-center justify-between p-3 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg">
               <div>
-                <p className="text-sm text-[#0B3C3C]">Mises à jour produit</p>
-                <p className="text-xs text-[#2F6F6F]">Nouveautés fonctionnalités</p>
+                <p className="text-sm text-[#0B3C3C] dark:text-zinc-200">Mises à jour produit</p>
+                <p className="text-xs text-[#2F6F6F] dark:text-zinc-400">Nouveautés fonctionnalités</p>
               </div>
               <button
                 onClick={() => setNotifications({ ...notifications, updates: !notifications.updates })}
                 className={`relative w-10 h-5 rounded-full transition ${
-                  notifications.updates ? "bg-[#008080]" : "bg-gray-300"
+                  notifications.updates ? "bg-[#008080]" : "bg-gray-300 dark:bg-zinc-700"
                 }`}
               >
                 <span
@@ -228,21 +228,21 @@ export default function SettingsPage() {
         </div>
 
         {/* PRÉFÉRENCES */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
-            <div className="p-1.5 bg-[#D9F3F3] rounded-lg">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <Globe className="w-4 h-4 text-[#008080]" />
             </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C]">Préférences</h2>
+            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Préférences</h2>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-[#0B3C3C] mb-1">Langue</label>
+              <label className="block text-sm text-[#0B3C3C] dark:text-zinc-200 mb-1">Langue</label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full p-2 text-sm border border-[#B8E0E0] rounded-lg bg-white text-[#0B3C3C] focus:outline-none focus:ring-2 focus:ring-[#008080]"
+                className="w-full p-2 text-sm border border-[#B8E0E0] dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#008080]"
               >
                 <option value="fr">Français</option>
                 <option value="en">English</option>
@@ -252,14 +252,14 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-[#0B3C3C] mb-1">Thème</label>
+              <label className="block text-sm text-[#0B3C3C] dark:text-zinc-200 mb-1">Thème</label>
               <div className="flex gap-3">
                 <button
                   onClick={() => setTheme("light")}
                   className={`flex-1 flex items-center justify-center gap-2 p-2 text-sm border rounded-lg transition ${
                     theme === "light"
-                      ? "border-[#008080] bg-[#D9F3F3] text-[#008080]"
-                      : "border-[#B8E0E0] text-[#2F6F6F]"
+                      ? "border-[#008080] bg-[#D9F3F3] dark:bg-zinc-800 text-[#008080]"
+                      : "border-[#B8E0E0] dark:border-zinc-700 text-[#2F6F6F] dark:text-zinc-400"
                   }`}
                 >
                   <Sun className="w-4 h-4" />
@@ -269,8 +269,8 @@ export default function SettingsPage() {
                   onClick={() => setTheme("dark")}
                   className={`flex-1 flex items-center justify-center gap-2 p-2 text-sm border rounded-lg transition ${
                     theme === "dark"
-                      ? "border-[#008080] bg-[#D9F3F3] text-[#008080]"
-                      : "border-[#B8E0E0] text-[#2F6F6F]"
+                      ? "border-[#008080] bg-[#D9F3F3] dark:bg-zinc-800 text-[#008080]"
+                      : "border-[#B8E0E0] dark:border-zinc-700 text-[#2F6F6F] dark:text-zinc-400"
                   }`}
                 >
                   <Moon className="w-4 h-4" />
@@ -282,29 +282,29 @@ export default function SettingsPage() {
         </div>
 
         {/* ABONNEMENT */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
-            <div className="p-1.5 bg-[#D9F3F3] rounded-lg">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <CreditCard className="w-4 h-4 text-[#008080]" />
             </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C]">Abonnement</h2>
+            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Abonnement</h2>
           </div>
 
           <div className="space-y-3">
-            <div className="p-3 bg-[#D9F3F3] rounded-lg">
+            <div className="p-3 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-[#0B3C3C]">Plan actuel</span>
+                <span className="text-sm font-medium text-[#0B3C3C] dark:text-white">Plan actuel</span>
                 <span className="text-xs bg-[#008080] text-white px-2 py-0.5 rounded-full">Pro</span>
               </div>
-              <p className="text-2xl font-bold text-[#008080]">49€<span className="text-sm text-[#2F6F6F]">/mois</span></p>
-              <p className="text-xs text-[#2F6F6F] mt-1">Facturé mensuellement</p>
+              <p className="text-2xl font-bold text-[#008080]">49€<span className="text-sm text-[#2F6F6F] dark:text-zinc-400">/mois</span></p>
+              <p className="text-xs text-[#2F6F6F] dark:text-zinc-400 mt-1">Facturé mensuellement</p>
             </div>
 
-            <button className="w-full p-2 text-sm border border-[#008080] text-[#008080] rounded-lg hover:bg-[#D9F3F3] transition">
+            <button className="w-full p-2 text-sm border border-[#008080] text-[#008080] rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition">
               Gérer mon abonnement
             </button>
 
-            <div className="flex items-center gap-2 p-2 text-xs text-[#2F6F6F]">
+            <div className="flex items-center gap-2 p-2 text-xs text-[#2F6F6F] dark:text-zinc-400">
               <AlertCircle className="w-3.5 h-3.5" />
               <span>Prochain renouvellement le 15/03/2025</span>
             </div>
@@ -312,26 +312,26 @@ export default function SettingsPage() {
         </div>
 
         {/* DONNÉES */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0]">
-            <div className="p-1.5 bg-[#D9F3F3] rounded-lg">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
               <Database className="w-4 h-4 text-[#008080]" />
             </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C]">Données et confidentialité</h2>
+            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Données et confidentialité</h2>
           </div>
 
           <div className="space-y-3">
-            <button className="w-full flex items-center justify-between p-3 border border-[#B8E0E0] rounded-lg hover:bg-[#D9F3F3] transition group">
+            <button className="w-full flex items-center justify-between p-3 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition group">
               <div className="flex items-center gap-3">
                 <Database className="w-4 h-4 text-[#008080]" />
-                <span className="text-sm text-[#0B3C3C]">Exporter mes données</span>
+                <span className="text-sm text-[#0B3C3C] dark:text-zinc-200">Exporter mes données</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#2F6F6F] group-hover:translate-x-1 transition" />
+              <ChevronRight className="w-4 h-4 text-[#2F6F6F] dark:text-zinc-400 group-hover:translate-x-1 transition" />
             </button>
-            <button className="w-full flex items-center justify-between p-3 border border-red-200 rounded-lg hover:bg-red-50 transition group">
+            <button className="w-full flex items-center justify-between p-3 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition group">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-4 h-4 text-red-500" />
-                <span className="text-sm text-red-600">Supprimer mon compte</span>
+                <span className="text-sm text-red-600 dark:text-red-400">Supprimer mon compte</span>
               </div>
               <ChevronRight className="w-4 h-4 text-red-400" />
             </button>

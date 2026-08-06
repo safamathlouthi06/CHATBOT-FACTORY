@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  Eye, 
+import {
+  Eye,
   EyeOff, 
   Mail, 
   Lock, 
@@ -28,6 +28,7 @@ import {
   TrendingUp,
   Award
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -83,7 +84,7 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8000/register", {
+      const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

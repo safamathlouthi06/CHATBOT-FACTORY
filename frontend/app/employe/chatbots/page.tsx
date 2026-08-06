@@ -23,6 +23,7 @@ import {
   Activity,
   Rocket,
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 type Chatbot = {
   id: string;
@@ -54,7 +55,7 @@ export default function ChatbotListPage() {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch("http://127.0.0.1:8000/chatbot/", {
+        const res = await fetch(`${API_URL}/chatbot/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -106,7 +107,7 @@ export default function ChatbotListPage() {
     if (deleteModal.botId) {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://127.0.0.1:8000/chatbot/${deleteModal.botId}`, {
+        const res = await fetch(`${API_URL}/chatbot/${deleteModal.botId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -132,7 +133,7 @@ export default function ChatbotListPage() {
   const handleDuplicate = async (bot: Chatbot) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://127.0.0.1:8000/chatbot/`, {
+      const res = await fetch(`${API_URL}/chatbot/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
