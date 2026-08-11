@@ -136,17 +136,19 @@ def create_employe(data: EmployeCreate, current_user=Depends(get_current_user)):
 
 
     existing_email = (
-    supabase.table("employe")
-    .select("id")
-    .eq("email_personnel", data.email_personnel)
-    .execute()
-)
+        supabase.table("employe")
+        .select("id, statut")
+        .eq("email_personnel", data.email_personnel)
+        .execute()
+    )
 
     if existing_email.data:
-        raise HTTPException(
-            status_code=400,
-            detail="Un employé existe déjà avec cet email personnel"
-        )
+        active_employes = [e for e in existing_email.data if e.get("statut") == "actif"]
+        if active_employes:
+            raise HTTPException(
+                status_code=400,
+                detail="Un employé actif existe déjà avec cet email personnel."
+            )
 
     ent = supabase.table("entreprise").select("nomentreprise").eq("id", entreprise_id).single().execute()
     if not ent.data:
