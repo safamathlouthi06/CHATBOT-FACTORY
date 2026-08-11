@@ -102,9 +102,6 @@ export default function DashboardPage() {
             <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
               Vos chatbots
             </h2>
-            <span className="px-2 py-0.5 text-xs bg-[#D9F3F3] dark:bg-gray-800 text-[#008080] rounded-full">
-              {chatbots.length}
-            </span>
           </div>
           <Link href="/dashboard/chatbots" className="text-sm text-[#008080] hover:underline">
             Voir tous
@@ -134,10 +131,17 @@ export default function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
-            {chatbots.map((bot: any) => (
-              <ChatbotRow key={bot.id} bot={bot} />
-            ))}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              {chatbots.slice(0, 5).map((bot: any) => (
+                <ChatbotRow key={bot.id} bot={bot} />
+              ))}
+            </div>
+            {chatbots.length > 5 && (
+              <p className="text-xs text-[#2F6F6F] dark:text-gray-400 italic text-center pt-2 border-t border-[#B8E0E0] dark:border-gray-800">
+                Affichage des 5 premiers chatbots. D'autres chatbots sont disponibles via le lien "Voir tous".
+              </p>
+            )}
           </div>
         )}
       </div>
