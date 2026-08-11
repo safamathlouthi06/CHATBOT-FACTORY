@@ -49,7 +49,7 @@ def verify_admin(token: str):
     try:
         decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
-        if decoded.get("role") != "admin":
+        if decoded.get("role") != "super_admin":
             raise HTTPException(status_code=403, detail="Accès refusé")
 
     except Exception:
@@ -101,14 +101,14 @@ def login(data: LoginData):
     if data.email == ADMIN_EMAIL and data.password == ADMIN_PASSWORD:
 
         token = jwt.encode({
-            "role": "admin",
+            "role": "super_admin",
             "email": data.email,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
         }, SECRET_KEY, algorithm="HS256")
 
         return {
             "access_token": token,
-            "role": "admin"
+            "role": "super_admin"
         }
 
     # =========================
@@ -122,7 +122,7 @@ def login(data: LoginData):
     if emp.data:
         emp_user = emp.data[0]
 
-        if not bcrypt.checkpw(
+        if not emp_user.get("password") or not bcrypt.checkpw(
             data.password.encode("utf-8"),
             emp_user["password"].encode("utf-8")
         ):
@@ -168,7 +168,7 @@ def login(data: LoginData):
             detail="Compte en attente de validation"
         )
 
-    if not bcrypt.checkpw(
+    if not user.get("password") or not bcrypt.checkpw(
         data.password.encode("utf-8"),
         user["password"].encode("utf-8")
     ):

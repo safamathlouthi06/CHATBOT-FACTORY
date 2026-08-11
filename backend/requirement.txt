@@ -12,11 +12,8 @@ pydantic==2.7.1           # Schémas de validation (utilisé par FastAPI)
 pydantic-settings==2.2.1  # Gestion des settings via .env avec Pydantic v2
 
 # ── Base de données — Supabase ───────────────────────────────────────────────
-supabase==2.4.2           # Client Python officiel Supabase (REST + RPC)
-postgrest==0.16.6         # Client PostgREST (dépendance de supabase-py)
-gotrue==2.4.2             # Auth Supabase (dépendance de supabase-py)
-realtime==1.0.6           # Temps réel Supabase (dépendance de supabase-py)
-storage3==0.7.4           # Stockage fichiers Supabase (dépendance de supabase-py)
+supabase==2.31.0          # Client Python officiel Supabase (REST + RPC) — requis pour les clés API "sb_..." récentes
+websockets==15.0.1        # Requis par realtime (dépendance de supabase-py), doit rester <16
 httpx==0.27.0             # Client HTTP async (requis par supabase-py)
 
 # ── Authentification & Sécurité ──────────────────────────────────────────────
@@ -26,6 +23,7 @@ passlib[bcrypt]==1.7.4    # Wrapper passlib pour bcrypt (optionnel mais pratique
 python-multipart==0.0.9   # Requis pour recevoir les fichiers (UploadFile / Form)
 
 # ── Intelligence Artificielle — Pipeline RAG ─────────────────────────────────
+openai==2.53.0                 # Client Azure OpenAI (génération de réponses)
 sentence-transformers==2.7.0  # Modèle all-MiniLM-L6-v2 → embeddings 384D
 torch==2.3.0                  # PyTorch (backend de SentenceTransformers)
 transformers==4.41.0          # HuggingFace Transformers (dépendance sentence-transformers)

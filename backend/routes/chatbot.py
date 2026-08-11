@@ -120,7 +120,11 @@ def get_chatbots(current_user=Depends(get_current_user)):
     # SUPER ADMIN → tout voir
     # =========================
     if role == "super_admin":
-        res = supabase.table(TABLE).select("*").execute()
+        res = (
+            supabase.table(TABLE)
+            .select("*, entreprise(nomentreprise)")
+            .execute()
+        )
         return res.data or []
 
     # =========================

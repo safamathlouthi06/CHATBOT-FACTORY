@@ -19,7 +19,8 @@ dependencies = [
     "python-dotenv==1.0.1",
 
     # ── Base de données (Supabase) ──
-    "supabase==2.4.2",
+    "supabase==2.31.0",
+    "websockets==15.0.1",
     "httpx==0.27.0",
 
     # ── Authentification ──
@@ -29,6 +30,7 @@ dependencies = [
     "python-multipart==0.0.9",
 
     # ── IA / RAG ──
+    "openai==2.53.0",
     "sentence-transformers==2.7.0",
     "torch==2.3.0",
     "transformers==4.41.0",
@@ -44,9 +46,6 @@ dependencies = [
     # ── ASGI ──
     "starlette==0.37.2",
     "anyio==4.3.0",
-
-    # ── Base de données ORM (optionnel si utilisé) ──
-    "sqlalchemy==2.0.30",
 
     # ── Tests ──
     "pytest==8.2.0",

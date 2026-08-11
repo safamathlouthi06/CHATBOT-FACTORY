@@ -14,66 +14,25 @@ import {
   AlertCircle,
   ExternalLink,
   Settings,
-  Smartphone,
-  Monitor,
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 export default function DeploymentPage() {
   const router = useRouter();
   const params = useParams();
   const chatbotId = params.chatbotId;
-  
+
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<"floating" | "embedded" | "api">("floating");
+  const [activeTab, setActiveTab] = useState<"widget" | "api">("widget");
   const [isActive, setIsActive] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [activateError, setActivateError] = useState("");
 
-  const embedCodes = {
-    floating: `<!-- ChatbotStudio - Widget Flottant -->
-<script>
-  (function() {
-    var script = document.createElement('script');
-    script.src = 'https://cdn.chatbotstudio.com/widget.js';
-    script.setAttribute('data-id', '${chatbotId}');
-    script.setAttribute('data-position', 'bottom-right');
-    document.body.appendChild(script);
-  })();
-</script>
-<div id="chatbot-widget-${chatbotId}"></div>`,
-    
-    embedded: `<!-- ChatbotStudio - Widget Intégré -->
-<div id="chatbot-container-${chatbotId}" style="width: 100%; height: 600px;"></div>
-<script>
-  (function() {
-    var script = document.createElement('script');
-    script.src = 'https://cdn.chatbotstudio.com/widget.js';
-    script.setAttribute('data-id', '${chatbotId}');
-    script.setAttribute('data-mode', 'embedded');
-    script.setAttribute('data-container', 'chatbot-container-${chatbotId}');
-    document.body.appendChild(script);
-  })();
-</script>`,
-    
-    api: `// ChatbotStudio - API REST
-// Exemple d'appel API avec JavaScript
+  const widgetSnippet = `<!-- Chatbot Factory - Widget -->\n<script src="${API_URL}/widget/${chatbotId}.js"></script>`;
 
-const response = await fetch('https://api.chatbotstudio.com/v1/chat', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer VOTRE_TOKEN_API'
-  },
-  body: JSON.stringify({
-    chatbot_id: '${chatbotId}',
-    message: 'Bonjour !',
-    session_id: 'user_session_123'
-  })
-});
+  const apiSnippet = `// Chatbot Factory - API REST\n// Exemple d'appel API avec JavaScript\n\nconst response = await fetch('${API_URL}/chat/', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    chatbot_id: '${chatbotId}',\n    question: 'Bonjour !'\n  })\n});\n\nconst data = await response.json();\nconsole.log(data.answer);`;
 
-const data = await response.json();
-console.log(data.answer);`
-  };
-
-  const currentCode = embedCodes[activeTab];
+  const currentCode = activeTab === "widget" ? widgetSnippet : apiSnippet;
 
   const copyCode = async () => {
     try {
@@ -86,26 +45,36 @@ console.log(data.answer);`
   };
 
   const handleActivate = async () => {
+    setActivating(true);
+    setActivateError("");
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://127.0.0.1:8000/chatbot/${chatbotId}`, {
-        method: "PATCH",
+      const res = await fetch(`${API_URL}/chatbot/${chatbotId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ statut: "actif" }),
       });
+
+      if (!res.ok) {
+        throw new Error("Échec de l'activation");
+      }
+
       setIsActive(true);
     } catch (error) {
       console.error("Erreur activation:", error);
+      setActivateError("Impossible d'activer le chatbot. Réessayez.");
+    } finally {
+      setActivating(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D9F3F3] via-white to-[#E8FFFF]">
+    <div className="min-h-screen bg-gradient-to-br from-[#D9F3F3] via-white to-[#E8FFFF] dark:from-[#0B1120] dark:via-[#0B1120] dark:to-[#0B1120]">
       <div className="max-w-5xl mx-auto px-4 py-8">
-        
+
         {/* HEADER */}
         <div className="mb-8">
           <button
@@ -115,14 +84,14 @@ console.log(data.answer);`
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm">Retour</span>
           </button>
-          
+
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#008080] to-[#00A8A8] flex items-center justify-center shadow-lg">
               <Rocket className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#0B3C3C]">Déploiement</h1>
-              <p className="text-sm text-[#2F6F6F] mt-0.5">
+              <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">Déploiement</h1>
+              <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 mt-0.5">
                 Intégrez votre chatbot sur votre site web
               </p>
             </div>
@@ -131,32 +100,36 @@ console.log(data.answer);`
 
         {/* ALERT - Statut du chatbot */}
         {!isActive ? (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+          <div className="mb-6 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-amber-800">Chatbot non actif</h3>
-                <p className="text-sm text-amber-700">
+                <h3 className="font-semibold text-amber-800 dark:text-amber-300">Chatbot non actif</h3>
+                <p className="text-sm text-amber-700 dark:text-amber-400">
                   Votre chatbot est en mode brouillon. Activez-le pour le rendre accessible.
                 </p>
+                {activateError && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{activateError}</p>
+                )}
               </div>
             </div>
             <button
               onClick={handleActivate}
-              className="px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#005F5F] transition flex items-center gap-2"
+              disabled={activating}
+              className="px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#005F5F] transition flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
             >
               <Zap className="w-4 h-4" />
-              Activer le chatbot
+              {activating ? "Activation..." : "Activer le chatbot"}
             </button>
           </div>
         ) : (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600" />
+          <div className="mb-6 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             <div>
-              <h3 className="font-semibold text-green-800">Chatbot actif</h3>
-              <p className="text-sm text-green-700">
+              <h3 className="font-semibold text-green-800 dark:text-green-300">Chatbot actif</h3>
+              <p className="text-sm text-green-700 dark:text-green-400">
                 Votre chatbot est en ligne et accessible aux utilisateurs.
               </p>
             </div>
@@ -164,48 +137,37 @@ console.log(data.answer);`
         )}
 
         {/* MAIN CARD */}
-        <div className="bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
-          
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
+
           {/* Title */}
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-[#0B3C3C]">
+            <h2 className="text-lg font-semibold text-[#0B3C3C] dark:text-white">
               Options de déploiement
             </h2>
-            <p className="text-sm text-[#2F6F6F] mt-1">
+            <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 mt-1">
               Choisissez la méthode d'intégration qui convient le mieux à votre site
             </p>
           </div>
 
           {/* TABS */}
-          <div className="flex gap-2 border-b border-[#B8E0E0] mb-6">
+          <div className="flex gap-2 border-b border-[#B8E0E0] dark:border-zinc-700 mb-6">
             <button
-              onClick={() => setActiveTab("floating")}
+              onClick={() => setActiveTab("widget")}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-                activeTab === "floating"
+                activeTab === "widget"
                   ? "text-[#008080] border-b-2 border-[#008080]"
-                  : "text-[#2F6F6F] hover:text-[#008080]"
+                  : "text-[#2F6F6F] dark:text-zinc-400 hover:text-[#008080]"
               }`}
             >
-              <Monitor className="w-4 h-4" />
-              Widget Flottant
-            </button>
-            <button
-              onClick={() => setActiveTab("embedded")}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-                activeTab === "embedded"
-                  ? "text-[#008080] border-b-2 border-[#008080]"
-                  : "text-[#2F6F6F] hover:text-[#008080]"
-              }`}
-            >
-              <Smartphone className="w-4 h-4" />
-              Widget Intégré
+              <Globe className="w-4 h-4" />
+              Widget de chat
             </button>
             <button
               onClick={() => setActiveTab("api")}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition ${
                 activeTab === "api"
                   ? "text-[#008080] border-b-2 border-[#008080]"
-                  : "text-[#2F6F6F] hover:text-[#008080]"
+                  : "text-[#2F6F6F] dark:text-zinc-400 hover:text-[#008080]"
               }`}
             >
               <Code2 className="w-4 h-4" />
@@ -216,41 +178,38 @@ console.log(data.answer);`
           {/* TAB CONTENT */}
           <div>
             <div className="mb-4">
-              <h3 className="text-xl font-semibold text-[#0B3C3C]">
-                {activeTab === "floating" && "Widget flottant"}
-                {activeTab === "embedded" && "Widget intégré"}
+              <h3 className="text-xl font-semibold text-[#0B3C3C] dark:text-white">
+                {activeTab === "widget" && "Widget de chat flottant"}
                 {activeTab === "api" && "API REST"}
               </h3>
-              <p className="text-sm text-[#2F6F6F] mt-1">
-                {activeTab === "floating" && "Affichez votre chatbot sous forme de bulle flottante dans le coin de votre site."}
-                {activeTab === "embedded" && "Intégrez le chatbot directement dans une zone spécifique de votre page."}
+              <p className="text-sm text-[#2F6F6F] dark:text-zinc-400 mt-1">
+                {activeTab === "widget" &&
+                  "Une bulle de chat flottante s'affiche en bas à droite de votre site. Un seul script à coller."}
                 {activeTab === "api" && "Utilisez notre API REST pour une intégration personnalisée."}
               </p>
             </div>
 
             {/* Preview */}
-            {activeTab !== "api" && (
-              <div className="mb-6 p-4 bg-[#D9F3F3] rounded-lg">
+            {activeTab === "widget" && (
+              <div className="mb-6 p-4 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Globe className="w-4 h-4 text-[#008080]" />
-                  <span className="text-sm font-medium text-[#0B3C3C]">Aperçu</span>
+                  <span className="text-sm font-medium text-[#0B3C3C] dark:text-white">Aperçu</span>
                 </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-[#008080] flex items-center justify-center">
                         <Bot className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#0B3C3C]">Assistant IA</p>
-                        <p className="text-xs text-[#2F6F6F]">En ligne</p>
+                        <p className="text-sm font-medium text-[#0B3C3C] dark:text-white">Assistant IA</p>
+                        <p className="text-xs text-[#2F6F6F] dark:text-zinc-400">En ligne</p>
                       </div>
                     </div>
-                    {activeTab === "floating" && (
-                      <div className="w-12 h-12 rounded-full bg-[#008080] shadow-lg flex items-center justify-center">
-                        <MessageSquare className="w-6 h-6 text-white" />
-                      </div>
-                    )}
+                    <div className="w-12 h-12 rounded-full bg-[#008080] shadow-lg flex items-center justify-center">
+                      <MessageSquare className="w-6 h-6 text-white" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -265,8 +224,7 @@ console.log(data.answer);`
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
                     <div className="w-3 h-3 rounded-full bg-green-500" />
                     <span className="text-xs text-gray-400 ml-2">
-                      {activeTab === "floating" && "widget-flottant.js"}
-                      {activeTab === "embedded" && "widget-integre.js"}
+                      {activeTab === "widget" && "widget.js"}
                       {activeTab === "api" && "api-exemple.js"}
                     </span>
                   </div>
@@ -294,34 +252,29 @@ console.log(data.answer);`
             </div>
 
             {/* INSTALLATION GUIDE */}
-            <div className="mt-6 bg-[#D9F3F3] rounded-lg p-4">
-              <h4 className="font-semibold text-[#0B3C3C] mb-3 flex items-center gap-2">
+            <div className="mt-6 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg p-4">
+              <h4 className="font-semibold text-[#0B3C3C] dark:text-white mb-3 flex items-center gap-2">
                 <Zap className="w-4 h-4 text-[#008080]" />
                 Installation
               </h4>
-              <ol className="space-y-2 text-sm text-[#2F6F6F] list-decimal pl-5">
+              <ol className="space-y-2 text-sm text-[#2F6F6F] dark:text-zinc-400 list-decimal pl-5">
+                <li>Activez votre chatbot ci-dessus</li>
                 <li>Copiez le code ci-dessus</li>
-                <li>Collez-le juste avant la balise <code className="bg-white px-1 rounded">&lt;/body&gt;</code> de votre site</li>
-                <li>Sauvegardez et publiez votre site</li>
-                <li>Votre chatbot apparaîtra automatiquement</li>
+                <li>Collez-le juste avant la balise <code className="bg-white dark:bg-zinc-900 dark:text-zinc-200 px-1 rounded">&lt;/body&gt;</code> de votre site</li>
+                <li>Sauvegardez et publiez votre site — le chatbot apparaîtra automatiquement</li>
               </ol>
             </div>
 
-            {/* LIENS UTILES */}
+            {/* LIEN UTILE */}
             <div className="mt-6 flex gap-4">
               <a
-                href="#"
+                href={`${API_URL}/widget/${chatbotId}.js`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-[#008080] hover:text-[#005F5F] transition"
               >
                 <ExternalLink className="w-4 h-4" />
-                Documentation complète
-              </a>
-              <a
-                href="#"
-                className="flex items-center gap-2 text-sm text-[#008080] hover:text-[#005F5F] transition"
-              >
-                <Settings className="w-4 h-4" />
-                Personnaliser le widget
+                Voir le script du widget
               </a>
             </div>
           </div>
@@ -329,16 +282,14 @@ console.log(data.answer);`
 
         {/* PREVIEW CARD (pour API) */}
         {activeTab === "api" && (
-          <div className="mt-6 bg-white rounded-xl border border-[#B8E0E0] p-6 shadow-sm">
-            <h3 className="font-semibold text-[#0B3C3C] mb-4">Exemple de requête cURL</h3>
+          <div className="mt-6 bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
+            <h3 className="font-semibold text-[#0B3C3C] dark:text-white mb-4">Exemple de requête cURL</h3>
             <pre className="bg-gray-900 text-gray-300 p-4 rounded-lg text-xs overflow-x-auto">
-              <code>{`curl -X POST https://api.chatbotstudio.com/v1/chat \\
+              <code>{`curl -X POST ${API_URL}/chat/ \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer VOTRE_TOKEN_API" \\
   -d '{
     "chatbot_id": "${chatbotId}",
-    "message": "Bonjour !",
-    "session_id": "user_123"
+    "question": "Bonjour !"
   }'`}</code>
             </pre>
           </div>

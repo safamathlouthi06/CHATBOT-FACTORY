@@ -16,6 +16,7 @@ import {
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { API_URL } from "@/services/api";
 
 export default function DashboardPage() {
   const [chatbots, setChatbots] = useState([]);
@@ -30,7 +31,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:8000/dashboard", {
+    fetch(`${API_URL}/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

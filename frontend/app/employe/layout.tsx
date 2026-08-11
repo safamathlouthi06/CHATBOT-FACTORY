@@ -18,6 +18,7 @@ import {
   X,
 
 } from "lucide-react";
+import { API_URL } from "@/services/api";
 
 export default function AppLayout({
   children,
@@ -49,7 +50,7 @@ export default function AppLayout({
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res=await fetch("http://127.0.0.1:8000/meEmploye", {
+        const res=await fetch(`${API_URL}/meEmploye`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -118,8 +119,9 @@ setUser({
                 const Icon = item.icon;
 
                 const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(item.href + "/");
+                  item.href === "/employe"
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(item.href + "/");
 
                 return (
                   <Link
