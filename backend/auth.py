@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Header, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from database import supabase
 import jwt
 import datetime
@@ -282,3 +283,6 @@ def get_me_employe(user=Depends(get_current_user)):
         "entreprise_id": response.data["entreprise_id"],
         "statut": response.data["statut"]
     }
+
+
+
