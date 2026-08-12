@@ -63,6 +63,9 @@ export default function ProfilePage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [popupType, setPopupType] = useState<"success" | "error">("success");
+  const [popupMessage, setPopupMessage] = useState("");
 
   // ─── Chargement du profil ──────────────────────────────────────────────────
   useEffect(() => {
@@ -79,7 +82,7 @@ export default function ProfilePage() {
 
 
 
-        const res = await fetch(`${API_URL}/employes/me`, {
+        const res = await fetch(`${API_URL}/meEmploye`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -123,7 +126,7 @@ export default function ProfilePage() {
     setUpdating(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/employes/me`, {
+      const res = await fetch(`${API_URL}/meEmploye`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -146,24 +149,83 @@ export default function ProfilePage() {
   };
 
   // ─── Changement de mot de passe ────────────────────────────────────────────
-  const changePassword = async () => {
-    if (!currentPassword) {
-      show("error", "Le mot de passe actuel est requis");
-      return;
-    }
-    if (!newPassword || newPassword.length < 6) {
-      show("error", "Le nouveau mot de passe doit contenir au moins 6 caractères");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      show("error", "Les mots de passe ne correspondent pas");
-      return;
-    }
+const changePassword = async () => {
+  // ─────────────────────────────
+  // VALIDATIONS FRONTEND
+  // ─────────────────────────────
 
-    setUpdating(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/users/change-password`, {
+  if (!currentPassword.trim()) {
+    setPopupType("error");
+    setPopupMessage("Veuillez saisir votre mot de passe actuel.");
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+    return;
+  }
+
+  if (!newPassword.trim()) {
+    setPopupType("error");
+    setPopupMessage("Veuillez saisir un nouveau mot de passe.");
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    setPopupType("error");
+    setPopupMessage(
+      "Le mot de passe doit contenir au moins 6 caractères."
+    );
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    setPopupType("error");
+    setPopupMessage(
+      "Les deux mots de passe ne correspondent pas."
+    );
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    setPopupType("error");
+    setPopupMessage("Votre session a expiré. Veuillez vous reconnecter.");
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+    return;
+  }
+
+  setUpdating(true);
+
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/employes/change-password",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -172,25 +234,73 @@ export default function ProfilePage() {
         body: JSON.stringify({
           current_password: currentPassword,
           new_password: newPassword,
+          confirm_password: confirmPassword,
         }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ?? "Erreur");
       }
+    );
 
-      setShowPasswordModal(false);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      show("success", "Mot de passe modifié avec succès ✅");
-    } catch (e: any) {
-      show("error", e.message ?? "Erreur lors du changement");
-    } finally {
-      setUpdating(false);
+    const data = await response.json();
+
+    console.log("CHANGE PASSWORD RESPONSE :", data);
+
+    // ─────────────────────────────
+    // ERREUR BACKEND
+    // ─────────────────────────────
+
+    if (!response.ok) {
+      setPopupType("error");
+      setPopupMessage(
+        data.detail || "Une erreur est survenue lors de la modification."
+      );
+
+      setShowSuccessPopup(true);
+
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 2000);
+
+      return;
     }
-  };
+
+    // ─────────────────────────────
+    // SUCCÈS
+    // ─────────────────────────────
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+
+    // Fermer le modal de changement
+    setShowPasswordModal(false);
+
+    // Popup succès
+    setPopupType("success");
+    setPopupMessage("Modification effectuée avec succès.");
+    setShowSuccessPopup(true);
+
+    // Fermer après 2 secondes
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+  } catch (error) {
+    console.error("❌ Erreur :", error);
+
+    setPopupType("error");
+    setPopupMessage(
+      "Impossible de contacter le serveur."
+    );
+
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 2000);
+
+  } finally {
+    setUpdating(false);
+  }
+};
 
   // ─── Déconnexion ───────────────────────────────────────────────────────────
   const logout = () => {
@@ -441,112 +551,219 @@ export default function ProfilePage() {
       </div>
 
       {/* Modal - Changement de mot de passe */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-zinc-700">
-              <h2 className="font-bold text-xl text-[#0B3C3C] dark:text-white flex items-center gap-2">
-                <Lock size={20} className="text-[#008080]" />
-                Changer le mot de passe
-              </h2>
-              <button
-                onClick={() => setShowPasswordModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 transition"
-              >
-                ✕
-              </button>
-            </div>
+{/* Modal - Changement de mot de passe */}
+{showPasswordModal && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
 
-            <div className="p-6 space-y-4">
-              {/* Mot de passe actuel */}
-              <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1.5">
-                  Mot de passe actuel
-                </label>
-                <div className="relative">
-                  <input
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] pr-10 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200"
-                  >
-                    {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
+      {/* Header */}
+      <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-zinc-700">
+        <h2 className="font-bold text-xl text-[#0B3C3C] dark:text-white flex items-center gap-2">
+          <Lock size={20} className="text-[#008080]" />
+          Changer le mot de passe
+        </h2>
 
-              {/* Nouveau mot de passe */}
-              <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1.5">
-                  Nouveau mot de passe
-                </label>
-                <div className="relative">
-                  <input
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] pr-10 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
-                    placeholder="•••••••• (min. 6 caractères)"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200"
-                  >
-                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
+        <button
+          type="button"
+          onClick={() => setShowPasswordModal(false)}
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 transition"
+        >
+          ✕
+        </button>
+      </div>
 
-              {/* Confirmation */}
-              <div>
-                <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1.5">
-                  Confirmer le nouveau mot de passe
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] pr-10 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200"
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-            </div>
+      {/* Body */}
+      <div className="p-6 space-y-4">
 
-            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-zinc-700">
-              <button
-                onClick={() => setShowPasswordModal(false)}
-                className="px-4 py-2 border border-[#B8E0E0] dark:border-zinc-700 rounded-xl text-sm text-[#0B3C3C] dark:text-zinc-200 hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={changePassword}
-                disabled={updating}
-                className="flex items-center gap-2 bg-[#008080] text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-[#005F5F] disabled:opacity-50 transition"
-              >
-                {updating ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                Changer
-              </button>
-            </div>
+        {/* Mot de passe actuel */}
+        <div>
+          <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1.5">
+            Mot de passe actuel
+          </label>
+
+          <div className="relative">
+            <input
+              type={showCurrentPassword ? "text" : "password"}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] pr-10 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
+              placeholder="••••••••"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowCurrentPassword(!showCurrentPassword)
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200"
+            >
+              {showCurrentPassword ? (
+                <EyeOff size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Nouveau mot de passe */}
+        <div>
+          <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1.5">
+            Nouveau mot de passe
+          </label>
+
+          <div className="relative">
+            <input
+              type={showNewPassword ? "text" : "password"}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] pr-10 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
+              placeholder="•••••••• (min. 6 caractères)"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowNewPassword(!showNewPassword)
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200"
+            >
+              {showNewPassword ? (
+                <EyeOff size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Confirmation */}
+        <div>
+          <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1.5">
+            Confirmer le nouveau mot de passe
+          </label>
+
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] pr-10 bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
+              placeholder="••••••••"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowConfirmPassword(!showConfirmPassword)
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200"
+            >
+              {showConfirmPassword ? (
+                <EyeOff size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-zinc-700">
+
+        <button
+          type="button"
+          onClick={() => setShowPasswordModal(false)}
+          className="px-4 py-2 border border-[#B8E0E0] dark:border-zinc-700 rounded-xl text-sm text-[#0B3C3C] dark:text-zinc-200 hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition"
+        >
+          Annuler
+        </button>
+
+        <button
+          type="button"
+          onClick={changePassword}
+          disabled={updating}
+          className="flex items-center gap-2 bg-[#008080] text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-[#005F5F] disabled:opacity-50 transition"
+        >
+          {updating ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Save size={16} />
+          )}
+
+          {updating ? "Modification..." : "Changer"}
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
+{showSuccessPopup && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+
+    <div className="w-[380px] rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+
+      {/* Icône */}
+      <div
+        className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ${
+          popupType === "success"
+            ? "bg-green-100 dark:bg-green-900/30"
+            : "bg-red-100 dark:bg-red-900/30"
+        }`}
+      >
+        {popupType === "success" ? (
+          <svg
+            className="h-7 w-7 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        ) : (
+          <svg
+            className="h-7 w-7 text-red-600"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        )}
+      </div>
+
+      {/* Titre */}
+      <h3
+        className={`text-lg font-semibold ${
+          popupType === "success"
+            ? "text-green-700 dark:text-green-400"
+            : "text-red-700 dark:text-red-400"
+        }`}
+      >
+        {popupType === "success"
+          ? "Modification réussie"
+          : "Modification impossible"}
+      </h3>
+
+      {/* Message */}
+      <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
+        {popupMessage}
+      </p>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }

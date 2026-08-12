@@ -238,26 +238,133 @@ def delete_employe(employe_id: str, current_user=Depends(get_current_user)):
     return {"message": "Employé supprimé"}
 
 
-@router.post("/{employe_id}/resend")
-def resend_credentials(employe_id: str, current_user=Depends(get_current_user)):
-    """Regénère un mot de passe et le renvoie à l'employé."""
-    require_entreprise(current_user)
-    emp = supabase.table("employe").select("*, entreprise(nomentreprise)") \
-        .eq("id", employe_id).eq("entreprise_id", current_user["entreprise_id"]).single().execute()
-    if not emp.data:
-        raise HTTPException(status_code=404, detail="Employé introuvable")
 
-    e = emp.data
-    new_pwd = generate_password()
-    new_hash = bcrypt.hashpw(new_pwd.encode(), bcrypt.gensalt()).decode()
-    supabase.table("employe").update({"password": new_hash}).eq("id", employe_id).execute()
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
 
-    send_credentials_email(
-        email_personnel=e["email_personnel"],
-        prenom=e["prenom"],
-        nom=e["nom"],
-        nomentreprise=e.get("entreprise", {}).get("nomentreprise", ""),
-        email_plateforme=e["email"],
-        password=new_pwd,
-    )
-    return {"message": "Nouveaux identifiants envoyés"}
+
+@router.post("/change-password")
+def change_password(
+    data: ChangePasswordRequest,
+    user=Depends(get_current_user)
+):
+    try:
+        # 1. Vérifier le rôle
+        if user.get("role") != "employe":
+            raise HTTPException(
+                status_code=403,
+                detail="Accès réservé aux employés"
+            )
+
+        employe_id = user.get("employe_id")
+
+        if not employe_id:
+            raise HTTPException(
+                status_code=401,
+                detail="Employé non identifié dans le token"
+            )
+
+        # 2. Vérifier les champs
+        if not data.current_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Le mot de passe actuel est obligatoire"
+            )
+
+        if not data.new_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Le nouveau mot de passe est obligatoire"
+            )
+
+        # 3. Vérifier longueur
+        if len(data.new_password) < 6:
+            raise HTTPException(
+                status_code=400,
+                detail="Le mot de passe doit contenir au moins 6 caractères"
+            )
+
+        # 4. Vérifier confirmation
+        if data.new_password != data.confirm_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Les mots de passe ne correspondent pas"
+            )
+
+        # 5. Récupérer l'employé
+        result = (
+            supabase
+            .table("employe")
+            .select("id, password")
+            .eq("id", employe_id)
+            .single()
+            .execute()
+        )
+
+        if not result.data:
+            raise HTTPException(
+                status_code=404,
+                detail="Employé introuvable"
+            )
+
+        hashed_password = result.data["password"]
+
+        # 6. Vérifier ancien mot de passe
+        try:
+            password_correct = bcrypt.checkpw(
+                data.current_password.encode("utf-8"),
+                hashed_password.encode("utf-8")
+            )
+        except Exception as e:
+            print("Erreur bcrypt :", e)
+            raise HTTPException(
+                status_code=500,
+                detail="Erreur lors de la vérification du mot de passe"
+            )
+
+        if not password_correct:
+            raise HTTPException(
+                status_code=400,
+                detail="Mot de passe actuel incorrect"
+            )
+
+        # 7. Hasher nouveau mot de passe
+        new_hashed_password = bcrypt.hashpw(
+            data.new_password.encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+        # 8. Mise à jour Supabase
+        update_result = (
+            supabase
+            .table("employe")
+            .update({
+                "password": new_hashed_password
+            })
+            .eq("id", employe_id)
+            .execute()
+        )
+
+        print("UPDATE PASSWORD :", update_result.data)
+
+        if not update_result.data:
+            raise HTTPException(
+                status_code=500,
+                detail="La modification du mot de passe a échoué"
+            )
+
+        return {
+            "message": "Mot de passe modifié avec succès"
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        print("❌ CHANGE PASSWORD ERROR :", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="Erreur serveur lors de la modification du mot de passe"
+        )
