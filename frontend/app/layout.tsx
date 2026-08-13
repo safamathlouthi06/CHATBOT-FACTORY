@@ -36,6 +36,8 @@ export default function RootLayout({
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/admin");
 
+    
+
   const isEmploye =
     pathname?.startsWith("/employe") ||
     pathname === "/employe/profile" ;
