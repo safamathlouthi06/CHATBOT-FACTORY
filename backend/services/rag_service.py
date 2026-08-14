@@ -58,44 +58,52 @@ def retrieve_relevant_chunks(chatbot_id: str, question: str, limit: int = 5):
 
         print("\n========= DEBUG RAG =========")
 
+        FAQ_SIMILARITY_THRESHOLD = 0.75  # à ajuster selon tes tests
+
+
         faq_results = []
         doc_results = []
 
         for r in results:
+
             print("Similarity:", r["similarity"])
             print("Source:", r["source_type"])
             print("Content:", r["content"])
             print("----------------------")
-
             if r["source_type"] == "faq":
                 faq_results.append(r)
             else:
                 doc_results.append(r)
 
-        # ✅ PRIORITÉ FAQ
-        if faq_results:
+        # ✅ FAQ seulement si suffisamment pertinent
+        if faq_results and faq_results[0].get("similarity", 0) >= FAQ_SIMILARITY_THRESHOLD:
             best_faq = faq_results[0]
             print("✅ CHOIX FINAL: FAQ")
             return clean_faq(best_faq["content"])
 
-        # ✅ DOCUMENTS (top 3 chunks 🔥)
+        # ✅ Sinon on retombe sur les documents
         if doc_results:
             top_docs = doc_results[:3]
-
             print("✅ CHOIX FINAL: DOCUMENT (TOP 3)")
-
-            combined_context = " ".join(
-                [doc["content"] for doc in top_docs]
-            )
-
+            combined_context = " ".join([doc["content"] for doc in top_docs])
             cleaned = clean_document(combined_context, question)
-
-            print("✅ CONTEXT FINAL:", cleaned)
-
             return cleaned
 
+        # ✅ dernier recours : FAQ même peu pertinent, si aucun doc
+        if faq_results:
+            print("✅ CHOIX FINAL: FAQ (fallback)")
+            return clean_faq(faq_results[0]["content"])
+
         return ""
+
+        
 
     except Exception as e:
         print("❌ RAG ERROR:", e)
         return ""
+
+
+
+
+
+
