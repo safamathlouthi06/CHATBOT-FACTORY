@@ -1,423 +1,817 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Users, Plus, Trash2, X, CheckCircle, AlertCircle,
-  Loader2, UserCheck, UserX, Search, RefreshCw, Mail,
+  BarChart3,
+  MessageSquare,
+  Bot,
+  FileText,
+  HelpCircle,
+  Loader2,
+  PieChart,
+  TrendingUp,
+  Clock,
+  Zap,
+  Sparkles,
 } from "lucide-react";
+
 import { API_URL } from "@/services/api";
 
-type Employe = {
-  id: string; nom: string; prenom: string;
-  email: string; 
-  email_personnel: string;
-  statut: "actif" | "inactif"; created_at: string;
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Bar, Doughnut } from "react-chartjs-2";
+import PeriodFilter, { Period } from "@/components/PeriodFilter";
+
+/* ========================================================= */
+/* CHART.JS */
+/* ========================================================= */
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
+
+/* ========================================================= */
+/* TYPES */
+/* ========================================================= */
+
+type ChatbotStat = {
+  id: string;
+  nom: string;
+  statut: string;
+  nombre_conversations: number;
+  nombre_messages: number;
+  nombre_documents: number;
+  nombre_faq: number;
 };
 
-export default function EmployesPage() {
+type Overview = {
+  totals: {
+    nombre_chatbots: number;
+    nombre_conversations: number;
+    nombre_messages: number;
+    nombre_documents: number;
+    nombre_faq: number;
+  };
+
+  chatbots: ChatbotStat[];
+};
+
+/* ========================================================= */
+/* PAGE */
+/* ========================================================= */
+
+export default function EmployeStatsPage() {
   const router = useRouter();
-  const [employes, setEmployes] = useState<Employe[]>([]);
+
+  const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: "success"|"error"; msg: string | any }|null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Employe|null>(null);
-  const [resendTarget, setResendTarget] = useState<string|null>(null);
-  const [nom, setNom] = useState(""); 
-  const [prenom, setPrenom] = useState(""); 
-  const [emailP, setEmailP] = useState("");
-  const [preview, setPreview] = useState("");
-  const [emailError, setEmailError] = useState<string>(""); // 🔥 État pour l'erreur email
+  const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<Period>("tout");
 
-  const tk = () => localStorage.getItem("token") ?? "";
-  
-  const toast_ = (type: "success" | "error", msg: string) => {
-    console.log("🔥 TOAST:", msg);
-    setToast({ type, msg });
-    setTimeout(() => {
-      setToast(null);
-    }, 4000);
-  };
+  /* ======================================================= */
+  /* CHARGEMENT */
+  /* ======================================================= */
 
-  const getErrorMessage = (detail: any): string => {
-    if (!detail) return "Erreur inconnue";
-    if (typeof detail === "string") return detail;
-    if (Array.isArray(detail)) {
-      return detail.map((e) => e.msg || e.message || JSON.stringify(e)).join(", ");
-    }
-    if (typeof detail === "object") {
-      return detail.detail || detail.msg || detail.message || JSON.stringify(detail);
-    }
-    return "Erreur inconnue";
-  };
-
-  const fetchEmployes = async () => {
-    try { 
-      setLoading(true);
-      const r = await fetch(`${API_URL}/employes/`,{headers:{Authorization:`Bearer ${tk()}`}});
-      if(r.status===403){router.push("/dashboard");return;}
-      const d = await r.json(); 
-      setEmployes(Array.isArray(d)?d:[]);
-    } catch { 
-      toast_("error","Impossible de charger"); 
-    } finally { 
-      setLoading(false); 
-    }
-  };
-  
-  useEffect(()=>{fetchEmployes();},[]);
-
-  useEffect(()=>{
-    if(!prenom&&!nom){setPreview("");return;}
-    const sl=(t:string)=>t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,".");
-    const company=(localStorage.getItem("nomentreprise")||"entreprise").toLowerCase().replace(/[^a-z0-9]/g,"");
-    const p=sl(prenom.trim()), n=sl(nom.trim());
-    setPreview(p&&n?`${p}.${n}@${company}.com`:"");
-  },[prenom,nom]);
-
-  // 🔥 Réinitialiser l'erreur email quand l'utilisateur modifie le champ
   useEffect(() => {
-    setEmailError("");
-  }, [emailP]);
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-  const handleCreate = async () => {
-    if (!nom.trim() || !prenom.trim() || !emailP.trim()) {
-      toast_("error", "Tous les champs sont obligatoires");
+    if (!token || role !== "employe") {
+      router.push("/login");
       return;
     }
 
-    setSaving(true);
-    setEmailError(""); // Réinitialiser l'erreur avant l'envoi
+    setLoading(true);
 
-    try {
-      const response = await fetch(`${API_URL}/employes/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tk()}`
-        },
-        body: JSON.stringify({
-          nom: nom.trim(),
-          prenom: prenom.trim(),
-          email_personnel: emailP.trim()
-        })
-      });
-
-      const text = await response.text();
-      let data = {};
+    const loadStatistics = async () => {
       try {
-        data = JSON.parse(text);
-      } catch {
-        data = { detail: text };
-      }
+        const response = await fetch(
+          `${API_URL}/statistiques/overview?period=${period}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (!response.ok) {
-        // 🔥 Gestion spéciale pour l'erreur "email already exists"
-        const errorMsg = getErrorMessage(data?.detail || data);
-        if (errorMsg.toLowerCase().includes("email") && errorMsg.toLowerCase().includes("exist")) {
-          setEmailError("Cet email personnel est déjà utilisé par un autre employé");
-          toast_("error", "Email déjà existant");
-        } else {
-          toast_("error", errorMsg);
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          router.push("/login");
+          return;
         }
-        return;
+
+        if (!response.ok) {
+          throw new Error(
+            "Erreur de chargement des statistiques"
+          );
+        }
+
+        const json: Overview = await response.json();
+
+        setData(json);
+      } catch (err) {
+        console.error(
+          "Erreur statistiques :",
+          err
+        );
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Une erreur est survenue."
+        );
+      } finally {
+        setLoading(false);
       }
+    };
 
-      toast_("success", `Employé créé — identifiants envoyés à ${emailP}`);
+    loadStatistics();
+  }, [router, period]);
 
-      setShowForm(false);
-      setNom("");
-      setPrenom("");
-      setEmailP("");
-      setEmailError("");
-      setPreview("");
+  /* ======================================================= */
+  /* LOADING */
+  /* ======================================================= */
 
-      fetchEmployes();
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-[#008080]/20 border-t-[#008080] animate-spin"></div>
+            <Bot className="w-6 h-6 text-[#008080] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Chargement des statistiques...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-    } catch (err) {
-      console.log(err);
-      toast_("error", "Erreur réseau");
-    } finally {
-      setSaving(false);
-    }
+  /* ======================================================= */
+  /* ERROR */
+  /* ======================================================= */
+
+  if (error || !data) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="rounded-xl bg-red-50 dark:bg-red-950/20 p-6 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+              <HelpCircle className="w-6 h-6 text-red-500" />
+            </div>
+            <div>
+              <p className="font-medium text-red-600 dark:text-red-400">
+                Erreur
+              </p>
+              <p className="text-sm text-red-500 dark:text-red-300 mt-1">
+                {error || "Impossible de charger les statistiques."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { totals, chatbots } = data;
+
+  /* ======================================================= */
+  /* DONNÉES GRAPHIQUES */
+  /* ======================================================= */
+
+  const chatbotNames = chatbots.map(
+    (bot) => bot.nom
+  );
+
+  /* ======================================================= */
+  /* GRAPHIQUE CONVERSATIONS */
+  /* ======================================================= */
+
+  const conversationsChartData = {
+    labels: chatbotNames,
+
+    datasets: [
+      {
+        label: "Conversations",
+
+        data: chatbots.map(
+          (bot) => bot.nombre_conversations
+        ),
+
+        backgroundColor: "rgba(0, 128, 128, 0.7)",
+
+        borderColor: "#008080",
+
+        borderWidth: 1,
+
+        borderRadius: 8,
+
+        borderSkipped: false,
+      },
+    ],
   };
-  
-  const handleToggle = async (emp:Employe) => {
-    try {
-      const r = await fetch(`${API_URL}/employes/${emp.id}/statut`,{method:"PATCH",headers:{Authorization:`Bearer ${tk()}`}});
-      const d = await r.json();
-      if(!r.ok){toast_("error",d.detail);return;}
-      toast_("success",`Compte ${d.statut==="actif"?"activé":"désactivé"}`); 
-      fetchEmployes();
-    } catch { 
-      toast_("error","Erreur"); 
-    }
+
+  /* ======================================================= */
+  /* GRAPHIQUE MESSAGES */
+  /* ======================================================= */
+
+  const messagesChartData = {
+    labels: chatbotNames,
+
+    datasets: [
+      {
+        label: "Messages",
+
+        data: chatbots.map(
+          (bot) => bot.nombre_messages
+        ),
+
+        backgroundColor: "rgba(99, 102, 241, 0.7)",
+
+        borderColor: "#6366F1",
+
+        borderWidth: 1,
+
+        borderRadius: 8,
+
+        borderSkipped: false,
+      },
+    ],
   };
 
-  const handleDelete = async () => {
-    if(!deleteTarget)return;
-    try {
-      await fetch(`${API_URL}/employes/${deleteTarget.id}`,{method:"DELETE",headers:{Authorization:`Bearer ${tk()}`}});
-      toast_("success","Employé supprimé"); 
-      setDeleteTarget(null); 
-      fetchEmployes();
-    } catch { 
-      toast_("error","Erreur suppression"); 
-    }
+  /* ======================================================= */
+  /* GRAPHIQUE DOCUMENTS + FAQ */
+  /* ======================================================= */
+
+  const resourcesChartData = {
+    labels: [
+      "Documents",
+      "FAQ",
+    ],
+
+    datasets: [
+      {
+        data: [
+          totals.nombre_documents,
+          totals.nombre_faq,
+        ],
+
+        backgroundColor: [
+          "#F59E0B",
+          "#EC4899",
+        ],
+
+        borderWidth: 0,
+
+        hoverOffset: 8,
+      },
+    ],
   };
 
-  const handleResend = async (id:string) => {
-    setResendTarget(id);
-    try {
-      const r = await fetch(`${API_URL}/employes/${id}/resend`,{method:"POST",headers:{Authorization:`Bearer ${tk()}`}});
-      const d = await r.json();
-      if(!r.ok){toast_("error",d.detail);return;}
-      toast_("success","Nouveaux identifiants envoyés");
-    } catch { 
-      toast_("error","Erreur"); 
-    } finally { 
-      setResendTarget(null); 
-    }
+  /* ======================================================= */
+  /* OPTIONS BAR */
+  /* ======================================================= */
+
+  const barOptions = {
+    responsive: true,
+
+    maintainAspectRatio: false,
+
+    plugins: {
+      legend: {
+        display: false,
+      },
+
+      tooltip: {
+        backgroundColor: "#0B3C3C",
+
+        padding: 12,
+
+        cornerRadius: 8,
+
+        titleColor: "#FFFFFF",
+
+        bodyColor: "#E0E0E0",
+
+        titleFont: {
+          size: 14,
+          weight: "bold" as const,
+        },
+
+        bodyFont: {
+          size: 13,
+        },
+      },
+    },
+
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+
+        ticks: {
+          color: "#6B7280",
+
+          font: {
+            size: 11,
+          },
+        },
+      },
+
+      y: {
+        beginAtZero: true,
+
+        ticks: {
+          color: "#6B7280",
+
+          font: {
+            size: 11,
+          },
+
+          precision: 0,
+        },
+
+        grid: {
+          color: "rgba(107, 114, 128, 0.1)",
+        },
+      },
+    },
   };
 
-  const resetForm = () => {
-    setNom("");
-    setPrenom("");
-    setEmailP("");
-    setPreview("");
-    setEmailError("");
+  /* ======================================================= */
+  /* OPTIONS DOUGHNUT */
+  /* ======================================================= */
+
+  const doughnutOptions = {
+    responsive: true,
+
+    maintainAspectRatio: false,
+
+    cutout: "65%",
+
+    plugins: {
+      legend: {
+        position: "bottom" as const,
+
+        labels: {
+          padding: 20,
+
+          usePointStyle: true,
+
+          color: "#6B7280",
+
+          font: {
+            size: 13,
+            weight: "500" as const,
+          },
+        },
+      },
+
+      tooltip: {
+        backgroundColor: "#0B3C3C",
+
+        padding: 12,
+
+        cornerRadius: 8,
+
+        titleColor: "#FFFFFF",
+
+        bodyColor: "#E0E0E0",
+
+        titleFont: {
+          size: 14,
+          weight: "bold" as const,
+        },
+
+        bodyFont: {
+          size: 13,
+        },
+
+        callbacks: {
+          label: function(context: any) {
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+            return `${context.label}: ${context.parsed} (${percentage}%)`;
+          }
+        }
+      },
+    },
   };
 
-  const closeModal = () => {
-    setShowForm(false);
-    resetForm();
-  };
-
-  const filtered = employes.filter(e=>`${e.nom} ${e.prenom} ${e.email} ${e.email_personnel}`.toLowerCase().includes(search.toLowerCase()));
+  /* ======================================================= */
+  /* RENDER */
+  /* ======================================================= */
 
   return (
-    <>  
-      {toast && (
-        <div
-          key={toast.msg}
-          style={{
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            zIndex: 999999,
-            backgroundColor: toast.type === "success" ? "#008080" : "#ef4444",
-            color: "white",
-            padding: "12px 16px",
-            borderRadius: "12px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-          }}
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+
+      {/* ================================================== */}
+      {/* HEADER */}
+        {/* ================================================== */}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-[#008080]" />
+            Mes statistiques
+          </h1>
+
+          <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mt-1">
+            Performances de vos chatbots
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-gray-400 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full shadow-sm">
+          <Clock className="w-4 h-4" />
+          <span>Mise à jour en temps réel</span>
+        </div>
+      </div>
+
+      {/* ================================================== */}
+      {/* FILTRE PAR PÉRIODE */}
+      {/* ================================================== */}
+
+      <PeriodFilter value={period} onChange={setPeriod} />
+
+      {/* ================================================== */}
+     { /* STATISTIQUES GLOBALES */}
+      {/* ================================================== */}
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+
+        <StatCard
+          title="Chatbots"
+          value={totals.nombre_chatbots}
+          icon={<Bot className="w-6 h-6 text-[#008080]" />}
+          color="teal"
+        />
+
+        <StatCard
+          title="Conversations"
+          value={totals.nombre_conversations}
+          icon={<MessageSquare className="w-6 h-6 text-emerald-500" />}
+          color="green"
+        />
+
+        <StatCard
+          title="Messages"
+          value={totals.nombre_messages}
+          icon={<BarChart3 className="w-6 h-6 text-indigo-500" />}
+          color="indigo"
+        />
+
+        <StatCard
+          title="Documents"
+          value={totals.nombre_documents}
+          icon={<FileText className="w-6 h-6 text-amber-500" />}
+          color="amber"
+        />
+
+        <StatCard
+          title="FAQ"
+          value={totals.nombre_faq}
+          icon={<HelpCircle className="w-6 h-6 text-rose-500" />}
+          color="rose"
+        />
+
+      </div>
+
+      {/* ================================================== */}
+      {/* GRAPHIQUES */}
+      {/* ================================================== */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* ================================================= */}
+       { /* CONVERSATIONS PAR CHATBOT */}
+       {/* ================================================= */}
+
+        <ChartCard
+          title="Conversations par chatbot"
+          icon={<MessageSquare className="w-5 h-5 text-[#008080]" />}
+          color="teal"
         >
-          {String(toast.msg)}
-        </div>
-      )}
-      
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white flex items-center gap-2">
-              <Users className="w-6 h-6 text-[#008080]"/>Gestion des employés
-            </h1>
-            <p className="text-sm text-[#2F6F6F] mt-1">{employes.length} employé{employes.length>1?"s":""} — les accès sont envoyés automatiquement par email</p>
+          {chatbots.length > 0 ? (
+            <div className="h-[300px]">
+              <Bar
+                data={conversationsChartData}
+                options={barOptions}
+              />
+            </div>
+          ) : (
+            <EmptyChart icon={<MessageSquare className="w-12 h-12 text-gray-300" />} />
+          )}
+        </ChartCard>
+
+        {/* ================================================= */}
+      {  /* MESSAGES PAR CHATBOT */}
+        {/* ================================================= */}
+
+        <ChartCard
+          title="Messages par chatbot"
+          icon={<BarChart3 className="w-5 h-5 text-indigo-500" />}
+          color="indigo"
+        >
+          {chatbots.length > 0 ? (
+            <div className="h-[300px]">
+              <Bar
+                data={messagesChartData}
+                options={barOptions}
+              />
+            </div>
+          ) : (
+            <EmptyChart icon={<BarChart3 className="w-12 h-12 text-gray-300" />} />
+          )}
+        </ChartCard>
+
+      </div>
+
+      {/* ================================================== */}
+     { /* RESSOURCES */}
+      {/* ================================================== */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* ================================================= */}
+        {/* DOCUMENTS + FAQ */}
+        {/* ================================================= */}
+
+        <ChartCard
+          title="Ressources utilisées"
+          icon={<PieChart className="w-5 h-5 text-amber-500" />}
+          color="amber"
+        >
+          {totals.nombre_documents + totals.nombre_faq > 0 ? (
+            <div className="h-[280px]">
+              <Doughnut
+                data={resourcesChartData}
+                options={doughnutOptions}
+              />
+            </div>
+          ) : (
+            <EmptyChart icon={<PieChart className="w-12 h-12 text-gray-300" />} />
+          )}
+        </ChartCard>
+
+        {/* ================================================= */}
+       { /* RÉSUMÉ */}
+        {/* ================================================= */}
+
+        <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
+
+          <div className="flex items-center gap-2 mb-6">
+
+            <div className="w-10 h-10 rounded-xl bg-[#E6F5F5] dark:bg-[#123D3D] flex items-center justify-center">
+              <Bot className="w-5 h-5 text-[#008080]" />
+            </div>
+
+            <div>
+              <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
+                Résumé
+              </h2>
+              <p className="text-xs text-gray-400">Vue d'ensemble de vos données</p>
+            </div>
+
           </div>
-          <button onClick={()=>setShowForm(true)} className="flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-4 py-2.5 rounded-xl transition text-sm font-semibold shadow-md">
-            <Plus size={16}/>Ajouter un employé
-          </button>
-        </div>
 
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00A8A8]"/>
-          <input className="w-full pl-10 pr-4 py-2.5 border border-[#B8E0E0] rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#008080] text-sm" placeholder="Rechercher..." value={search} onChange={e=>setSearch(e.target.value)}/>
-        </div>
+          <div className="space-y-3">
 
-        {loading?(
-          <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#008080]" size={36}/></div>
-        ):filtered.length===0?(
-          <div className="text-center py-16 border border-[#B8E0E0] rounded-2xl bg-white dark:bg-gray-900">
-            <Users className="w-14 h-14 mx-auto text-[#00A8A8] mb-4"/>
-            <p className="font-semibold text-[#0B3C3C] dark:text-white mb-1">{search?"Aucun résultat":"Aucun employé encore"}</p>
-            {!search&&<p className="text-sm text-[#2F6F6F]">Ajoutez votre premier employé pour lui donner accès à la plateforme.</p>}
+            <SummaryRow
+              label="Chatbots"
+              value={totals.nombre_chatbots}
+              icon={<Bot className="w-4 h-4 text-[#008080]" />}
+              color="teal"
+            />
+
+            <SummaryRow
+              label="Conversations"
+              value={totals.nombre_conversations}
+              icon={<MessageSquare className="w-4 h-4 text-emerald-500" />}
+              color="green"
+            />
+
+            <SummaryRow
+              label="Messages"
+              value={totals.nombre_messages}
+              icon={<BarChart3 className="w-4 h-4 text-indigo-500" />}
+              color="indigo"
+            />
+
+            <SummaryRow
+              label="Documents"
+              value={totals.nombre_documents}
+              icon={<FileText className="w-4 h-4 text-amber-500" />}
+              color="amber"
+            />
+
+            <SummaryRow
+              label="FAQ"
+              value={totals.nombre_faq}
+              icon={<HelpCircle className="w-4 h-4 text-rose-500" />}
+              color="rose"
+            />
+
           </div>
-        ):(
-          <div className="bg-white dark:bg-gray-900 border border-[#B8E0E0] rounded-2xl overflow-hidden shadow-sm">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#D9F3F3] dark:bg-gray-800">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#005F5F] uppercase tracking-wide">Employé</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#005F5F] uppercase tracking-wide hidden sm:table-cell">Email connexion</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#005F5F] uppercase tracking-wide hidden md:table-cell">Email personnel</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#005F5F] uppercase tracking-wide">Statut</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#005F5F] uppercase tracking-wide">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E8F7F7] dark:divide-gray-800">
-                {filtered.map(emp=>(
-                  <tr key={emp.id} className="hover:bg-[#F7FFFF] dark:hover:bg-gray-800 transition">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#008080] to-[#00A8A8] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                          {emp.prenom[0]?.toUpperCase()}{emp.nom[0]?.toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm text-[#0B3C3C] dark:text-white">{emp.prenom} {emp.nom}</p>
-                          <p className="text-xs text-[#2F6F6F]">Ajouté le {new Date(emp.created_at).toLocaleDateString("fr-FR")}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 hidden sm:table-cell">
-                      <span className="font-mono text-xs text-[#005F5F] bg-[#D9F3F3] px-2 py-1 rounded-lg">{emp.email}</span>
-                    </td>
-                    <td className="px-5 py-4 hidden md:table-cell">
-                      <span className="text-sm text-[#2F6F6F] dark:text-gray-400">{emp.email_personnel}</span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${emp.statut==="actif"?"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":"bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${emp.statut==="actif"?"bg-green-500":"bg-red-500"}`}/>
-                        {emp.statut==="actif"?"Actif":"Inactif"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1">
-                        <button onClick={()=>handleResend(emp.id)} disabled={resendTarget===emp.id} className="p-2 rounded-lg hover:bg-[#D9F3F3] text-[#008080] transition" title="Renvoyer les identifiants">
-                          {resendTarget===emp.id?<Loader2 size={15} className="animate-spin"/>:<RefreshCw size={15}/>}
-                        </button>
-                        <button onClick={()=>handleToggle(emp)} className={`p-2 rounded-lg transition ${emp.statut==="actif"?"hover:bg-red-50 text-red-500":"hover:bg-green-50 text-green-500"}`} title={emp.statut==="actif"?"Désactiver":"Activer"}>
-                          {emp.statut==="actif"?<UserX size={15}/>:<UserCheck size={15}/>}
-                        </button>
-                        <button onClick={()=>setDeleteTarget(emp)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition" title="Supprimer">
-                          <Trash2 size={15}/>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
 
-        {/* MODAL AJOUT EMPLOYÉ - avec affichage d'erreur email */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
-              <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="font-bold text-xl text-[#0B3C3C] dark:text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#008080]" />
-                  Nouvel employé
-                </h2>
-                <button 
-                  onClick={closeModal} 
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <X size={20}/>
-                </button>
-              </div>
-              
-              <div className="p-6 space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">
-                      Prénom <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" 
-                      placeholder="Marie" 
-                      value={prenom} 
-                      onChange={e=>setPrenom(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">
-                      Nom <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      className="w-full border border-[#B8E0E0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white" 
-                      placeholder="Dupont" 
-                      value={nom} 
-                      onChange={e=>setNom(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300 mb-1.5">
-                    Email personnel <span className="text-red-500">*</span>
-                  </label>
-                  <input 
-                    type="email" 
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] dark:bg-gray-800 dark:text-white ${
-                      emailError ? 'border-red-500 ring-1 ring-red-500' : 'border-[#B8E0E0]'
-                    }`}
-                    placeholder="marie.dupont@gmail.com" 
-                    value={emailP} 
-                    onChange={e=>setEmailP(e.target.value)}
-                  />
-                  
-                  {/* 🔥 Affichage de l'erreur email directement sous le champ */}
-                  {emailError && (
-                    <div className="mt-2 flex items-center gap-1.5 text-red-600 text-xs">
-                      <AlertCircle size={12} />
-                      <span>{emailError}</span>
-                    </div>
-                  )}
-                  
-                  <p className="text-xs text-[#2F6F6F] mt-1.5">
-                    Les identifiants de connexion seront envoyés à cette adresse.
-                  </p>
-                </div>
-                
-             
-              </div>  
-
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-                <button 
-                  onClick={closeModal} 
-                  className="px-4 py-2.5 border border-[#B8E0E0] rounded-xl text-sm hover:bg-[#D9F3F3] transition"
-                >
-                  Annuler
-                </button>
-                <button 
-                  onClick={handleCreate} 
-                  disabled={saving} 
-                  className="flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 transition shadow-md"
-                >
-                  {saving?<Loader2 size={15} className="animate-spin"/>:<Mail size={15}/>}
-                  {saving?"Création en cours...":"Créer et envoyer les accès"}
-                </button>
+          {chatbots.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-400">Total ressources</span>
+                <span className="font-semibold text-[#008080]">
+                  {totals.nombre_documents + totals.nombre_faq}
+                </span>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* MODAL SUPPRESSION */}
-        {deleteTarget&&(
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-5 h-5 text-red-500"/>
-                </div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Supprimer l'employé</h2>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Voulez-vous supprimer <strong>{deleteTarget.prenom} {deleteTarget.nom}</strong> ? Son accès à la plateforme sera révoqué.
-              </p>
-              <div className="flex justify-end gap-3 pt-2">
-                <button onClick={()=>setDeleteTarget(null)} className="px-4 py-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition">Annuler</button>
-                <button onClick={handleDelete} className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold flex items-center gap-2 transition">
-                  <Trash2 size={14}/>Supprimer
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>  
-    </>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* ========================================================= */
+/* STAT CARD */
+/* ========================================================= */
+
+function StatCard({
+  title,
+  value,
+  icon,
+  color = "teal",
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color?: "teal" | "green" | "indigo" | "amber" | "rose";
+}) {
+  const colorClasses = {
+    teal: "bg-[#008080]/5 border-[#008080]/20",
+    green: "bg-emerald-500/5 border-emerald-500/20",
+    indigo: "bg-indigo-500/5 border-indigo-500/20",
+    amber: "bg-amber-500/5 border-amber-500/20",
+    rose: "bg-rose-500/5 border-rose-500/20",
+  };
+
+  const accentColors = {
+    teal: "bg-[#008080]",
+    green: "bg-emerald-500",
+    indigo: "bg-indigo-500",
+    amber: "bg-amber-500",
+    rose: "bg-rose-500",
+  };
+
+  return (
+    <div className={`p-5 rounded-xl border bg-white dark:bg-gray-900 ${colorClasses[color]} hover:shadow-lg transition-all duration-300 group relative overflow-hidden`}>
+      <div className={`absolute top-0 left-0 h-1 w-full ${accentColors[color]}`}></div>
+
+      <div className="flex justify-between items-center">
+
+        <div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {title}
+          </p>
+
+          <p className="text-2xl font-bold text-[#0B3C3C] dark:text-white mt-1">
+            {value.toLocaleString("fr-FR")}
+          </p>
+        </div>
+
+        <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          {icon}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================= */
+/* CHART CARD */
+/* ========================================================= */
+
+function ChartCard({
+  title,
+  icon,
+  children,
+  color = "teal",
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  color?: "teal" | "indigo" | "amber" | "rose" | "green";
+}) {
+  const colors = {
+    teal: "border-[#008080]/20",
+    indigo: "border-indigo-500/20",
+    amber: "border-amber-500/20",
+    rose: "border-rose-500/20",
+    green: "border-emerald-500/20",
+  };
+
+  return (
+    <div className={`p-6 rounded-2xl bg-white dark:bg-gray-900 border ${colors[color]} shadow-sm hover:shadow-md transition-shadow duration-300`}>
+
+      <div className="flex items-center gap-2 mb-5">
+
+        <div className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+          {icon}
+        </div>
+
+        <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
+          {title}
+        </h2>
+
+      </div>
+
+      {children}
+
+    </div>
+  );
+}
+
+/* ========================================================= */
+/* EMPTY CHART */
+/* ========================================================= */
+
+function EmptyChart({ icon }: { icon: React.ReactNode }) {
+  return (
+    <div className="h-[280px] flex items-center justify-center">
+
+      <div className="text-center">
+
+        {icon}
+
+        <p className="text-sm text-gray-400 mt-3">
+          Aucune donnée disponible
+        </p>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* ========================================================= */
+/* SUMMARY ROW */
+/* ========================================================= */
+
+function SummaryRow({
+  label,
+  value,
+  icon,
+  color = "teal",
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  color?: "teal" | "green" | "indigo" | "amber" | "rose";
+}) {
+  const bgColors = {
+    teal: "bg-[#008080]/5",
+    green: "bg-emerald-500/5",
+    indigo: "bg-indigo-500/5",
+    amber: "bg-amber-500/5",
+    rose: "bg-rose-500/5",
+  };
+
+  return (
+    <div className={`flex items-center justify-between p-3 rounded-lg ${bgColors[color]} transition-colors duration-200 hover:bg-opacity-10`}>
+
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm">
+          {icon}
+        </div>
+        <span className="text-sm text-gray-600 dark:text-gray-300">
+          {label}
+        </span>
+      </div>
+
+      <span className="font-semibold text-[#0B3C3C] dark:text-white">
+        {value.toLocaleString("fr-FR")}
+      </span>
+
+    </div>
   );
 }

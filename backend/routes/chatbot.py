@@ -1,9 +1,9 @@
-
 from fastapi import APIRouter, HTTPException, Depends
 from database import supabase
 from schemas.chatbot import ChatbotCreate, ChatbotUpdate, DEFAULT_WELCOME_MESSAGE
 import traceback
 import re
+from datetime import datetime, timezone
 from auth import get_current_user
 from postgrest.exceptions import APIError
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
@@ -115,6 +115,7 @@ def create_chatbot(
             "entreprise_id": entreprise_id,
             "employe_id": employe_id,
             "message_accueil": data.message_accueil or DEFAULT_WELCOME_MESSAGE,
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         if data.ton is not None:
             insert_data["ton"] = data.ton

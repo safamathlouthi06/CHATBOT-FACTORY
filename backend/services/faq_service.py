@@ -6,6 +6,7 @@ Gestion :
 - Indexation optimisée pour RAG
 """
 
+from datetime import datetime, timezone
 from core.config import supabase
 from services.embedding_service import create_embedding
 
@@ -32,7 +33,8 @@ def create_faq(chatbot_id: str, question: str, reponse: str):
     faq_res = supabase.table("faq").insert({
         "chatbot_id": chatbot_id,
         "question": question,
-        "reponse": reponse
+        "reponse": reponse,
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }).execute()
 
     if not faq_res.data:
