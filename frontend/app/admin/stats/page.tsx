@@ -34,6 +34,7 @@ import {
 } from "chart.js";
 
 import { Bar, Doughnut } from "react-chartjs-2";
+import PeriodFilter, { Period } from "@/components/PeriodFilter";
 
 /* ========================================================= */
 /* CHART JS */
@@ -117,6 +118,8 @@ export default function AdminDashboardPage() {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [period, setPeriod] = useState<Period>("tout");
+
   const [selectedTab, setSelectedTab] = useState<
     "overview" | "entreprises" | "chatbots"
   >("overview");
@@ -156,7 +159,7 @@ export default function AdminDashboardPage() {
           },
         }),
 
-        fetch(`${API_URL}/statistiques/overview`, {
+        fetch(`${API_URL}/statistiques/overview?period=${period}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -245,7 +248,8 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchAdminData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
 
   /* ========================================================= */
   /* FILTRES */
@@ -655,14 +659,18 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <button
-          onClick={fetchAdminData}
-          className="flex items-center gap-2 bg-[#008080] hover:bg-[#006666] text-white px-4 py-2 rounded-lg transition"
-        >
-          <RefreshCw className="w-4 h-4" />
+        <div className="flex items-center gap-3">
+          <PeriodFilter value={period} onChange={setPeriod} />
 
-          Rafraîchir
-        </button>
+          <button
+            onClick={fetchAdminData}
+            className="flex items-center gap-2 bg-[#008080] hover:bg-[#006666] text-white px-4 py-2 rounded-lg transition"
+          >
+            <RefreshCw className="w-4 h-4" />
+
+            Rafraîchir
+          </button>
+        </div>
 
       </div>
 

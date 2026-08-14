@@ -31,6 +31,7 @@ import {
 import { Bar, Doughnut } from "react-chartjs-2";
 
 import { API_URL } from "@/services/api";
+import PeriodFilter, { Period } from "@/components/PeriodFilter";
 
 /* =========================================================
    CONFIGURATION CHART.JS
@@ -90,6 +91,7 @@ export default function StatsPage() {
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<Period>("tout");
 
   /* =======================================================
      CHARGEMENT DES STATISTIQUES
@@ -98,7 +100,9 @@ export default function StatsPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`${API_URL}/statistiques/overview`, {
+    setLoading(true);
+
+    fetch(`${API_URL}/statistiques/overview?period=${period}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -119,7 +123,7 @@ export default function StatsPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [period]);
 
   /* =======================================================
      LOADING
@@ -373,6 +377,12 @@ export default function StatsPage() {
           <span>Dernière mise à jour : aujourd'hui</span>
         </div>
       </div>
+
+      {/* =================================================
+          FILTRE PAR PÉRIODE
+      ================================================= */}
+
+      <PeriodFilter value={period} onChange={setPeriod} />
 
       {/* =================================================
           GLOBAL STATS
@@ -689,6 +699,7 @@ export default function StatsPage() {
               <ChatbotStatRow
                 key={bot.id}
                 bot={bot}
+                period={period}
               />
             ))}
 
@@ -783,8 +794,10 @@ function StatCard({
 
 function ChatbotStatRow({
   bot,
+  period,
 }: {
   bot: ChatbotStat;
+  period: Period;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -793,6 +806,14 @@ function ChatbotStatRow({
 
   const [loadingConv, setLoadingConv] =
     useState(false);
+
+  /*
+   * Si la période change pendant que le détail est déjà
+   * chargé, on force un rechargement à la prochaine ouverture.
+   */
+  useEffect(() => {
+    setConversations(null);
+  }, [period]);
 
   /* =======================================================
      OUVRIR / FERMER
@@ -804,7 +825,8 @@ function ChatbotStatRow({
 
     /*
      * On charge les conversations seulement
-     * lors de la première ouverture.
+     * lors de la première ouverture (ou après
+     * un changement de période).
      */
 
     if (!open && conversations === null) {
@@ -816,7 +838,7 @@ function ChatbotStatRow({
         const token = localStorage.getItem("token");
 
         const res = await fetch(
-          `${API_URL}/statistiques/chatbot/${bot.id}`,
+          `${API_URL}/statistiques/chatbot/${bot.id}?period=${period}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

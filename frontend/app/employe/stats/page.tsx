@@ -29,6 +29,7 @@ import {
 } from "chart.js";
 
 import { Bar, Doughnut } from "react-chartjs-2";
+import PeriodFilter, { Period } from "@/components/PeriodFilter";
 
 /* ========================================================= */
 /* CHART.JS */
@@ -79,6 +80,7 @@ export default function EmployeStatsPage() {
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<Period>("tout");
 
   /* ======================================================= */
   /* CHARGEMENT */
@@ -93,10 +95,12 @@ export default function EmployeStatsPage() {
       return;
     }
 
+    setLoading(true);
+
     const loadStatistics = async () => {
       try {
         const response = await fetch(
-          `${API_URL}/statistiques/overview`,
+          `${API_URL}/statistiques/overview?period=${period}`,
           {
             method: "GET",
             headers: {
@@ -139,7 +143,7 @@ export default function EmployeStatsPage() {
     };
 
     loadStatistics();
-  }, [router]);
+  }, [router, period]);
 
   /* ======================================================= */
   /* LOADING */
@@ -441,6 +445,12 @@ export default function EmployeStatsPage() {
           <span>Mise à jour en temps réel</span>
         </div>
       </div>
+
+      {/* ================================================== */}
+      {/* FILTRE PAR PÉRIODE */}
+      {/* ================================================== */}
+
+      <PeriodFilter value={period} onChange={setPeriod} />
 
       {/* ================================================== */}
      { /* STATISTIQUES GLOBALES */}

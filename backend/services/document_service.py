@@ -3,6 +3,7 @@ Document service (PDF / PPT)
 """
 
 import os
+from datetime import datetime, timezone
 from core.config import supabase
 from services.embedding_service import create_embedding
 from services.chunking_service import chunk_text  # ✅ IMPORT CORRECT
@@ -31,7 +32,8 @@ def create_document(chatbot_id: str, titre: str, file_path: str):
     doc = supabase.table("documents").insert({
         "chatbot_id": chatbot_id,
         "titre": titre,
-        "contenu_extrait": content
+        "contenu_extrait": content,
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }).execute()
 
     doc_id = doc.data[0]["id"]

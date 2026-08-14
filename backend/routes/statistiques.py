@@ -16,28 +16,111 @@ de ne perdre aucune donnée historique.
 """
 
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from auth import get_current_user
 from database import supabase
 
 router = APIRouter(prefix="/statistiques", tags=["Statistiques"])
 
+# Périodes acceptées par le paramètre `?period=`
+PERIODES_VALIDES = {"jour", "semaine", "semaine_precedente", "mois", "tout"}
+
 
 # =========================================================
 # HELPERS
 # =========================================================
 
+def _get_period_range(period: Optional[str]):
+    """
+    Calcule les bornes [debut, fin) au format ISO pour une période donnée.
+
+    - "jour"               -> aujourd'hui (00:00 -> maintenant/minuit suivant)
+    - "semaine"             -> semaine en cours (lundi -> aujourd'hui + 1j)
+    - "semaine_precedente"  -> semaine calendaire précédente (lundi -> lundi)
+    - "mois"                -> mois en cours (1er -> aujourd'hui + 1j)
+    - "tout" / None          -> pas de filtre -> (None, None)
+    """
+    if not period or period == "tout":
+        return None, None
+
+    if period not in PERIODES_VALIDES:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Période invalide. Valeurs acceptées : "
+                "jour, semaine, semaine_precedente, mois, tout."
+            ),
+        )
+
+    now = datetime.now(timezone.utc)
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    if period == "jour":
+        debut = today
+        fin = today + timedelta(days=1)
+
+    elif period == "semaine":
+        debut = today - timedelta(days=today.weekday())  # lundi de cette semaine
+        fin = today + timedelta(days=1)
+
+    elif period == "semaine_precedente":
+        debut_semaine_courante = today - timedelta(days=today.weekday())
+        debut = debut_semaine_courante - timedelta(days=7)
+        fin = debut_semaine_courante
+
+    elif period == "mois":
+        debut = today.replace(day=1)
+        fin = today + timedelta(days=1)
+
+    return debut.isoformat(), fin.isoformat()
+
+def _parse_iso(value: Optional[str]):
+    """Parse une date ISO renvoyée par Supabase en objet datetime (UTC)."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _in_period(created_at: Optional[str], date_debut: Optional[str], date_fin: Optional[str]) -> bool:
+    """
+    Vérifie si `created_at` (ISO) tombe dans [date_debut, date_fin).
+    Si aucune borne n'est fournie (période = "tout"), retourne toujours True.
+    """
+    if not date_debut and not date_fin:
+        return True
+
+    dt = _parse_iso(created_at)
+    if dt is None:
+        # Pas de date de création connue -> exclu dès qu'un filtre est actif
+        return False
+
+    if date_debut and dt < _parse_iso(date_debut):
+        return False
+    if date_fin and dt >= _parse_iso(date_fin):
+        return False
+    return True
+
+
 def _get_scoped_chatbots(user: dict):
     """Retourne (liste des chatbots visibles par l'utilisateur, entreprise_id)."""
     role = user.get("role")
 
+    # NB : "created_at" est nécessaire pour pouvoir filtrer le graphique
+    # "Chatbots par employé" par période. Assurez-vous d'avoir exécuté la
+    # migration SQL qui ajoute cette colonne à la table `chatbots`.
+    champs = "id, nom, statut, entreprise_id, employe_id, created_at"
+
     if role == "super_admin":
         res = (
             supabase.table("chatbots")
-            .select("id, nom, statut, entreprise_id, employe_id")
+            .select(champs)
             .execute()
         )
         return res.data or [], None
@@ -48,7 +131,7 @@ def _get_scoped_chatbots(user: dict):
             raise HTTPException(status_code=403, detail="Entreprise manquante")
         res = (
             supabase.table("chatbots")
-            .select("id, nom, statut, entreprise_id, employe_id")
+            .select(champs)
             .eq("entreprise_id", entreprise_id)
             .execute()
         )
@@ -60,7 +143,7 @@ def _get_scoped_chatbots(user: dict):
             raise HTTPException(status_code=403, detail="Employé manquant")
         res = (
             supabase.table("chatbots")
-            .select("id, nom, statut, entreprise_id, employe_id")
+            .select(champs)
             .eq("employe_id", employe_id)
             .execute()
         )
@@ -69,25 +152,50 @@ def _get_scoped_chatbots(user: dict):
     raise HTTPException(status_code=403, detail="Rôle non autorisé")
 
 
-def _count_by_chatbot_ids(table: str, chatbot_ids: list[str]) -> dict[str, int]:
-    """Compte le nombre de lignes de `table` par chatbot_id."""
+def _count_by_chatbot_ids(
+    table: str,
+    chatbot_ids: list[str],
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+) -> dict[str, int]:
+    """
+    Compte le nombre de lignes de `table` par chatbot_id.
+
+    Si `date_debut` / `date_fin` sont fournis, seules les lignes créées
+    dans cet intervalle sont comptées (nécessite une colonne `created_at`
+    sur la table `table`).
+    """
     if not chatbot_ids:
         return {}
-    res = (
+
+    query = (
         supabase.table(table)
-        .select("id, chatbot_id")
+        .select("id, chatbot_id, created_at")
         .in_("chatbot_id", chatbot_ids)
-        .execute()
     )
+
+    if date_debut:
+        query = query.gte("created_at", date_debut)
+    if date_fin:
+        query = query.lt("created_at", date_fin)
+
+    res = query.execute()
     counts: dict[str, int] = defaultdict(int)
     for row in res.data or []:
         counts[row["chatbot_id"]] += 1
     return counts
 
 
-def _conversations_stats(chatbot_ids: list[str]):
+def _conversations_stats(
+    chatbot_ids: list[str],
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+):
     """
     Regroupe les lignes de `conversations` (= messages) par session_id.
+
+    Si `date_debut` / `date_fin` sont fournis (bornes ISO, fin exclue),
+    seuls les messages créés dans cet intervalle sont pris en compte.
 
     Retourne :
     - conversations_par_chatbot : { chatbot_id: nombre_de_conversations }
@@ -98,13 +206,18 @@ def _conversations_stats(chatbot_ids: list[str]):
     if not chatbot_ids:
         return {}, {}, {}
 
-    res = (
+    query = (
         supabase.table("conversations")
         .select("chatbot_id, session_id, created_at")
         .in_("chatbot_id", chatbot_ids)
-        .order("created_at", desc=False)
-        .execute()
     )
+
+    if date_debut:
+        query = query.gte("created_at", date_debut)
+    if date_fin:
+        query = query.lt("created_at", date_fin)
+
+    res = query.order("created_at", desc=False).execute()
     rows = res.data or []
 
     sessions_par_chatbot: dict[str, set] = defaultdict(set)
@@ -144,11 +257,17 @@ def _conversations_stats(chatbot_ids: list[str]):
     return conversations_par_chatbot, messages_par_chatbot, detail_par_chatbot
 
 
-def _build_chatbots_detail(chatbots: list[dict]):
+def _build_chatbots_detail(
+    chatbots: list[dict],
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+):
     chatbot_ids = [c["id"] for c in chatbots]
-    doc_counts = _count_by_chatbot_ids("documents", chatbot_ids)
-    faq_counts = _count_by_chatbot_ids("faq", chatbot_ids)
-    conv_counts, msg_counts, conv_detail = _conversations_stats(chatbot_ids)
+    doc_counts = _count_by_chatbot_ids("documents", chatbot_ids, date_debut, date_fin)
+    faq_counts = _count_by_chatbot_ids("faq", chatbot_ids, date_debut, date_fin)
+    conv_counts, msg_counts, conv_detail = _conversations_stats(
+        chatbot_ids, date_debut, date_fin
+    )
 
     detail = []
     for c in chatbots:
@@ -160,6 +279,7 @@ def _build_chatbots_detail(chatbots: list[dict]):
                 "statut": c.get("statut"),
                 "entreprise_id": c.get("entreprise_id"),
                 "employe_id": c.get("employe_id"),
+                "created_at": c.get("created_at"),
                 "nombre_conversations": conv_counts.get(cid, 0),
                 "nombre_messages": msg_counts.get(cid, 0),
                 "nombre_documents": doc_counts.get(cid, 0),
@@ -173,10 +293,17 @@ def _build_chatbots_detail(chatbots: list[dict]):
 # GET /statistiques/overview
 # =========================================================
 @router.get("/overview")
-def statistiques_overview(user=Depends(get_current_user)):
+def statistiques_overview(
+    period: Optional[str] = Query(
+        default="tout",
+        description="jour | semaine | semaine_precedente | mois | tout",
+    ),
+    user=Depends(get_current_user),
+):
     role = user.get("role")
     chatbots, entreprise_id = _get_scoped_chatbots(user)
-    chatbots_detail, _ = _build_chatbots_detail(chatbots)
+    date_debut, date_fin = _get_period_range(period)
+    chatbots_detail, _ = _build_chatbots_detail(chatbots, date_debut, date_fin)
 
     totals = {
         "nombre_chatbots": len(chatbots_detail),
@@ -186,7 +313,11 @@ def statistiques_overview(user=Depends(get_current_user)):
         "nombre_faq": sum(c["nombre_faq"] for c in chatbots_detail),
     }
 
-    result: dict = {"totals": totals, "chatbots": chatbots_detail}
+    result: dict = {
+        "totals": totals,
+        "chatbots": chatbots_detail,
+        "period": period or "tout",
+    }
 
     # =====================================================
     # SUPER ADMIN → regroupement par entreprise
@@ -202,7 +333,10 @@ def statistiques_overview(user=Depends(get_current_user)):
         for c in chatbots_detail:
             eid = c["entreprise_id"] or "inconnue"
             bucket = par_entreprise[eid]
-            bucket["nombre_chatbots"] += 1
+            # Le chatbot ne compte dans "nombre_chatbots" que s'il a été
+            # créé pendant la période sélectionnée (nécessite created_at).
+            if _in_period(c.get("created_at"), date_debut, date_fin):
+                bucket["nombre_chatbots"] += 1
             bucket["nombre_conversations"] += c["nombre_conversations"]
             bucket["nombre_messages"] += c["nombre_messages"]
             bucket["nombre_documents"] += c["nombre_documents"]
@@ -236,7 +370,10 @@ def statistiques_overview(user=Depends(get_current_user)):
         for c in chatbots_detail:
             eid = c.get("employe_id") or "sans-employe"
             bucket = par_employe[eid]
-            bucket["nombre_chatbots"] += 1
+            # Idem : on ne compte le chatbot que s'il a été créé
+            # pendant la période sélectionnée.
+            if _in_period(c.get("created_at"), date_debut, date_fin):
+                bucket["nombre_chatbots"] += 1
             bucket["nombre_conversations"] += c["nombre_conversations"]
             bucket["nombre_messages"] += c["nombre_messages"]
             bucket["nombre_documents"] += c["nombre_documents"]
@@ -258,7 +395,14 @@ def statistiques_overview(user=Depends(get_current_user)):
 # GET /statistiques/chatbot/{chatbot_id}
 # =========================================================
 @router.get("/chatbot/{chatbot_id}")
-def statistiques_chatbot(chatbot_id: str, user=Depends(get_current_user)):
+def statistiques_chatbot(
+    chatbot_id: str,
+    period: Optional[str] = Query(
+        default="tout",
+        description="jour | semaine | semaine_precedente | mois | tout",
+    ),
+    user=Depends(get_current_user),
+):
     role = user.get("role")
     chatbots, _ = _get_scoped_chatbots(user)
     ids_autorises = {c["id"] for c in chatbots}
@@ -266,9 +410,13 @@ def statistiques_chatbot(chatbot_id: str, user=Depends(get_current_user)):
     if role != "super_admin" and chatbot_id not in ids_autorises:
         raise HTTPException(status_code=403, detail="Accès refusé à ce chatbot")
 
+    date_debut, date_fin = _get_period_range(period)
+
     doc_counts = _count_by_chatbot_ids("documents", [chatbot_id])
     faq_counts = _count_by_chatbot_ids("faq", [chatbot_id])
-    conv_counts, msg_counts, conv_detail = _conversations_stats([chatbot_id])
+    conv_counts, msg_counts, conv_detail = _conversations_stats(
+        [chatbot_id], date_debut, date_fin
+    )
 
     conversations = sorted(
         conv_detail.get(chatbot_id, []),
@@ -278,6 +426,7 @@ def statistiques_chatbot(chatbot_id: str, user=Depends(get_current_user)):
 
     return {
         "chatbot_id": chatbot_id,
+        "period": period or "tout",
         "nombre_conversations": conv_counts.get(chatbot_id, 0),
         "nombre_messages": msg_counts.get(chatbot_id, 0),
         "nombre_documents": doc_counts.get(chatbot_id, 0),
