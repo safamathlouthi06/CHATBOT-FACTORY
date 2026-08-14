@@ -1,24 +1,26 @@
+
 """
 routes/widget.py
-
 Sert le script JS embarquable (widget de chat flottant) pour un chatbot donné.
 Route publique : aucun token requis, comme /chat/.
 """
-
+import json
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
-
+from database import supabase
+from schemas.chatbot import DEFAULT_WELCOME_MESSAGE
+from postgrest.exceptions import APIError
 router = APIRouter(prefix="/widget", tags=["Widget"])
-
 API_URL = os.getenv("PUBLIC_API_URL", "http://127.0.0.1:8000")
-
 
 WIDGET_TEMPLATE = """
 (function () {
-  var CHATBOT_ID = "%(chatbot_id)s";
-  var API_URL = "%(api_url)s";
-
+  var CHATBOT_ID = %(chatbot_id)s;
+  var API_URL = %(api_url)s;
+  var WELCOME_MESSAGE = %(welcome_message)s;
+  var CHATBOT_NAME = %(chatbot_name)s;
+  var welcomeShown = false;
   var bubble = document.createElement("button");
   bubble.innerHTML = "💬";
   bubble.setAttribute("aria-label", "Ouvrir le chat");
@@ -28,7 +30,6 @@ WIDGET_TEMPLATE = """
     "font-size:24px", "cursor:pointer", "box-shadow:0 4px 14px rgba(0,0,0,.25)",
     "z-index:999999"
   ].join(";");
-
   var panel = document.createElement("div");
   panel.style.cssText = [
     "position:fixed", "bottom:88px", "right:20px", "width:320px", "height:440px",
@@ -36,33 +37,26 @@ WIDGET_TEMPLATE = """
     "display:none", "flex-direction:column", "overflow:hidden",
     "font-family:Arial,Helvetica,sans-serif", "z-index:999999"
   ].join(";");
-
   var header = document.createElement("div");
-  header.textContent = "Assistant";
+  header.textContent = CHATBOT_NAME;
   header.style.cssText = "background:#008080;color:#fff;padding:12px 16px;font-weight:bold;";
-
   var messages = document.createElement("div");
   messages.style.cssText = "flex:1;overflow-y:auto;padding:12px;font-size:14px;";
-
   var form = document.createElement("form");
   form.style.cssText = "display:flex;border-top:1px solid #eee;";
-
   var input = document.createElement("input");
   input.type = "text";
   input.placeholder = "Ecrivez un message...";
   input.style.cssText = "flex:1;border:none;padding:10px;font-size:14px;outline:none;";
-
   var sendBtn = document.createElement("button");
   sendBtn.textContent = "Envoyer";
   sendBtn.type = "submit";
   sendBtn.style.cssText = "background:#008080;color:#fff;border:none;padding:0 14px;cursor:pointer;";
-
   form.appendChild(input);
   form.appendChild(sendBtn);
   panel.appendChild(header);
   panel.appendChild(messages);
   panel.appendChild(form);
-
   function addMessage(text, from) {
     var bubbleEl = document.createElement("div");
     bubbleEl.textContent = text;
@@ -75,14 +69,12 @@ WIDGET_TEMPLATE = """
     messages.appendChild(bubbleEl);
     messages.scrollTop = messages.scrollHeight;
   }
-
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var question = input.value.trim();
     if (!question) return;
     addMessage(question, "user");
     input.value = "";
-
     fetch(API_URL + "/chat/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -96,19 +88,46 @@ WIDGET_TEMPLATE = """
         addMessage("Erreur de connexion au serveur", "bot");
       });
   });
-
   bubble.addEventListener("click", function () {
     var visible = panel.style.display === "flex";
     panel.style.display = visible ? "none" : "flex";
+    if (!visible && !welcomeShown && WELCOME_MESSAGE) {
+      addMessage(WELCOME_MESSAGE, "bot");
+      welcomeShown = true;
+    }
   });
-
   document.body.appendChild(bubble);
   document.body.appendChild(panel);
 })();
 """
 
-
 @router.get("/{chatbot_id}.js")
 def get_widget_script(chatbot_id: str):
-    script = WIDGET_TEMPLATE % {"chatbot_id": chatbot_id, "api_url": API_URL}
+    welcome = DEFAULT_WELCOME_MESSAGE
+    chatbot_name = "Assistant"
+    try:
+        res = (
+            supabase.table("chatbots")
+            .select("nom, message_accueil")
+            .eq("id", chatbot_id)
+            .execute()
+        )
+    except APIError:
+        res = (
+            supabase.table("chatbots")
+            .select("nom")
+            .eq("id", chatbot_id)
+            .execute()
+        )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Chatbot introuvable")
+    chatbot = res.data[0]
+    welcome = chatbot.get("message_accueil") or DEFAULT_WELCOME_MESSAGE
+    chatbot_name = chatbot.get("nom") or "Assistant"
+    script = WIDGET_TEMPLATE % {
+        "chatbot_id": json.dumps(chatbot_id),
+        "api_url": json.dumps(API_URL),
+        "welcome_message": json.dumps(welcome),
+        "chatbot_name": json.dumps(chatbot_name),
+    }
     return Response(content=script, media_type="application/javascript")

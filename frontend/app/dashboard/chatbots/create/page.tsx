@@ -1,5 +1,5 @@
-"use client";
 
+"use client";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -22,30 +22,23 @@ import {
   AlertCircle
 } from "lucide-react";
 import { API_URL } from "@/services/api";
-
 type Step = 1 | 2 | 3 | 4;
-
 export default function CreateChatbotPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const urlChatbotId = searchParams.get("id");
   const urlStep = searchParams.get("step");
-
   const getStepFromUrl = (): Step => {
     const step = Number(urlStep);
     if (step >= 1 && step <= 4) return step as Step;
     return 1;
   };
-
   const [currentStep, setCurrentStep] = useState<Step>(getStepFromUrl());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [chatbotId, setChatbotId] = useState<string | null>(urlChatbotId);
   const [chatbotName, setChatbotName] = useState("");
-
   const activeChatbotId = chatbotId || urlChatbotId;
-
   // STEP 1
   const [form, setForm] = useState({
     nom: "",
@@ -54,36 +47,30 @@ export default function CreateChatbotPage() {
     tone: "Professionnel",
     welcomeMessage: "Bonjour ! En quoi puis-je vous être utile ?",
   });
-
   // STEP 2
   const [documents, setDocuments] = useState<File[]>([]);
   const [faqs, setFaqs] = useState<{ question: string; reponse: string }[]>([]);
   const [newFaq, setNewFaq] = useState({ question: "", reponse: "" });
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-
   // STEP 3
   const [testMessage, setTestMessage] = useState("");
   const [testLoading, setTestLoading] = useState(false);
   const [testMessages, setTestMessages] = useState<{ role: string; content: string }[]>([]);
-
   // STEP 4
   const [deploying, setDeploying] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const [embedCode, setEmbedCode] = useState("");
-
   const steps = [
     { id: 1, title: "Informations", icon: Bot, description: "Configurez votre chatbot" },
     { id: 2, title: "Base de connaissances", icon: Database, description: "Ajoutez des données" },
     { id: 3, title: "Test", icon: TestTube, description: "Testez votre chatbot" },
     { id: 4, title: "Déploiement", icon: Rocket, description: "Mettez en ligne" },
   ];
-
   // sync URL → state
   useEffect(() => {
     setCurrentStep(getStepFromUrl());
   }, [urlStep]);
-
   // Charger le nom du chatbot si on a un ID
   useEffect(() => {
     const fetchChatbotName = async () => {
@@ -104,33 +91,27 @@ export default function CreateChatbotPage() {
     };
     fetchChatbotName();
   }, [activeChatbotId]);
-
   const goToStep = (step: number) => {
     if (step === 1) {
       router.push("/employe/chatbots/create?step=1");
       return;
     }
-
     if (!activeChatbotId) {
       router.push("/employe/chatbots/create?step=1");
       return;
     }
-
     router.push(`/employe/chatbots/create?id=${activeChatbotId}&step=${step}`);
   };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
   };
-
   // CREATE CHATBOT
   const handleCreateChatbot = async () => {
     if (!form.nom || !form.domaine) {
       setError("Veuillez remplir tous les champs obligatoires");
       return;
     }
-
     setLoading(true);
     setError("");
     
@@ -142,7 +123,6 @@ export default function CreateChatbotPage() {
         setLoading(false);
         return;
       }
-
       const res = await fetch(`${API_URL}/chatbot/`, {
         method: "POST",
         headers: {
@@ -153,34 +133,29 @@ export default function CreateChatbotPage() {
           nom: form.nom,
           domaine: form.domaine,
           statut: "brouillon",
+          message_accueil: form.welcomeMessage,
+          ton: form.tone,
         }),
       });
-
       const data = await res.json();
-
 if (!res.ok) {
-
   // Erreur nom déjà utilisé
   if (res.status === 400) {
     setError(data.detail || "Nom du chatbot déjà utilisé");
     return;
   }
-
   // Non autorisé
   if (res.status === 401) {
     setError("Session expirée. Reconnectez-vous.");
     return;
   }
-
   // Autres erreurs
   setError(data.detail || `Erreur ${res.status}`);
   return;
 }
-
       // ✅ CORRECTION: Extraire l'ID de la structure correcte
       // La réponse a cette structure: { message: "...", data: [{ id: "...", ... }] }
 let newId = null;
-
 if (data.data?.id) {
   newId = data.data.id;
 }
@@ -195,7 +170,6 @@ else if (data.chatbot_id) {
         setError("ID chatbot manquant dans la réponse du serveur");
         return;
       }
-
       setChatbotId(newId);
       setChatbotName(form.nom);
       router.push(`/employe/chatbots/create?id=${newId}&step=2`);
@@ -207,35 +181,29 @@ else if (data.chatbot_id) {
       setLoading(false);
     }
   };
-
   // SAVE KNOWLEDGE
   const handleSaveKnowledge = async () => {
     if (!activeChatbotId) return;
-
     setUploading(true);
     setError("");
     
     try {
       const token = localStorage.getItem("token");
-
       for (const file of documents) {
         const formData = new FormData();
         formData.append("chatbot_id", activeChatbotId);
         formData.append("titre", file.name);
         formData.append("file", file);
-
         const res = await fetch(`${API_URL}/documents/`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
-
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.detail || "Erreur upload document");
         }
       }
-
       for (const faq of faqs) {
         const res = await fetch(`${API_URL}/faq/`, {
           method: "POST",
@@ -249,13 +217,11 @@ else if (data.chatbot_id) {
             reponse: faq.reponse,
           }),
         });
-
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.detail || "Erreur ajout FAQ");
         }
       }
-
       router.push(`/employe/chatbots/create?id=${activeChatbotId}&step=3`);
     } catch (err: any) {
       console.error(err);
@@ -264,23 +230,49 @@ else if (data.chatbot_id) {
       setUploading(false);
     }
   };
-
   const goToTest = () => {
     if (activeChatbotId) {
       router.push(`/employe/chatbots/create?id=${activeChatbotId}&step=3`);
     }
   };
-
+  // Afficher le message d'accueil à l'ouverture de l'espace de test
+  useEffect(() => {
+    const loadWelcomeMessage = async () => {
+      if (currentStep !== 3 || !activeChatbotId || testMessages.length > 0) return;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_URL}/conversations/${activeChatbotId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const history = Array.isArray(data) ? data : data.messages || [];
+        const welcome = Array.isArray(data) ? form.welcomeMessage : data.welcome_message;
+        if (history.length > 0) {
+          setTestMessages(
+            history.map((m: { role: string; message: string }) => ({
+              role: m.role,
+              content: m.message,
+            }))
+          );
+        } else if (welcome) {
+          setTestMessages([{ role: "bot", content: welcome }]);
+        }
+      } catch {
+        if (form.welcomeMessage) {
+          setTestMessages([{ role: "bot", content: form.welcomeMessage }]);
+        }
+      }
+    };
+    loadWelcomeMessage();
+  }, [currentStep, activeChatbotId]);
   // TEST CHAT
   const handleTestMessage = async () => {
     if (!testMessage.trim() || !activeChatbotId) return;
-
     setTestMessages(prev => [...prev, { role: "user", content: testMessage }]);
     setTestLoading(true);
-
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(`${API_URL}/chat/`, {
         method: "POST",
         headers: {
@@ -292,10 +284,8 @@ else if (data.chatbot_id) {
           question: testMessage,
         }),
       });
-
       const data = await res.json();
       setTestMessages(prev => [...prev, { role: "bot", content: data.answer || "Pas de réponse." }]);
-
     } catch (err) {
       setTestMessages(prev => [...prev, { role: "bot", content: "Erreur serveur." }]);
     } finally {
@@ -303,17 +293,14 @@ else if (data.chatbot_id) {
       setTestMessage("");
     }
   };
-
   // DEPLOY
   const handleDeploy = async () => {
     if (!activeChatbotId) return;
-
     setDeploying(true);
     setError("");
     
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(`${API_URL}/chatbot/${activeChatbotId}`, {
         method: "PUT",
         headers: {
@@ -322,11 +309,9 @@ else if (data.chatbot_id) {
         },
         body: JSON.stringify({ statut: "actif" }),
       });
-
       if (!res.ok) {
         throw new Error("Erreur déploiement");
       }
-
       const code = `<script>
   (function() {
     var s = document.createElement('script');
@@ -336,7 +321,6 @@ else if (data.chatbot_id) {
   })();
 </script>
 <div id="chatbot-widget-${activeChatbotId}"></div>`;
-
       setEmbedCode(code);
       setDeployed(true);
     } catch (err: any) {
@@ -345,26 +329,21 @@ else if (data.chatbot_id) {
       setDeploying(false);
     }
   };
-
   const addFaq = () => {
     if (newFaq.question && newFaq.reponse) {
       setFaqs([...faqs, newFaq]);
       setNewFaq({ question: "", reponse: "" });
     }
   };
-
   const removeFaq = (index: number) => {
     setFaqs(faqs.filter((_, i) => i !== index));
   };
-
   const removeDocument = (index: number) => {
     setDocuments(documents.filter((_, i) => i !== index));
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D9F3F3] via-white to-[#E8FFFF] dark:from-[#0B1120] dark:via-[#0B1120] dark:to-[#0B1120]">
       <div className="max-w-5xl mx-auto px-4 py-8">
-
         {/* Header */}
         <div className="mb-8">
           <button
@@ -374,7 +353,6 @@ else if (data.chatbot_id) {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm">Retour</span>
           </button>
-
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#008080] to-[#00A8A8] flex items-center justify-center shadow-lg">
               <Bot className="w-6 h-6 text-white" />
@@ -385,7 +363,6 @@ else if (data.chatbot_id) {
             </div>
           </div>
         </div>
-
         {/* Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -426,7 +403,6 @@ else if (data.chatbot_id) {
             ))}
           </div>
         </div>
-
         {/* Affichage des erreurs */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
@@ -440,7 +416,6 @@ else if (data.chatbot_id) {
             </button>
           </div>
         )}
-
         {/* STEP 1 - Informations */}
         {currentStep === 1 && (
           <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
@@ -448,13 +423,11 @@ else if (data.chatbot_id) {
               <Bot className="w-5 h-5 text-[#008080]" />
               <h2 className="font-semibold text-[#0B3C3C] dark:text-white">Informations générales</h2>
             </div>
-
             <div className="space-y-4">
 <div>
   <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
     Nom du chatbot <span className="text-red-500">*</span>
   </label>
-
   <input
     type="text"
     name="nom"
@@ -468,14 +441,12 @@ else if (data.chatbot_id) {
           : "border-[#B8E0E0] dark:border-zinc-700 focus:ring-[#008080]"
       }`}
   />
-
   {error && (
     <p className="text-sm text-red-500 mt-1">
       {error}
     </p>
   )}
 </div>
-
               <div>
                 <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Domaine d'activité <span className="text-red-500">*</span>
@@ -489,7 +460,6 @@ else if (data.chatbot_id) {
                   className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Rôle du chatbot
@@ -507,7 +477,6 @@ else if (data.chatbot_id) {
                   <option>Conseiller Technique</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Ton de la conversation
@@ -524,7 +493,6 @@ else if (data.chatbot_id) {
                   <option>Formel</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-[#0B3C3C] dark:text-zinc-200 mb-1">
                   Message d'accueil
@@ -538,7 +506,6 @@ else if (data.chatbot_id) {
                 />
               </div>
             </div>
-
             <div className="flex justify-end mt-6">
               <button
                 onClick={handleCreateChatbot}
@@ -551,7 +518,6 @@ else if (data.chatbot_id) {
             </div>
           </div>
         )}
-
         {/* STEP 2 - Base de connaissances */}
         {currentStep === 2 && activeChatbotId && (
           <div className="space-y-6">
@@ -564,14 +530,12 @@ else if (data.chatbot_id) {
                 <p className="text-xs text-green-600 dark:text-green-400">ID: {activeChatbotId}</p>
               </div>
             </div>
-
             {/* Upload documents */}
             <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
                 <Upload className="w-5 h-5 text-[#008080]" />
                 <h2 className="font-semibold text-[#0B3C3C] dark:text-white">Documents</h2>
               </div>
-
               <div
                 onClick={() => fileRef.current?.click()}
                 className="border-2 border-dashed border-[#B8E0E0] dark:border-zinc-700 rounded-lg p-6 text-center cursor-pointer hover:border-[#008080] transition"
@@ -592,7 +556,6 @@ else if (data.chatbot_id) {
                   }}
                 />
               </div>
-
               {documents.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {documents.map((doc, idx) => (
@@ -609,14 +572,12 @@ else if (data.chatbot_id) {
                 </div>
               )}
             </div>
-
             {/* FAQ */}
             <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
                 <HelpCircle className="w-5 h-5 text-[#008080]" />
                 <h2 className="font-semibold text-[#0B3C3C] dark:text-white">FAQ personnalisées</h2>
               </div>
-
               <div className="space-y-3">
                 <input
                   type="text"
@@ -636,7 +597,6 @@ else if (data.chatbot_id) {
                   + Ajouter une FAQ
                 </button>
               </div>
-
               {faqs.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {faqs.map((faq, idx) => (
@@ -648,7 +608,6 @@ else if (data.chatbot_id) {
                 </div>
               )}
             </div>
-
             <div className="flex justify-between gap-3">
               <button onClick={() => goToStep(1)} className="px-6 py-2.5 border border-[#B8E0E0] dark:border-zinc-700 rounded-lg text-[#0B3C3C] dark:text-zinc-200">
                 Précédent
@@ -665,7 +624,6 @@ else if (data.chatbot_id) {
             </div>
           </div>
         )}
-
         {/* STEP 3 - Test */}
         {currentStep === 3 && activeChatbotId && (
           <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
@@ -673,7 +631,6 @@ else if (data.chatbot_id) {
               <Play className="w-5 h-5 text-[#008080]" />
               <h2 className="font-semibold text-[#0B3C3C] dark:text-white">Testez votre chatbot</h2>
             </div>
-
             <div className="h-96 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg p-4 overflow-y-auto mb-4">
               {testMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
@@ -690,7 +647,6 @@ else if (data.chatbot_id) {
                 ))
               )}
             </div>
-
             <div className="flex gap-2">
               <input
                 value={testMessage}
@@ -703,7 +659,6 @@ else if (data.chatbot_id) {
                 Envoyer
               </button>
             </div>
-
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => goToStep(2)} className="px-6 py-2.5 border dark:border-zinc-700 rounded-lg text-[#0B3C3C] dark:text-zinc-200">
                 Précédent
@@ -714,7 +669,6 @@ else if (data.chatbot_id) {
             </div>
           </div>
         )}
-
         {/* STEP 4 - Déploiement */}
         {currentStep === 4 && activeChatbotId && (
           <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-6 shadow-sm">
