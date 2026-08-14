@@ -1,4 +1,4 @@
-
+import uuid
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.rag_service import retrieve_relevant_chunks
@@ -10,6 +10,21 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 class ChatRequest(BaseModel):
     chatbot_id: str
     question: str
+    session_id: str | None = None  # regroupe les messages en une conversation
+
+
+def _insert_conversation_row(payload: dict):
+    """Insère un message dans `conversations`. Si la colonne session_id
+    n'existe pas encore (migration non appliquée), on retente sans elle
+    pour ne jamais casser l'envoi du message."""
+    try:
+        return supabase.table("conversations").insert(payload).execute()
+    except APIError as error:
+        message = str(error)
+        if "session_id" in message and "session_id" in payload:
+            payload = {k: v for k, v in payload.items() if k != "session_id"}
+            return supabase.table("conversations").insert(payload).execute()
+        raise
 
 def _get_chatbot_ton(chatbot_id: str) -> str:
     try:
@@ -79,18 +94,21 @@ def chat(data: ChatRequest):
                 answer = context
             else:
                 answer = generated.strip()
-        # ✅ 3. sauvegarde conversation
+        # ✅ 3. sauvegarde conversation (regroupée par session_id)
+        session_id = data.session_id or str(uuid.uuid4())
         try:
-            supabase.table("conversations").insert({
+            _insert_conversation_row({
                 "chatbot_id": data.chatbot_id,
                 "role": "user",
-                "message": data.question
-            }).execute()
-            supabase.table("conversations").insert({
+                "message": data.question,
+                "session_id": session_id,
+            })
+            _insert_conversation_row({
                 "chatbot_id": data.chatbot_id,
                 "role": "bot",
-                "message": answer
-            }).execute()
+                "message": answer,
+                "session_id": session_id,
+            })
         except Exception as e:
             print("❌ ERREUR save:", e)
         # ✅ 4. récupérer historique complet ✅
@@ -100,14 +118,17 @@ def chat(data: ChatRequest):
             .order("created_at", desc=False) \
             .execute()
         history = history_res.data if history_res.data else []
-        # ✅ 5. retourner réponse + historique
+        # ✅ 5. retourner réponse + historique + session_id (à renvoyer
+        # dans les appels suivants pour rester dans la même conversation)
         return {
             "answer": answer,
-            "history": history
+            "history": history,
+            "session_id": session_id
         }
     except Exception as e:
         print("❌ ERROR:", e)
         return {
             "answer": "Erreur serveur",
-            "history": []
+            "history": [],
+            "session_id": data.session_id
         }

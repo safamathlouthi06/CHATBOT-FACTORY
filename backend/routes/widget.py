@@ -1,4 +1,3 @@
-
 """
 routes/widget.py
 Sert le script JS embarquable (widget de chat flottant) pour un chatbot donné.
@@ -21,6 +20,22 @@ WIDGET_TEMPLATE = """
   var WELCOME_MESSAGE = %(welcome_message)s;
   var CHATBOT_NAME = %(chatbot_name)s;
   var welcomeShown = false;
+  // ✅ Identifiant de conversation : regroupe les messages d'une même
+  // visite dans les statistiques. Persisté en sessionStorage pour
+  // survivre à une navigation dans le même onglet.
+  var SESSION_KEY = "cf_session_" + CHATBOT_ID;
+  var SESSION_ID;
+  try {
+    SESSION_ID = window.sessionStorage.getItem(SESSION_KEY);
+    if (!SESSION_ID) {
+      SESSION_ID = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : "sess-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+      window.sessionStorage.setItem(SESSION_KEY, SESSION_ID);
+    }
+  } catch (e) {
+    SESSION_ID = "sess-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+  }
   var bubble = document.createElement("button");
   bubble.innerHTML = "💬";
   bubble.setAttribute("aria-label", "Ouvrir le chat");
@@ -78,7 +93,7 @@ WIDGET_TEMPLATE = """
     fetch(API_URL + "/chat/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chatbot_id: CHATBOT_ID, question: question })
+      body: JSON.stringify({ chatbot_id: CHATBOT_ID, question: question, session_id: SESSION_ID })
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {

@@ -39,6 +39,7 @@ export default function AppLayout({
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/entreprise", label: "Entreprise", icon: Bot },
     { href: "/admin/widget-preview", label: "Test déploiement", icon: Rocket },
+    { href: "/admin/stats", label: "Statistiques", icon: BarChart3 },
   ];
 
   return (

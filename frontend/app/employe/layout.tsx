@@ -81,7 +81,9 @@ setUser({
   const navItems = [
     { href: "/employe", label: "Dashboard", icon: LayoutDashboard },
     { href: "/employe/chatbots", label: "Chatbots", icon: Bot },
+    { href: "/employe/stats", label: "Statistiques", icon: BarChart3 },
     { href: "/employe/profile", label: "Profile", icon: User },
+
     
    
    
@@ -160,9 +162,7 @@ setUser({
                     <p className="text-sm font-semibold text-[#134E52] dark:text-white">
                       {user.name}
                     </p>
-                    <p className="text-xs text-[#6CAFB4] dark:text-zinc-400">
-                      {user.role}
-                    </p>
+                    
                   </div>
 
                   <ChevronDown className="hidden lg:block w-4 h-4 text-[#6CAFB4]" />
