@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -31,6 +30,14 @@ export default function TestPage() {
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // ✅ Identifiant de conversation : regroupe les échanges de cette
+  // session de test pour les statistiques (nombre de conversations,
+  // nombre de messages par conversation).
+  const sessionIdRef = useRef<string>(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  );
   // ✅ AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -96,10 +103,14 @@ export default function TestPage() {
         body: JSON.stringify({
           chatbot_id: chatbotId,
           question: question,
+          session_id: sessionIdRef.current,
         }),
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
+      if (data?.session_id) {
+        sessionIdRef.current = data.session_id;
+      }
       const botMsg: Message = {
         role: "bot",
         text:
@@ -134,6 +145,11 @@ export default function TestPage() {
         method: "DELETE",
       });
       if (res.ok) {
+        // Nouvelle conversation après effacement de l'historique
+        sessionIdRef.current =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         const convRes = await fetch(`${API_URL}/conversations/${chatbotId}`);
         const data = await convRes.json();
         const welcomeMessage = Array.isArray(data) ? null : data.welcome_message;

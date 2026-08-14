@@ -344,13 +344,7 @@ const changePassword = async () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#008080] hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Retour
-          </button>
+         
           <div>
             <h1 className="text-3xl font-bold text-[#0B3C3C] dark:text-white">Mon profil</h1>
             <p className="text-[#2F6F6F] dark:text-zinc-400 text-sm mt-1">
