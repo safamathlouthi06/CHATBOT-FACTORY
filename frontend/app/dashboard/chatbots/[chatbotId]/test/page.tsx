@@ -1,5 +1,5 @@
-"use client";
 
+"use client";
 import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -10,85 +10,83 @@ import {
   Bot,
 } from "lucide-react";
 import { API_URL } from "@/services/api";
-
 // ✅ TYPES
 type Role = "user" | "bot";
-
 type Message = {
   role: Role;
   text: string;
   ts: string;
 };
-
 const timestamp = () =>
   new Date().toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
   });
-
 export default function TestPage() {
-
   const params = useParams();
   const router = useRouter();
   const chatbotId = params.chatbotId as string;
-
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
   // ✅ AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // ✅ LOAD HISTORIQUE
+  // ✅ LOAD HISTORIQUE + MESSAGE D'ACCUEIL
   useEffect(() => {
     const fetchHistory = async () => {
       if (!chatbotId) return;
-
       try {
         const res = await fetch(
           `${API_URL}/conversations/${chatbotId}`
         );
-
         const data = await res.json();
-
-        const formatted = data.map((m: any) => ({
-          role: m.role,
+        const history = Array.isArray(data) ? data : data.messages || [];
+        const welcomeMessage = Array.isArray(data) ? null : data.welcome_message;
+        const formatted = history.map((m: { role: string; message: string; created_at?: string }) => ({
+          role: m.role as Role,
           text: m.message,
-          ts: new Date(m.created_at).toLocaleTimeString(),
+          ts: m.created_at
+            ? new Date(m.created_at).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : timestamp(),
         }));
-
-        setMessages(formatted);
+        if (formatted.length > 0) {
+          setMessages(formatted);
+        } else if (welcomeMessage) {
+          setMessages([
+            {
+              role: "bot",
+              text: welcomeMessage,
+              ts: timestamp(),
+            },
+          ]);
+        }
       } catch (err) {
         console.error("Erreur history:", err);
       }
     };
-
     fetchHistory();
   }, [chatbotId]);
-
   // ✅ SEND MESSAGE
   const sendMessage = async () => {
     const question = input.trim();
     if (!question || loading) return;
-
     const userMsg: Message = {
       role: "user",
       text: question,
       ts: timestamp(),
     };
-
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setLoading(true);
-
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(`${API_URL}/chat/`, {
         method: "POST",
         headers: {
@@ -100,11 +98,8 @@ export default function TestPage() {
           question: question,
         }),
       });
-
       if (!res.ok) throw new Error();
-
       const data = await res.json();
-
       const botMsg: Message = {
         role: "bot",
         text:
@@ -112,9 +107,7 @@ export default function TestPage() {
           "Je n'ai pas assez d'informations pour répondre.",
         ts: timestamp(),
       };
-
       setMessages(prev => [...prev, botMsg]);
-
     } catch {
       setMessages(prev => [
         ...prev,
@@ -129,25 +122,37 @@ export default function TestPage() {
       inputRef.current?.focus();
     }
   };
-
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
       sendMessage();
     }
   };
-
   const clearHistory = async () => {
     try {
-      await fetch(`${API_URL}/conversations/${chatbotId}`, {
+      const res = await fetch(`${API_URL}/conversations/${chatbotId}`, {
         method: "DELETE",
       });
-      setMessages([]);
+      if (res.ok) {
+        const convRes = await fetch(`${API_URL}/conversations/${chatbotId}`);
+        const data = await convRes.json();
+        const welcomeMessage = Array.isArray(data) ? null : data.welcome_message;
+        if (welcomeMessage) {
+          setMessages([
+            {
+              role: "bot",
+              text: welcomeMessage,
+              ts: timestamp(),
+            },
+          ]);
+        } else {
+          setMessages([]);
+        }
+      }
     } catch (err) {
       console.error("Erreur clear:", err);
     }
   };
-
   return (
     <div className="flex flex-col h-screen bg-[#D9F3F3] dark:bg-[#0B1120] max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* HEADER */}
@@ -169,7 +174,6 @@ export default function TestPage() {
             </div>
           </div>
         </div>
-
         <button
           onClick={clearHistory}
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#008080] border border-[#B8E0E0] dark:border-zinc-700 hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition-colors"
@@ -179,7 +183,6 @@ export default function TestPage() {
           <span className="text-sm hidden sm:inline">Effacer</span>
         </button>
       </div>
-
       {/* MESSAGES */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
@@ -188,14 +191,10 @@ export default function TestPage() {
               <Bot className="w-8 h-8 text-[#008080]" />
             </div>
             <p className="text-[#2F6F6F] dark:text-zinc-400 text-sm">
-              Aucune conversation
-            </p>
-            <p className="text-xs text-[#2F6F6F] dark:text-zinc-400 mt-1">
-              Envoyez un message pour commencer à tester votre chatbot
+              Chargement de la conversation...
             </p>
           </div>
         )}
-
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -215,7 +214,6 @@ export default function TestPage() {
             </div>
           </div>
         ))}
-
         {loading && (
           <div className="flex items-center gap-2 justify-start">
             <div className="bg-white dark:bg-zinc-900 border border-[#B8E0E0] dark:border-zinc-700 rounded-2xl px-4 py-3 shadow-sm">
@@ -228,10 +226,8 @@ export default function TestPage() {
             </div>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
-
       {/* INPUT */}
       <div className="p-4 border-t border-[#B8E0E0] dark:border-zinc-700 bg-white dark:bg-zinc-900">
         <div className="flex gap-2">
@@ -244,7 +240,6 @@ export default function TestPage() {
             className="flex-1 border border-[#B8E0E0] dark:border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-transparent transition-all bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
             disabled={loading}
           />
-
           <button
             onClick={sendMessage}
             disabled={loading || !input.trim()}

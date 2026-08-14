@@ -1,16 +1,29 @@
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.rag_service import retrieve_relevant_chunks
-from services.generation_service import generate_answer, is_valid_answer
+from services.generation_service import generate_answer, is_valid_answer, DEFAULT_TON
 from database import supabase
-
+from postgrest.exceptions import APIError
 router = APIRouter(prefix="/chat", tags=["Chat"])
-
 
 class ChatRequest(BaseModel):
     chatbot_id: str
     question: str
 
+def _get_chatbot_ton(chatbot_id: str) -> str:
+    try:
+        res = (
+            supabase.table("chatbots")
+            .select("ton")
+            .eq("id", chatbot_id)
+            .execute()
+        )
+        if res.data and res.data[0].get("ton"):
+            return res.data[0]["ton"]
+    except APIError:
+        pass
+    return DEFAULT_TON
 
 # ✅ nettoyage texte généré
 def clean_generated_answer(answer: str) -> str:
@@ -21,12 +34,9 @@ def clean_generated_answer(answer: str) -> str:
         "Cette réponse correspond",
         "à la question posée"
     ]
-
     for p in patterns:
         answer = answer.replace(p, "")
-
     return answer.strip()
-
 
 # ✅ filtre réponses inutiles
 def is_bad_answer(answer: str) -> bool:
@@ -37,9 +47,7 @@ def is_bad_answer(answer: str) -> bool:
         "la réponse est dans le contexte",
         "à la question posée"
     ]
-
     return any(p in answer.lower() for p in bad_patterns)
-
 
 @router.post("/")
 def chat(data: ChatRequest):
@@ -49,21 +57,16 @@ def chat(data: ChatRequest):
             data.chatbot_id,
             data.question
         )
-
         print("✅ CONTEXT:", context)
-
         if not context:
             answer = "Je n'ai pas assez d'informations pour répondre."
-
         else:
+            ton = _get_chatbot_ton(data.chatbot_id)
             # ✅ 2. génération
-            generated = generate_answer(context, data.question)
-
+            generated = generate_answer(context, data.question, ton=ton)
             print("✅ GENERATED:", generated)
-
             # ✅ nettoyage
             generated = clean_generated_answer(generated)
-
             # ✅ anti-hallucination
             if (
                 not generated
@@ -76,7 +79,6 @@ def chat(data: ChatRequest):
                 answer = context
             else:
                 answer = generated.strip()
-
         # ✅ 3. sauvegarde conversation
         try:
             supabase.table("conversations").insert({
@@ -84,31 +86,25 @@ def chat(data: ChatRequest):
                 "role": "user",
                 "message": data.question
             }).execute()
-
             supabase.table("conversations").insert({
                 "chatbot_id": data.chatbot_id,
                 "role": "bot",
                 "message": answer
             }).execute()
-
         except Exception as e:
             print("❌ ERREUR save:", e)
-
         # ✅ 4. récupérer historique complet ✅
         history_res = supabase.table("conversations") \
             .select("*") \
             .eq("chatbot_id", data.chatbot_id) \
             .order("created_at", desc=False) \
             .execute()
-
         history = history_res.data if history_res.data else []
-
         # ✅ 5. retourner réponse + historique
         return {
             "answer": answer,
             "history": history
         }
-
     except Exception as e:
         print("❌ ERROR:", e)
         return {
