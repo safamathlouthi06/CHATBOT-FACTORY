@@ -21,6 +21,7 @@ import re
 import traceback
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/employes", tags=["Employes"])
 
@@ -176,6 +177,7 @@ def create_employe(data: EmployeCreate, current_user=Depends(get_current_user)):
             "email_personnel": data.email_personnel,
             "password":        password_hash,
             "statut":          "actif",
+             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
 
         send_credentials_email(

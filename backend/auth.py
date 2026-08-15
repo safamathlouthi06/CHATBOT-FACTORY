@@ -266,7 +266,7 @@ def get_me_employe(user=Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Accès réservé aux employés")
 
     response = supabase.table("employe") \
-        .select("id, nom, prenom, email, email_personnel, entreprise_id, statut") \
+        .select("id, nom, prenom, email, email_personnel, entreprise_id, statut, created_at") \
         .eq("id", user["employe_id"]) \
         .single() \
         .execute()
@@ -281,7 +281,8 @@ def get_me_employe(user=Depends(get_current_user)):
         "email": response.data["email"],
         "email_personnel": response.data["email_personnel"],
         "entreprise_id": response.data["entreprise_id"],
-        "statut": response.data["statut"]
+        "statut": response.data["statut"],
+           "created_at": response.data["created_at"],  
     }
 
 
