@@ -7,7 +7,8 @@ import datetime
 import bcrypt
 import os
 
-from models.entreprise import Entreprise, LoginData
+from models.entreprise import Entreprise, LoginData 
+from schemas.entreprise import EntrepriseUpdate
 
 router = APIRouter()
 
@@ -63,32 +64,65 @@ def verify_admin(token: str):
 @router.post("/register")
 def register(entreprise: Entreprise):
 
-    hashed_password = bcrypt.hashpw(
-        entreprise.password.encode("utf-8"),
-        bcrypt.gensalt()
-    ).decode("utf-8")
+    try:
+        # ==============================
+        # HASH DU MOT DE PASSE
+        # ==============================
+        hashed_password = bcrypt.hashpw(
+            entreprise.password.encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
 
-    response = supabase.table("entreprise").insert({
-        "nomentreprise": entreprise.nomentreprise,
-        "secteurd_activite": entreprise.secteurd_activite,
-        "email": entreprise.email,
-        "password": hashed_password,
-        "statut": "pending"
-    }).execute()
+        # ==============================
+        # DONNÉES À INSÉRER
+        # ==============================
+        insert_data = {
+            "nomentreprise": entreprise.nomentreprise,
+            "secteurd_activite": entreprise.secteurd_activite,
+            "email": entreprise.email,
+            "password": hashed_password,
+            "statut": "pending",
 
-    if response.data:
-        return {
-            "message": "Entreprise créée",
-            "data": response.data
+            # Nouveaux champs
+            "tel": entreprise.tel,
+            "adresse": entreprise.adresse,
+            "site_web": entreprise.site_web,
         }
 
-    raise HTTPException(status_code=400, detail="Erreur register")
+        # ==============================
+        # INSERTION SUPABASE
+        # ==============================
+        response = (
+            supabase
+            .table("entreprise")
+            .insert(insert_data)
+            .execute()
+        )
 
-    return {
-        "message": "Entreprise créée (en attente de validation)",
-        "data": response.data[0]
-    }
+        # ==============================
+        # VÉRIFICATION
+        # ==============================
+        if not response.data:
+            raise HTTPException(
+                status_code=400,
+                detail="Erreur lors de la création de l'entreprise"
+            )
 
+        # ==============================
+        # RÉPONSE
+        # ==============================
+        return {
+            "message": "Entreprise créée (en attente de validation)",
+            "data": response.data[0]
+        }
+
+    except Exception as e:
+        print("ERREUR REGISTER :", str(e))
+
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erreur register : {str(e)}"
+        )
 
 # =========================
 # LOGIN (ADMIN + ENTREPRISE)
@@ -235,7 +269,7 @@ def validate(id: str, authorization: str = Header(None)):
 def get_me(user=Depends(get_current_user)):
 
     response = supabase.table("entreprise") \
-        .select("id, nomentreprise, email") \
+        .select( " id, nomentreprise, email, created_at, secteurd_activite, tel, adresse, site_web") \
         .eq("id", user["entreprise_id"]) \
         .single() \
         .execute()
@@ -247,8 +281,76 @@ def get_me(user=Depends(get_current_user)):
         "id": response.data["id"],
         "nomentreprise": response.data["nomentreprise"],
         "email": response.data["email"],
+        "created_at": response.data["created_at"], 
+        "secteurd_activite": response.data["secteurd_activite"],
+        "tel": response.data["tel"],
+        "adresse": response.data["adresse"],
+        "site_web": response.data["site_web"],
         #"role": user["role"]
     }
+
+@router.put("/meEntreprise")
+def update_me(
+    entreprise: EntrepriseUpdate,
+    user=Depends(get_current_user)
+):
+
+    update_data = {}
+
+    if entreprise.nomentreprise is not None:
+        update_data["nomentreprise"] = entreprise.nomentreprise
+
+    if entreprise.secteurd_activite is not None:
+        update_data["secteurd_activite"] = entreprise.secteurd_activite
+
+    if entreprise.tel is not None:
+        update_data["tel"] = entreprise.tel
+
+    if entreprise.adresse is not None:
+        update_data["adresse"] = entreprise.adresse
+
+    if entreprise.site_web is not None:
+        update_data["site_web"] = entreprise.site_web
+
+    if not update_data:
+        raise HTTPException(
+            status_code=400,
+            detail="Aucune donnée à modifier"
+        )
+
+    response = (
+        supabase
+        .table("entreprise")
+        .update(update_data)
+        .eq("id", user["entreprise_id"])
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(
+            status_code=404,
+            detail="Entreprise introuvable"
+        )
+
+    updated = response.data[0]
+
+    return {
+        "message": "Profil entreprise modifié avec succès",
+        "data": {
+            "id": updated["id"],
+            "nomentreprise": updated["nomentreprise"],
+            "email": updated["email"],
+            "created_at": updated["created_at"],
+            "secteurd_activite": updated["secteurd_activite"],
+            "tel": updated["tel"],
+            "adresse": updated["adresse"],
+            "site_web": updated["site_web"]
+        }
+    }
+
+
+
+
 
 
 
@@ -282,7 +384,7 @@ def get_me_employe(user=Depends(get_current_user)):
         "email_personnel": response.data["email_personnel"],
         "entreprise_id": response.data["entreprise_id"],
         "statut": response.data["statut"],
-           "created_at": response.data["created_at"],  
+        "created_at": response.data["created_at"],  
     }
 
 
