@@ -6,6 +6,10 @@ import re
 from datetime import datetime, timezone
 from auth import get_current_user
 from postgrest.exceptions import APIError
+from constants.roles import CHATBOT_ROLES
+
+
+
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 TABLE = "chatbots"
 
@@ -112,6 +116,7 @@ def create_chatbot(
             "nom": data.nom,
             "domaine": data.domaine,
             "statut": data.statut,
+            "role": data.role,
             "entreprise_id": entreprise_id,
             "employe_id": employe_id,
             "message_accueil": data.message_accueil or DEFAULT_WELCOME_MESSAGE,
@@ -174,6 +179,23 @@ def get_chatbots(current_user=Depends(get_current_user)):
         )
         return res.data or []
     raise HTTPException(status_code=403, detail="Rôle non autorisé")
+
+
+
+
+
+# =========================
+# exposer la liste des rôles disponibles
+# =========================
+
+@router.get("/roles")
+def get_available_roles():
+    return [{"value": k, "label": v} for k, v in CHATBOT_ROLES.items()]
+
+
+
+
+
 # =========================
 # GET BY ID
 # =========================

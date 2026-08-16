@@ -5,6 +5,8 @@ from services.rag_service import retrieve_relevant_chunks
 from services.generation_service import generate_answer, is_valid_answer, DEFAULT_TON
 from database import supabase
 from postgrest.exceptions import APIError
+from constants.roles import DEFAULT_ROLE
+
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 class ChatRequest(BaseModel):
@@ -26,19 +28,23 @@ def _insert_conversation_row(payload: dict):
             return supabase.table("conversations").insert(payload).execute()
         raise
 
-def _get_chatbot_ton(chatbot_id: str) -> str:
+
+
+def _get_chatbot_meta(chatbot_id: str) -> tuple[str, str]:
     try:
         res = (
             supabase.table("chatbots")
-            .select("ton")
+            .select("ton, role")
             .eq("id", chatbot_id)
             .execute()
         )
-        if res.data and res.data[0].get("ton"):
-            return res.data[0]["ton"]
+        if res.data:
+            row = res.data[0]
+            return row.get("ton") or DEFAULT_TON, row.get("role") or DEFAULT_ROLE
     except APIError:
         pass
-    return DEFAULT_TON
+    return DEFAULT_TON, DEFAULT_ROLE
+
 
 # ✅ nettoyage texte généré
 def clean_generated_answer(answer: str) -> str:
@@ -76,9 +82,9 @@ def chat(data: ChatRequest):
         if not context:
             answer = "Je n'ai pas assez d'informations pour répondre."
         else:
-            ton = _get_chatbot_ton(data.chatbot_id)
+            ton, role = _get_chatbot_meta(data.chatbot_id)
             # ✅ 2. génération
-            generated = generate_answer(context, data.question, ton=ton)
+            generated = generate_answer(context, data.question, ton=ton, role=role)
             print("✅ GENERATED:", generated)
             # ✅ nettoyage
             generated = clean_generated_answer(generated)

@@ -30,6 +30,8 @@ import {
 
 import { API_URL } from "@/services/api";
 
+import { getRoleLabel } from "@/constants/roles";
+
 /* ========================================================= */
 /* TYPES */
 /* ========================================================= */
@@ -38,6 +40,7 @@ type ChatbotStat = {
   id: string;
   nom: string;
   statut: string;
+  role?: string;
   employe_id: string | null;
   nombre_conversations: number;
   nombre_messages: number;
@@ -725,16 +728,18 @@ export default function ChatbotListPage() {
 
                             <Bot className="w-5 h-5 text-[#008080] mt-1 shrink-0" />
 
-                            <div className="min-w-0">
-
+                         <div className="min-w-0">
                               <h3 className="font-semibold text-[#0B3C3C] dark:text-white truncate">
                                 {bot.nom}
                               </h3>
-
                               <p className="text-xs text-[#2F6F6F] dark:text-gray-400 truncate">
                                 {bot.domaine}
                               </p>
-
+                              {bot.role && (
+                                <span className="inline-block mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#D9F3F3] text-[#008080] dark:bg-teal-900/30 dark:text-teal-300">
+                                  {getRoleLabel(bot.role)}
+                                </span>
+                              )}
                             </div>
 
                           </div>
@@ -1102,284 +1107,291 @@ export default function ChatbotListPage() {
       {/* DETAILS MODAL */}
       {/* ================================================== */}
 
-      {detailsModal.isOpen &&
-        detailsModal.bot && (
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+{detailsModal.isOpen &&
+  detailsModal.bot && (
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+      onClick={closeDetailsModal}
+    >
+      <div
+        className="
+          bg-white dark:bg-gray-800
+          rounded-xl shadow-xl
+          max-w-lg w-full
+          max-h-[82vh]
+          overflow-y-auto
+        "
+        onClick={(event) => event.stopPropagation()}
+      >
+
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+
+          <div className="flex items-center gap-2">
+            <Bot className="w-5 h-5 text-[#008080]" />
+
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+              Détails du chatbot
+            </h2>
+          </div>
+
+          <button
+            type="button"
             onClick={closeDetailsModal}
+            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
 
-            <div
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
-              onClick={(event) =>
-                event.stopPropagation()
-              }
-            >
+        </div>
 
-              {/* HEADER */}
+        {/* CONTENT */}
+        <div className="px-4 py-3 space-y-2.5">
 
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          {/* NOM */}
+          <div className="flex items-center gap-3">
 
-                <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+              <Tag className="w-4 h-4 text-[#008080]" />
+            </div>
 
-                  <Bot className="w-5 h-5 text-[#008080]" />
+            <div className="flex-1 min-w-0">
 
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Détails du chatbot
-                  </h2>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Nom du chatbot
+              </p>
 
-                </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {detailsModal.bot.nom}
+              </p>
 
-                <button
-                  type="button"
-                  onClick={closeDetailsModal}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                >
+            </div>
 
-                  <X className="w-5 h-5 text-gray-500" />
+          </div>
 
-                </button>
+          {/* DOMAINE */}
+          <div className="flex items-center gap-3">
+
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+              <Activity className="w-4 h-4 text-[#008080]" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Secteur d'activité
+              </p>
+
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {detailsModal.bot.domaine}
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* RÔLE */}
+          <div className="flex items-center gap-3">
+
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+              <Tag className="w-4 h-4 text-[#008080]" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Rôle
+              </p>
+
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {getRoleLabel(detailsModal.bot.role)}
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* STATUT */}
+          <div className="flex items-center gap-3">
+
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+
+              {detailsModal.bot.statut?.toLowerCase() === "actif" ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <Clock className="w-4 h-4 text-orange-500" />
+              )}
+
+            </div>
+
+            <div className="flex-1">
+
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+                Statut
+              </p>
+
+              <span
+                className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded ${
+                  detailsModal.bot.statut?.toLowerCase() === "actif"
+                    ? "bg-[#D9F3F3] text-[#008080]"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    detailsModal.bot.statut?.toLowerCase() === "actif"
+                      ? "bg-[#008080]"
+                      : "bg-gray-400"
+                  }`}
+                />
+
+                {detailsModal.bot.statut?.toLowerCase() === "actif"
+                  ? "Actif"
+                  : "Brouillon"}
+
+              </span>
+
+            </div>
+
+          </div>
+
+          {/* EMPLOYÉ */}
+          <div className="flex items-center gap-3">
+
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+              <User className="w-4 h-4 text-[#008080]" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Créé par
+              </p>
+
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+
+                {detailsModal.bot.employe
+                  ? `${detailsModal.bot.employe.prenom} ${detailsModal.bot.employe.nom}`
+                  : "Employé inconnu"}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* ID */}
+          <div className="flex items-center gap-3">
+
+            <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+              <Calendar className="w-4 h-4 text-[#008080]" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                ID du chatbot
+              </p>
+
+              <p className="font-mono text-[11px] text-gray-600 dark:text-gray-400 break-all">
+                {detailsModal.bot.id}
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* STATISTIQUES */}
+          <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+
+            <p className="text-xs font-semibold text-[#0B3C3C] dark:text-white mb-2">
+              Statistiques
+            </p>
+
+            <div className="grid grid-cols-4 gap-2">
+
+              {/* CONVERSATIONS */}
+              <div className="p-1.5 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
+
+                <p className="text-[9px] text-gray-500 uppercase tracking-wide leading-tight">
+                  Conversations
+                </p>
+
+                <p className="text-sm font-bold text-green-600 mt-0.5">
+                  {detailsModal.bot.nombre_conversations}
+                </p>
 
               </div>
 
-              {/* CONTENT */}
-
-              <div className="p-5 space-y-4">
-
-                {/* NOM */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <Tag className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Nom du chatbot
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {detailsModal.bot.nom}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* DOMAINE */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <Activity className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Secteur d'activité
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {detailsModal.bot.domaine}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* STATUT */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    {detailsModal.bot.statut?.toLowerCase() ===
-                    "actif" ? (
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <Clock className="w-4 h-4 text-orange-500" />
-                    )}
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Statut
-                    </p>
-
-                    <span
-                      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${
-                        detailsModal.bot.statut?.toLowerCase() ===
-                        "actif"
-                          ? "bg-[#D9F3F3] text-[#008080]"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          detailsModal.bot.statut?.toLowerCase() ===
-                          "actif"
-                            ? "bg-[#008080]"
-                            : "bg-gray-400"
-                        }`}
-                      />
-
-                      {detailsModal.bot.statut?.toLowerCase() ===
-                      "actif"
-                        ? "Actif"
-                        : "Brouillon"}
-
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* EMPLOYÉ */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <User className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Créé par
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white">
-
-                      {detailsModal.bot.employe
-                        ? `${detailsModal.bot.employe.prenom} ${detailsModal.bot.employe.nom}`
-                        : "Employé inconnu"}
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* ID */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <Calendar className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      ID du chatbot
-                    </p>
-
-                    <p className="font-mono text-xs text-gray-600 dark:text-gray-400 break-all">
-                      {detailsModal.bot.id}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* STATISTIQUES */}
-
-<div className="border-t border-gray-100 dark:border-gray-700 pt-4">
-
-  <p className="text-sm font-semibold text-[#0B3C3C] dark:text-white mb-3">
-    Statistiques
-  </p>
-
-  <div className="grid grid-cols-4 gap-2">
-
-    <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        Conversations
-      </p>
-
-      <p className="text-base font-bold text-green-600">
-        {detailsModal.bot.nombre_conversations}
-      </p>
-
-    </div>
-
-    <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        Messages
-      </p>
-
-      <p className="text-base font-bold text-purple-600">
-        {detailsModal.bot.nombre_messages}
-      </p>
-
-    </div>
-
-    <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        Documents
-      </p>
-
-      <p className="text-base font-bold text-orange-600">
-        {detailsModal.bot.nombre_documents}
-      </p>
-
-    </div>
-
-    <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        FAQ
-      </p>
-
-      <p className="text-base font-bold text-pink-600">
-        {detailsModal.bot.nombre_faq}
-      </p>
-
-    </div>
-
-  </div>
-
-</div>
+              {/* MESSAGES */}
+              <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-center">
+
+                <p className="text-[9px] text-gray-500 uppercase tracking-wide leading-tight">
+                  Messages
+                </p>
+
+                <p className="text-sm font-bold text-purple-600 mt-0.5">
+                  {detailsModal.bot.nombre_messages}
+                </p>
 
               </div>
 
-              {/* FOOTER */}
+              {/* DOCUMENTS */}
+              <div className="p-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/20 text-center">
 
-              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-[9px] text-gray-500 uppercase tracking-wide leading-tight">
+                  Documents
+                </p>
 
-                <button
-                  type="button"
-                  onClick={closeDetailsModal}
-                  className="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition"
-                >
-                  Fermer
-                </button>
+                <p className="text-sm font-bold text-orange-600 mt-0.5">
+                  {detailsModal.bot.nombre_documents}
+                </p>
 
-              
+              </div>
+
+              {/* FAQ */}
+              <div className="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950/20 text-center">
+
+                <p className="text-[9px] text-gray-500 uppercase tracking-wide leading-tight">
+                  FAQ
+                </p>
+
+                <p className="text-sm font-bold text-pink-600 mt-0.5">
+                  {detailsModal.bot.nombre_faq}
+                </p>
 
               </div>
 
             </div>
 
           </div>
-        )}
+
+        </div>
+
+        {/* FOOTER */}
+        <div className="flex justify-end px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+
+          <button
+            type="button"
+            onClick={closeDetailsModal}
+            className="
+              px-4 py-1.5
+              text-xs font-medium
+              bg-gray-100 hover:bg-gray-200
+              dark:bg-gray-700 dark:hover:bg-gray-600
+              text-gray-700 dark:text-gray-300
+              rounded-lg transition
+            "
+          >
+            Fermer
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  )}
 
     </div>
   );

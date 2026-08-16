@@ -22,6 +22,11 @@ import {
   AlertCircle
 } from "lucide-react";
 import { API_URL } from "@/services/api";
+import { CHATBOT_ROLES, DEFAULT_ROLE } from "@/constants/roles";
+
+
+
+
 type Step = 1 | 2 | 3 | 4;
 export default function CreateChatbotPage() {
   const router = useRouter();
@@ -43,7 +48,7 @@ export default function CreateChatbotPage() {
   const [form, setForm] = useState({
     nom: "",
     domaine: "",
-    role: "Support Client",
+    role: DEFAULT_ROLE,
     tone: "Professionnel",
     welcomeMessage: "Bonjour ! En quoi puis-je vous être utile ?",
   });
@@ -135,6 +140,7 @@ export default function CreateChatbotPage() {
           statut: "brouillon",
           message_accueil: form.welcomeMessage,
           ton: form.tone,
+          role: form.role,
         }),
       });
       const data = await res.json();
@@ -470,11 +476,11 @@ else if (data.chatbot_id) {
                   onChange={handleChange}
                   className="w-full border border-[#B8E0E0] dark:border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#008080] transition bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100"
                 >
-                  <option>Support Client</option>
-                  <option>Assistant Commercial</option>
-                  <option>Coach</option>
-                  <option>Assistant RH</option>
-                  <option>Conseiller Technique</option>
+                  {CHATBOT_ROLES.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>

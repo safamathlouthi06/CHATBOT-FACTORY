@@ -28,9 +28,13 @@ import {
   HelpCircle,
   BarChart3,
   MessageSquare,
+  Save,
+  ChevronDown,
+  Globe,
 } from "lucide-react";
 
 import { API_URL } from "@/services/api";
+import { CHATBOT_ROLES, DEFAULT_ROLE, getRoleLabel } from "@/constants/roles";
 
 /* =========================================================
    TYPES
@@ -41,6 +45,7 @@ type Chatbot = {
   nom: string;
   domaine: string;
   statut: string;
+  role?: string;
   entreprise_id: string;
   created_at: string;
 
@@ -145,6 +150,7 @@ export default function ChatbotListPage() {
     nom: "",
     domaine: "",
     statut: "brouillon",
+    role: DEFAULT_ROLE,
   });
 
   const [savingEdit, setSavingEdit] = useState(false);
@@ -502,6 +508,7 @@ export default function ChatbotListPage() {
       domaine: bot.domaine || "",
       statut:
         bot.statut || "brouillon",
+      role: bot.role || DEFAULT_ROLE,
     });
 
     setEditModal({
@@ -574,6 +581,9 @@ export default function ChatbotListPage() {
             statut:
               editForm.statut,
 
+            role:
+              editForm.role,
+
             entreprise_id:
               editModal.bot
                 .entreprise_id,
@@ -618,6 +628,9 @@ export default function ChatbotListPage() {
 
             statut:
               editForm.statut,
+
+            role:
+              editForm.role,
           };
         })
       );
@@ -685,6 +698,9 @@ export default function ChatbotListPage() {
 
             statut:
               "brouillon",
+
+            role:
+              bot.role || DEFAULT_ROLE,
 
             entreprise_id:
               bot.entreprise_id,
@@ -891,16 +907,18 @@ export default function ChatbotListPage() {
 
                     </div>
 
-                    <div>
-
-                      <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-[#0B3C3C] dark:text-white truncate">
                         {bot.nom}
-                      </h2>
-
-                      <p className="text-xs text-[#2F6F6F] dark:text-gray-400">
+                      </h3>
+                      <p className="text-xs text-[#2F6F6F] dark:text-gray-400 truncate">
                         {bot.domaine}
                       </p>
-
+                      {bot.role && (
+                        <span className="inline-block mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#D9F3F3] text-[#008080] dark:bg-teal-900/30 dark:text-teal-300">
+                          {getRoleLabel(bot.role)}
+                        </span>
+                      )}
                     </div>
 
                   </div>
@@ -909,141 +927,141 @@ export default function ChatbotListPage() {
                       MENU
                   ================================================= */}
 
-<div
-  className="relative"
-  data-chatbot-menu
->
+                  <div
+                    className="relative"
+                    data-chatbot-menu
+                  >
 
-  <button
-    type="button"
-    onClick={(e) => {
-      e.stopPropagation();
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
 
-      setOpenMenuId(
-        (current) =>
-          current === bot.id
-            ? null
-            : bot.id
-      );
-    }}
-    className="p-1.5 rounded-xl hover:bg-[#E8FAFB] dark:hover:bg-[#1E293B] transition-all duration-200 group"
-    aria-label={`Menu du chatbot ${bot.nom}`}
-  >
+                        setOpenMenuId(
+                          (current) =>
+                            current === bot.id
+                              ? null
+                              : bot.id
+                        );
+                      }}
+                      className="p-1.5 rounded-xl hover:bg-[#E8FAFB] dark:hover:bg-[#1E293B] transition-all duration-200 group"
+                      aria-label={`Menu du chatbot ${bot.nom}`}
+                    >
 
-    <MoreVertical className="w-4 h-4 text-[#6CAFB4] group-hover:text-[#007A80] dark:group-hover:text-[#00B7C2] transition-colors" />
+                      <MoreVertical className="w-4 h-4 text-[#6CAFB4] group-hover:text-[#007A80] dark:group-hover:text-[#00B7C2] transition-colors" />
 
-  </button>
+                    </button>
 
-  {/* =================================================
-      DROPDOWN AMÉLIORÉ
-  ================================================= */}
+                    {/* =================================================
+                        DROPDOWN AMÉLIORÉ
+                    ================================================= */}
 
-  {openMenuId === bot.id && (
-    <div
-      data-chatbot-menu
-      className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-[#D7F3F5] dark:border-[#1E293B] z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200"
-    >
+                    {openMenuId === bot.id && (
+                      <div
+                        data-chatbot-menu
+                        className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-[#D7F3F5] dark:border-[#1E293B] z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200"
+                      >
 
-      {/* ÉDITER */}
+                        {/* ÉDITER */}
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-          setOpenMenuId(null);
+                            setOpenMenuId(null);
 
-          openEditModal(bot);
-        }}
-        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#134E52] dark:text-zinc-200 hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-200 group"
-      >
+                            openEditModal(bot);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#134E52] dark:text-zinc-200 hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-200 group"
+                        >
 
-        <div className="w-7 h-7 rounded-lg bg-[#E8FAFB] dark:bg-[#111827] flex items-center justify-center group-hover:bg-[#007A80]/10 dark:group-hover:bg-[#007A80]/20 transition-colors">
+                          <div className="w-7 h-7 rounded-lg bg-[#E8FAFB] dark:bg-[#111827] flex items-center justify-center group-hover:bg-[#007A80]/10 dark:group-hover:bg-[#007A80]/20 transition-colors">
 
-          <Pencil className="w-4 h-4 text-[#007A80]" />
+                            <Pencil className="w-4 h-4 text-[#007A80]" />
 
-        </div>
+                          </div>
 
-        <div className="flex-1 text-left">
-          <span className="font-medium">Éditer</span>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500">
-            Modifier les paramètres
-          </p>
-        </div>
+                          <div className="flex-1 text-left">
+                            <span className="font-medium">Éditer</span>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                              Modifier les paramètres
+                            </p>
+                          </div>
 
-      </button>
+                        </button>
 
-      {/* DÉTAILS */}
+                        {/* DÉTAILS */}
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-          setOpenMenuId(null);
+                            setOpenMenuId(null);
 
-          openDetailsModal(bot);
-        }}
-        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#134E52] dark:text-zinc-200 hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-200 group"
-      >
+                            openDetailsModal(bot);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#134E52] dark:text-zinc-200 hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-200 group"
+                        >
 
-        <div className="w-7 h-7 rounded-lg bg-[#E8FAFB] dark:bg-[#111827] flex items-center justify-center group-hover:bg-[#007A80]/10 dark:group-hover:bg-[#007A80]/20 transition-colors">
+                          <div className="w-7 h-7 rounded-lg bg-[#E8FAFB] dark:bg-[#111827] flex items-center justify-center group-hover:bg-[#007A80]/10 dark:group-hover:bg-[#007A80]/20 transition-colors">
 
-          <Eye className="w-4 h-4 text-[#007A80]" />
+                            <Eye className="w-4 h-4 text-[#007A80]" />
 
-        </div>
+                          </div>
 
-        <div className="flex-1 text-left">
-          <span className="font-medium">Voir les détails</span>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500">
-            Informations complètes
-          </p>
-        </div>
+                          <div className="flex-1 text-left">
+                            <span className="font-medium">Voir les détails</span>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                              Informations complètes
+                            </p>
+                          </div>
 
-      </button>
+                        </button>
 
-      {/* SÉPARATEUR STYLISÉ */}
+                        {/* SÉPARATEUR STYLISÉ */}
 
-      <div className="relative my-1.5 px-4">
-        <div className="border-t border-[#E5E7EB] dark:border-[#1E293B]"></div>
-      </div>
+                        <div className="relative my-1.5 px-4">
+                          <div className="border-t border-[#E5E7EB] dark:border-[#1E293B]"></div>
+                        </div>
 
-      {/* SUPPRIMER */}
+                        {/* SUPPRIMER */}
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-          setOpenMenuId(null);
+                            setOpenMenuId(null);
 
-          openDeleteModal(
-            bot.id,
-            bot.nom
-          );
-        }}
-        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
-      >
+                            openDeleteModal(
+                              bot.id,
+                              bot.nom
+                            );
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
+                        >
 
-        <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
+                          <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
 
-          <Trash2 className="w-4 h-4 text-red-500" />
+                            <Trash2 className="w-4 h-4 text-red-500" />
 
-        </div>
+                          </div>
 
-        <div className="flex-1 text-left">
-          <span className="font-medium">Supprimer</span>
-          <p className="text-[10px] text-red-400/60 dark:text-red-400/50">
-            Supprimer définitivement
-          </p>
-        </div>
+                          <div className="flex-1 text-left">
+                            <span className="font-medium">Supprimer</span>
+                            <p className="text-[10px] text-red-400/60 dark:text-red-400/50">
+                              Supprimer définitivement
+                            </p>
+                          </div>
 
-      </button>
+                        </button>
 
-    </div>
-  )}
+                      </div>
+                    )}
 
-</div>
+                  </div>
 
                 </div>
 
@@ -1332,498 +1350,948 @@ export default function ChatbotListPage() {
           DETAILS MODAL
       ================================================= */}
 
-      {detailsModal.isOpen &&
-        detailsModal.bot && (
-
+      {detailsModal.isOpen && detailsModal.bot && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              closeDetailsModal();
+            }
+          }}
+        >
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) {
-                closeDetailsModal();
-              }
-            }}
+            className="
+              bg-white dark:bg-gray-800
+              rounded-xl shadow-xl
+              max-w-md w-full
+              max-h-[85vh]
+              flex flex-col
+              mx-4
+              animate-in fade-in zoom-in duration-200
+            "
           >
+            {/* HEADER */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <div className="flex items-center gap-2">
+                <Bot className="w-5 h-5 text-[#008080]" />
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full mx-4 animate-in fade-in zoom-in duration-200">
-
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-
-                <div className="flex items-center gap-2">
-
-                  <Bot className="w-5 h-5 text-[#008080]" />
-
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Détails du chatbot
-                  </h2>
-
-                </div>
-
-                <button
-                  onClick={closeDetailsModal}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                >
-
-                  <X className="w-5 h-5 text-gray-500" />
-
-                </button>
-
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+                  Détails du chatbot
+                </h2>
               </div>
 
-              <div className="p-5 space-y-4">
-
-                {/* NOM */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <Tag className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Nom du chatbot
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {detailsModal.bot.nom}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* DOMAINE */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <Activity className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Secteur d'activité
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {detailsModal.bot.domaine}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* STATUS */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    {detailsModal.bot.statut ===
-                    "actif" ? (
-
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-
-                    ) : (
-
-                      <Clock className="w-4 h-4 text-orange-500" />
-
-                    )}
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Statut
-                    </p>
-
-                    <span
-                      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${
-                        detailsModal.bot.statut ===
-                        "actif"
-                          ? "bg-[#D9F3F3] text-[#008080]"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          detailsModal.bot.statut ===
-                          "actif"
-                            ? "bg-[#008080]"
-                            : "bg-gray-400"
-                        }`}
-                      />
-
-                      {detailsModal.bot.statut ===
-                      "actif"
-                        ? "Actif"
-                        : "Brouillon"}
-
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* ID */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <User className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      ID du chatbot
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white break-all">
-                      {detailsModal.bot.id}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* DATE */}
-
-                <div className="flex items-start gap-3">
-
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
-
-                    <Calendar className="w-4 h-4 text-[#008080]" />
-
-                  </div>
-
-                  <div className="flex-1">
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Date de création
-                    </p>
-
-                    <p className="font-medium text-gray-900 dark:text-white">
-
-                      {detailsModal.bot.created_at
-                        ? new Date(
-                            detailsModal.bot.created_at
-                          ).toLocaleString(
-                            "fr-FR",
-                            {
-                              day: "2-digit",
-                              month: "long",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )
-                        : "Date inconnue"}
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* STATISTIQUES */}
-
-<div className="border-t border-gray-100 dark:border-gray-700 pt-4">
-
-  <p className="text-sm font-semibold text-[#0B3C3C] dark:text-white mb-3">
-    Statistiques
-  </p>
-
-  <div className="grid grid-cols-4 gap-2">
-
-    <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        Conversations
-      </p>
-
-      <p className="text-base font-bold text-green-600">
-        {detailsModal.bot.nombre_conversations}
-      </p>
-
-    </div>
-
-    <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        Messages
-      </p>
-
-      <p className="text-base font-bold text-purple-600">
-        {detailsModal.bot.nombre_messages}
-      </p>
-
-    </div>
-
-    <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        Documents
-      </p>
-
-      <p className="text-base font-bold text-orange-600">
-        {detailsModal.bot.nombre_documents}
-      </p>
-
-    </div>
-
-    <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-950/20 text-center">
-
-      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-        FAQ
-      </p>
-
-      <p className="text-base font-bold text-pink-600">
-        {detailsModal.bot.nombre_faq}
-      </p>
-
-    </div>
-
-  </div>
-
-</div>
-
-              </div>
-
-              {/* FOOTER */}
-
-              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-
-                <button
-                  onClick={closeDetailsModal}
-                  className="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition"
-                >
-                  Fermer
-                </button>
-
-                <button
-                  onClick={() => {
-
-                    const bot =
-                      detailsModal.bot;
-
-                    closeDetailsModal();
-
-                    if (bot) {
-                      openEditModal(bot);
-                    }
-
-                  }}
-                  className="px-4 py-2 text-sm font-medium bg-[#008080] hover:bg-[#005F5F] text-white rounded-lg transition flex items-center gap-2"
-                >
-
-                  <Pencil className="w-4 h-4" />
-
-                  Modifier
-
-                </button>
-
-              </div>
-
+              <button
+                onClick={closeDetailsModal}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
             </div>
 
-          </div>
-        )}
+            {/* CONTENU */}
+            <div className="px-4 py-3 space-y-3 overflow-y-auto">
 
+              {/* NOM */}
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+                  <Tag className="w-4 h-4 text-[#008080]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Nom du chatbot
+                  </p>
+
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {detailsModal.bot.nom}
+                  </p>
+                </div>
+              </div>
+
+              {/* DOMAINE */}
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+                  <Activity className="w-4 h-4 text-[#008080]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Secteur d'activité
+                  </p>
+
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {detailsModal.bot.domaine}
+                  </p>
+                </div>
+              </div>
+
+              {/* RÔLE */}
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+                  <Tag className="w-4 h-4 text-[#008080]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Rôle
+                  </p>
+
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {getRoleLabel(detailsModal.bot.role)}
+                  </p>
+                </div>
+              </div>
+
+              {/* STATUT */}
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+                  {detailsModal.bot.statut === "actif" ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Clock className="w-4 h-4 text-orange-500" />
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+                    Statut
+                  </p>
+
+                  <span
+                    className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded ${
+                      detailsModal.bot.statut === "actif"
+                        ? "bg-[#D9F3F3] text-[#008080]"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        detailsModal.bot.statut === "actif"
+                          ? "bg-[#008080]"
+                          : "bg-gray-400"
+                      }`}
+                    />
+
+                    {detailsModal.bot.statut === "actif"
+                      ? "Actif"
+                      : "Brouillon"}
+                  </span>
+                </div>
+              </div>
+
+              {/* ID */}
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+                  <User className="w-4 h-4 text-[#008080]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    ID du chatbot
+                  </p>
+
+                  <p className="text-sm font-medium text-gray-900 dark:text-white break-all">
+                    {detailsModal.bot.id}
+                  </p>
+                </div>
+              </div>
+
+              {/* DATE */}
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg shrink-0">
+                  <Calendar className="w-4 h-4 text-[#008080]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Date de création
+                  </p>
+
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {detailsModal.bot.created_at
+                      ? new Date(
+                          detailsModal.bot.created_at
+                        ).toLocaleString("fr-FR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Date inconnue"}
+                  </p>
+                </div>
+              </div>
+
+              {/* STATISTIQUES */}
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+                <p className="text-xs font-semibold text-[#0B3C3C] dark:text-white mb-2">
+                  Statistiques
+                </p>
+
+                <div className="grid grid-cols-4 gap-2">
+
+                  {/* CONVERSATIONS */}
+                  <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
+                    <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                      Conversations
+                    </p>
+
+                    <p className="text-sm font-bold text-green-600">
+                      {detailsModal.bot.nombre_conversations}
+                    </p>
+                  </div>
+
+                  {/* MESSAGES */}
+                  <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-center">
+                    <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                      Messages
+                    </p>
+
+                    <p className="text-sm font-bold text-purple-600">
+                      {detailsModal.bot.nombre_messages}
+                    </p>
+                  </div>
+
+                  {/* DOCUMENTS */}
+                  <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/20 text-center">
+                    <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                      Documents
+                    </p>
+
+                    <p className="text-sm font-bold text-orange-600">
+                      {detailsModal.bot.nombre_documents}
+                    </p>
+                  </div>
+
+                  {/* FAQ */}
+                  <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-950/20 text-center">
+                    <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                      FAQ
+                    </p>
+
+                    <p className="text-sm font-bold text-pink-600">
+                      {detailsModal.bot.nombre_faq}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* FOOTER */}
+            <div className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700 shrink-0">
+
+              <button
+                onClick={closeDetailsModal}
+                className="
+                  px-3 py-1.5
+                  text-xs font-medium
+                  bg-gray-100 hover:bg-gray-200
+                  dark:bg-gray-700 dark:hover:bg-gray-600
+                  text-gray-700 dark:text-gray-300
+                  rounded-lg transition
+                "
+              >
+                Fermer
+              </button>
+
+              <button
+                onClick={() => {
+                  const bot = detailsModal.bot;
+
+                  closeDetailsModal();
+
+                  if (bot) {
+                    openEditModal(bot);
+                  }
+                }}
+                className="
+                  px-3 py-1.5
+                  text-xs font-medium
+                  bg-[#008080] hover:bg-[#005F5F]
+                  text-white rounded-lg
+                  transition
+                  flex items-center gap-1.5
+                "
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Modifier
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
       {/* =================================================
           EDIT MODAL
       ================================================= */}
 
-      {editModal.isOpen &&
-        editModal.bot && (
+{/* =====================================================
+    EDIT MODAL — VERSION INTERMÉDIAIRE
+===================================================== */}
 
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60]"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) {
-                closeEditModal();
-              }
-            }}
-          >
+{editModal.isOpen && editModal.bot && (
+  <div
+    className="
+      fixed inset-0
+      z-[60]
+      flex items-center justify-center
+      bg-black/50
+      backdrop-blur-sm
+      p-4
+    "
+    onMouseDown={(e) => {
+      if (e.target === e.currentTarget) {
+        closeEditModal();
+      }
+    }}
+  >
+    {/* MODAL */}
+    <div
+      className="
+        bg-white
+        dark:bg-[#0F172A]
+        rounded-2xl
+        shadow-2xl
+        max-w-lg
+        w-full
+        mx-auto
+        max-h-[90vh]
+        overflow-y-auto
+        border
+        border-[#D7F3F5]
+        dark:border-[#1E293B]
+        animate-in
+        fade-in
+        zoom-in
+        duration-200
+      "
+      onMouseDown={(e) => e.stopPropagation()}
+    >
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full mx-4 animate-in fade-in zoom-in duration-200">
+      {/* =================================================
+          HEADER
+      ================================================= */}
 
-              {/* HEADER */}
+      <div
+        className="
+          relative
+          px-5
+          py-4
+          bg-gradient-to-r
+          from-[#F8FCFD]
+          to-white
+          dark:from-[#0B1120]
+          dark:to-[#0F172A]
+          border-b
+          border-[#D9E3E5]
+          dark:border-[#1E293B]
+        "
+      >
 
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
 
-                <div className="flex items-center gap-3">
+          {/* TITRE */}
+          <div className="flex items-center gap-3">
 
-                  <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
+            <div
+              className="
+                p-2.5
+                rounded-xl
+                bg-gradient-to-br
+                from-[#007A80]
+                to-[#00B7C2]
+                shadow-md
+                shadow-[#007A80]/20
+              "
+            >
+              <Pencil className="w-5 h-5 text-white" />
+            </div>
 
-                    <Pencil className="w-5 h-5 text-[#008080]" />
+            <div>
 
-                  </div>
+              <h2
+                className="
+                  text-lg
+                  font-bold
+                  text-[#134E52]
+                  dark:text-white
+                "
+              >
+                Modifier le chatbot
+              </h2>
 
-                  <div>
-
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Modifier le chatbot
-                    </h2>
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Modifiez les informations du chatbot
-                    </p>
-
-                  </div>
-
-                </div>
-
-                <button
-                  onClick={closeEditModal}
-                  disabled={savingEdit}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50"
-                >
-
-                  <X className="w-5 h-5 text-gray-500" />
-
-                </button>
-
-              </div>
-
-              {/* FORM */}
-
-              <div className="p-5 space-y-5">
-
-                {/* NOM */}
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nom du chatbot
-                  </label>
-
-                  <input
-                    type="text"
-                    value={editForm.nom}
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        nom: e.target.value,
-                      })
-                    }
-                    disabled={savingEdit}
-                    className="w-full px-3 py-2.5 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] disabled:opacity-60"
-                    placeholder="Ex: Assistant commercial"
-                  />
-
-                </div>
-
-                {/* DOMAINE */}
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Secteur d'activité
-                  </label>
-
-                  <input
-                    type="text"
-                    value={editForm.domaine}
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        domaine:
-                          e.target.value,
-                      })
-                    }
-                    disabled={savingEdit}
-                    className="w-full px-3 py-2.5 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] disabled:opacity-60"
-                    placeholder="Ex: E-commerce"
-                  />
-
-                </div>
-
-                {/* STATUT */}
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Statut
-                  </label>
-
-                  <select
-                    value={
-                      editForm.statut
-                    }
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        statut:
-                          e.target.value,
-                      })
-                    }
-                    disabled={savingEdit}
-                    className="w-full px-3 py-2.5 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008080] disabled:opacity-60"
-                  >
-
-                    <option value="brouillon">
-                      Brouillon
-                    </option>
-
-                    <option value="actif">
-                      Actif
-                    </option>
-
-                  </select>
-
-                </div>
-
-              </div>
-
-              {/* FOOTER */}
-
-              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-
-                <button
-                  onClick={closeEditModal}
-                  disabled={savingEdit}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition disabled:opacity-50"
-                >
-                  Annuler
-                </button>
-
-                <button
-                  onClick={
-                    handleEditSubmit
-                  }
-                  disabled={
-                    savingEdit ||
-                    !editForm.nom.trim() ||
-                    !editForm.domaine.trim()
-                  }
-                  className="px-4 py-2 text-sm font-medium bg-[#008080] hover:bg-[#005F5F] disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition flex items-center gap-2"
-                >
-
-                  <Pencil className="w-4 h-4" />
-
-                  {savingEdit
-                    ? "Enregistrement..."
-                    : "Enregistrer"}
-
-                </button>
-
-              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Modifiez les informations du chatbot
+              </p>
 
             </div>
 
           </div>
-        )}
+
+          {/* BOUTON FERMER */}
+          <button
+            type="button"
+            onClick={closeEditModal}
+            disabled={savingEdit}
+            className="
+              p-2
+              rounded-lg
+              hover:bg-[#E8FAFB]
+              dark:hover:bg-[#1E293B]
+              transition
+              disabled:opacity-50
+            "
+          >
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
+
+        </div>
+
+      
+
+      </div>
+
+
+      {/* =================================================
+          CONTENU DU FORMULAIRE
+      ================================================= */}
+
+      <div className="px-5 py-4 space-y-4">
+
+        {/* =================================================
+            NOM DU CHATBOT
+        ================================================= */}
+
+        <div>
+
+          <label
+            htmlFor="edit-chatbot-nom"
+            className="
+              block
+              text-sm
+              font-semibold
+              text-[#134E52]
+              dark:text-gray-300
+              mb-1.5
+            "
+          >
+            Nom du chatbot
+            <span className="text-red-500 ml-1">*</span>
+          </label>
+
+          <div className="relative">
+
+            {/* ICÔNE */}
+            <div
+              className="
+                absolute
+                inset-y-0
+                left-3
+                flex
+                items-center
+                pointer-events-none
+              "
+            >
+              <Bot className="w-4 h-4 text-gray-400" />
+            </div>
+
+            {/* INPUT */}
+            <input
+              id="edit-chatbot-nom"
+              type="text"
+              value={editForm.nom}
+              onChange={(e) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  nom: e.target.value,
+                }))
+              }
+              disabled={savingEdit}
+              placeholder="Ex : Assistant commercial"
+              className="
+                w-full
+                pl-10
+                pr-3
+                py-2.5
+                bg-[#F8FCFD]
+                dark:bg-[#111827]
+                border
+                border-[#D9E3E5]
+                dark:border-[#1E293B]
+                rounded-xl
+                text-sm
+                text-[#134E52]
+                dark:text-white
+                placeholder-gray-400
+                dark:placeholder-gray-500
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#007A80]
+                focus:border-transparent
+                transition
+                disabled:opacity-60
+              "
+            />
+
+          </div>
+
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+            Donnez un nom descriptif à votre chatbot.
+          </p>
+
+        </div>
+
+
+        {/* =================================================
+            SECTEUR D'ACTIVITÉ
+        ================================================= */}
+
+        <div>
+
+          <label
+            htmlFor="edit-chatbot-domaine"
+            className="
+              block
+              text-sm
+              font-semibold
+              text-[#134E52]
+              dark:text-gray-300
+              mb-1.5
+            "
+          >
+            Secteur d'activité
+            <span className="text-red-500 ml-1">*</span>
+          </label>
+
+          <div className="relative">
+
+            {/* ICÔNE */}
+            <div
+              className="
+                absolute
+                inset-y-0
+                left-3
+                flex
+                items-center
+                pointer-events-none
+              "
+            >
+              <Globe className="w-4 h-4 text-gray-400" />
+            </div>
+
+            {/* INPUT */}
+            <input
+              id="edit-chatbot-domaine"
+              type="text"
+              value={editForm.domaine}
+              onChange={(e) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  domaine: e.target.value,
+                }))
+              }
+              disabled={savingEdit}
+              placeholder="Ex : E-commerce, Finance, Santé..."
+              className="
+                w-full
+                pl-10
+                pr-3
+                py-2.5
+                bg-[#F8FCFD]
+                dark:bg-[#111827]
+                border
+                border-[#D9E3E5]
+                dark:border-[#1E293B]
+                rounded-xl
+                text-sm
+                text-[#134E52]
+                dark:text-white
+                placeholder-gray-400
+                dark:placeholder-gray-500
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#007A80]
+                focus:border-transparent
+                transition
+                disabled:opacity-60
+              "
+            />
+
+          </div>
+
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+            Précisez le secteur d'activité de votre entreprise.
+          </p>
+
+        </div>
+
+
+        {/* =================================================
+            RÔLE
+        ================================================= */}
+
+        <div>
+
+          <label
+            htmlFor="edit-chatbot-role"
+            className="
+              block
+              text-sm
+              font-semibold
+              text-[#134E52]
+              dark:text-gray-300
+              mb-1.5
+            "
+          >
+            Rôle du chatbot
+          </label>
+
+          <div className="relative">
+
+            {/* ICÔNE */}
+            <div
+              className="
+                absolute
+                inset-y-0
+                left-3
+                flex
+                items-center
+                pointer-events-none
+                z-10
+              "
+            >
+              <User className="w-4 h-4 text-gray-400" />
+            </div>
+
+            {/* SELECT */}
+
+            <select
+              id="edit-chatbot-role"
+              value={editForm.role}
+              onChange={(e) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  role: e.target.value,
+                }))
+              }
+              disabled={savingEdit}
+              className="
+                w-full
+                pl-10
+                pr-10
+                py-2.5
+                bg-[#F8FCFD]
+                dark:bg-[#111827]
+                border
+                border-[#D9E3E5]
+                dark:border-[#1E293B]
+                rounded-xl
+                text-sm
+                text-[#134E52]
+                dark:text-white
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#007A80]
+                focus:border-transparent
+                transition
+                disabled:opacity-60
+                appearance-none
+              "
+            >
+
+              <option value="">
+                Sélectionner un rôle
+              </option>
+
+              {CHATBOT_ROLES.map((role) => (
+                <option
+                  key={role.value}
+                  value={role.value}
+                >
+                  {role.label}
+                </option>
+              ))}
+
+            </select>
+
+            {/* FLÈCHE */}
+
+            <div
+              className="
+                absolute
+                inset-y-0
+                right-3
+                flex
+                items-center
+                pointer-events-none
+              "
+            >
+              <ChevronDown className="w-4 h-4 text-gray-400" />
+            </div>
+
+          </div>
+
+          {editForm.role && (
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+
+              Rôle sélectionné :
+
+              <span className="ml-1 font-medium text-[#007A80]">
+                {getRoleLabel(editForm.role)}
+              </span>
+
+            </p>
+          )}
+
+        </div>
+
+
+        {/* =================================================
+            STATUT
+        ================================================= */}
+
+        <div>
+
+          <label
+            className="
+              block
+              text-sm
+              font-semibold
+              text-[#134E52]
+              dark:text-gray-300
+              mb-1.5
+            "
+          >
+            Statut
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+
+            {/* BROUILLON */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  statut: "brouillon",
+                }))
+              }
+              disabled={savingEdit}
+              className={`
+                flex
+                items-center
+                justify-center
+                gap-2
+                px-3
+                py-2.5
+                rounded-xl
+                border
+                transition
+                ${
+                  editForm.statut === "brouillon"
+                    ? `
+                      border-yellow-500
+                      bg-yellow-50
+                      dark:bg-yellow-950/20
+                      text-yellow-700
+                      dark:text-yellow-400
+                    `
+                    : `
+                      border-[#D9E3E5]
+                      dark:border-[#1E293B]
+                      bg-[#F8FCFD]
+                      dark:bg-[#111827]
+                      text-gray-500
+                      dark:text-gray-400
+                      hover:border-yellow-300
+                    `
+                }
+              `}
+            >
+
+              <FileText className="w-4 h-4" />
+
+              <span className="text-sm font-medium">
+                Brouillon
+              </span>
+
+            </button>
+
+
+            {/* ACTIF */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  statut: "actif",
+                }))
+              }
+              disabled={savingEdit}
+              className={`
+                flex
+                items-center
+                justify-center
+                gap-2
+                px-3
+                py-2.5
+                rounded-xl
+                border
+                transition
+                ${
+                  editForm.statut === "actif"
+                    ? `
+                      border-green-500
+                      bg-green-50
+                      dark:bg-green-950/20
+                      text-green-700
+                      dark:text-green-400
+                    `
+                    : `
+                      border-[#D9E3E5]
+                      dark:border-[#1E293B]
+                      bg-[#F8FCFD]
+                      dark:bg-[#111827]
+                      text-gray-500
+                      dark:text-gray-400
+                      hover:border-green-300
+                    `
+                }
+              `}
+            >
+
+              <CheckCircle className="w-4 h-4" />
+
+              <span className="text-sm font-medium">
+                Actif
+              </span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+     
+      </div>
+
+
+      {/* =================================================
+          FOOTER
+      ================================================= */}
+
+      <div
+        className="
+          flex
+          justify-end
+          gap-3
+          px-5
+          py-4
+          bg-[#F8FCFD]
+          dark:bg-[#0B1120]
+          border-t
+          border-[#D9E3E5]
+          dark:border-[#1E293B]
+        "
+      >
+
+        {/* ANNULER */}
+
+        <button
+          type="button"
+          onClick={closeEditModal}
+          disabled={savingEdit}
+          className="
+            px-5
+            py-2.5
+            text-sm
+            font-medium
+            text-[#134E52]
+            dark:text-gray-300
+            bg-white
+            dark:bg-[#1E293B]
+            border
+            border-[#D9E3E5]
+            dark:border-[#334155]
+            rounded-xl
+            hover:bg-[#E8FAFB]
+            dark:hover:bg-[#111827]
+            transition
+            disabled:opacity-50
+          "
+        >
+          Annuler
+        </button>
+
+
+        {/* ENREGISTRER */}
+
+        <button
+          type="button"
+          onClick={handleEditSubmit}
+          disabled={
+            savingEdit ||
+            !editForm.nom.trim() ||
+            !editForm.domaine.trim()
+          }
+          className="
+            px-5
+            py-2.5
+            bg-gradient-to-r
+            from-[#007A80]
+            to-[#00B7C2]
+            text-white
+            text-sm
+            font-medium
+            rounded-xl
+            shadow-md
+            shadow-[#007A80]/20
+            hover:shadow-[#007A80]/30
+            transition
+            disabled:opacity-50
+            disabled:cursor-not-allowed
+            flex
+            items-center
+            justify-center
+            gap-2
+          "
+        >
+
+          {savingEdit ? (
+            <>
+              <span
+                className="
+                  w-4
+                  h-4
+                  border-2
+                  border-white/30
+                  border-t-white
+                  rounded-full
+                  animate-spin
+                "
+              />
+
+              Enregistrement...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              Enregistrer
+            </>
+          )}
+
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
 
       {/* =================================================
           NOTIFICATION POPUP

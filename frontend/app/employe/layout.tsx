@@ -488,11 +488,7 @@ export default function AppLayout({
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-[#E5E7EB] dark:border-[#1E293B]"></div>
                         </div>
-                        <div className="relative flex justify-center text-xs">
-                          <span className="px-2 bg-white dark:bg-[#0F172A] text-gray-400 dark:text-gray-500">
-                            Sécurité
-                          </span>
-                        </div>
+                        
                       </div>
 
                       {/* DÉCONNEXION - AMÉLIORÉE AVEC EFFET */}
@@ -531,32 +527,7 @@ export default function AppLayout({
 
                     </div>
 
-                    {/* =================================================
-                        FOOTER DU MENU - VERSION
-                    ================================================= */}
-
-                    <div className="px-5 py-3 bg-[#F8FCFD] dark:bg-[#0B1120] border-t border-[#E5E7EB] dark:border-[#1E293B] flex items-center justify-between">
-
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
-
-                        Version 2.4.1
-
-                      </span>
-
-                      <div className="flex items-center gap-1.5">
-
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
-
-                          Sécurisé
-
-                        </span>
-
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#00B7C2] animate-pulse" />
-
-                      </div>
-
-                    </div>
-
+                   
                   </div>
                 )}
 
