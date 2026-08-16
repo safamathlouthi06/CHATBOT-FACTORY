@@ -20,6 +20,7 @@ import {
   Users,
   Clock,
   CheckCircle,
+  ChevronRight,
 } from "lucide-react";
 
 import { API_URL } from "@/services/api";
@@ -380,6 +381,198 @@ export default function EmployeDashboard() {
     },
   };
 
+
+    const displayedChatbots = chatbots.slice(0, 5);
+
+  const remainingChatbots = Math.max(
+    chatbots.length - 5,
+    0
+  );
+
+
+
+
+  function ChatbotStatRow({
+  bot,
+}: {
+  bot: ChatbotStatistic;
+}) {
+  const isActive =
+    bot.statut?.toLowerCase() === "actif";
+
+  return (
+    <div
+      className="
+        rounded-xl
+        p-4
+        bg-gray-50/50
+        dark:bg-gray-800/30
+        hover:bg-gray-100/50
+        dark:hover:bg-gray-800/50
+        transition-all
+        duration-200
+      "
+    >
+
+      {/* ================================================= */}
+      {/* HEADER */}
+      {/* ================================================= */}
+
+      <div className="flex items-center justify-between gap-4">
+
+        {/* INFORMATIONS CHATBOT */}
+
+        <div className="flex items-center gap-3 min-w-0">
+
+          <div className="min-w-0">
+
+            <div className="flex items-center gap-2">
+
+              <p className="font-medium text-[#0B3C3C] dark:text-white truncate">
+                {bot.nom}
+              </p>
+
+              <span
+                className={`
+                  text-xs
+                  px-2
+                  py-0.5
+                  rounded-full
+                  ${
+                    isActive
+                      ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                  }
+                `}
+              >
+                {bot.statut}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ACTIONS */}
+
+        <div className="flex items-center gap-1 shrink-0">
+
+          {/* BASE DE CONNAISSANCES */}
+
+          <Link
+            href={`/employe/chatbots/${bot.id}/base-de-connaissance`}
+            className="
+              p-2
+              rounded-xl
+              hover:bg-[#D9F3F3]
+              dark:hover:bg-[#123D3D]
+              text-[#008080]
+              transition-colors
+            "
+            title="Base de connaissances"
+          >
+            <Database size={15} />
+          </Link>
+
+          {/* TESTER */}
+
+          <Link
+            href={`/employe/chatbots/${bot.id}/test`}
+            className="
+              p-2
+              rounded-xl
+              hover:bg-[#D9F3F3]
+              dark:hover:bg-[#123D3D]
+              text-[#008080]
+              transition-colors
+            "
+            title="Tester"
+          >
+            <Play size={15} />
+          </Link>
+
+          {/* DÉPLOYER */}
+
+          <Link
+            href={`/employe/chatbots/${bot.id}/deployment`}
+            className="
+              p-2
+              rounded-xl
+              hover:bg-[#D9F3F3]
+              dark:hover:bg-[#123D3D]
+              text-[#008080]
+              transition-colors
+            "
+            title="Déployer"
+          >
+            <Rocket size={15} />
+          </Link>
+
+        </div>
+
+      </div>
+
+      {/* ================================================= */}
+      {/* STATISTIQUES */}
+      {/* ================================================= */}
+
+      <div className="flex flex-wrap gap-2 mt-3">
+
+        {/* CONVERSATIONS */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400">
+
+          <MessageSquare className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_conversations} conversations
+          </span>
+
+        </div>
+
+        {/* MESSAGES */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400">
+
+          <BarChart3 className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_messages} messages
+          </span>
+
+        </div>
+
+        {/* DOCUMENTS */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400">
+
+          <FileText className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_documents} documents
+          </span>
+
+        </div>
+
+        {/* FAQ */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
+
+          <HelpCircle className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_faq} FAQ
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
   /* ======================================================= */
   /* RENDER */
   /* ======================================================= */
@@ -579,99 +772,101 @@ export default function EmployeDashboard() {
         {/* MES CHATBOTS */}
         {/* ================================================= */}
 
-        <div className="bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 border border-[#B8E0E0]/50 dark:border-gray-700/50 rounded-3xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-lg text-[#0B3C3C] dark:text-white flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[#008080]" />
-              Mes chatbots
-            </h2>
-            <Link
-              href="/employe/chatbots"
-              className="text-sm text-[#008080] hover:text-[#005F5F] font-medium flex items-center gap-1 transition-colors"
-            >
-              Voir tous
-              <span className="text-lg">→</span>
-            </Link>
+      <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
+
+        {/* HEADER */}
+
+        <div className="flex items-start justify-between gap-4 mb-5">
+
+          <div className="flex items-start gap-3">
+
+            {/* 
+              ICÔNE SANS CADRE
+              Aucun bg, aucun border, aucun rounded container
+            */}
+
+            <Bot className="w-5 h-5 text-blue-500 mt-1 shrink-0" />
+
+            <div>
+
+              <div className="flex items-center gap-2">
+
+                <h2 className="font-semibold text-[#0B3C3C] dark:text-white text-lg">
+                  Vos chatbots
+                </h2>
+
+                <span className="text-xs bg-[#D9F3F3] dark:bg-[#123D3D] text-[#008080] px-2 py-0.5 rounded-full">
+                  {chatbots.length}
+                </span>
+
+              </div>
+
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Consultez les statistiques de vos chatbots
+              </p>
+
+              {remainingChatbots > 0 && (
+                <p className="text-xs text-[#2F6F6F] dark:text-gray-400 italic mt-1">
+                  Affichage des 5 premiers chatbots.{" "}
+                  {remainingChatbots} autres disponibles.
+                </p>
+              )}
+
+            </div>
+
           </div>
 
-          {chatbots.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-[#D9F3F3] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Bot className="w-8 h-8 text-[#008080]" />
-              </div>
-              <p className="text-[#2F6F6F] text-sm font-medium mb-3">Aucun chatbot encore</p>
-              <Link
-                href="/employe/chatbots/create"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-[#008080] to-[#00A8A8] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:shadow-lg transition-all duration-300"
-              >
-                <Plus className="w-4 h-4" />
-                Créer mon premier chatbot
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {chatbots.slice(0, 5).map((bot) => (
-                <div
-                  key={bot.id}
-                  className="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 border border-[#B8E0E0]/50 dark:border-gray-700/50 rounded-2xl hover:bg-[#F7FFFF] dark:hover:bg-gray-800/80 transition-all duration-300 group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-[#D9F3F3] dark:bg-[#123D3D] flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Bot className="w-5 h-5 text-[#008080]" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-[#0B3C3C] dark:text-white">
-                        {bot.nom}
-                      </p>
-                      <p className="text-xs text-[#2F6F6F] dark:text-gray-400">
-                        {bot.domaine || "Assistant IA"}
-                      </p>
-                    </div>
-                  </div>
+          {/* VOIR TOUS */}
 
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`
-                        text-xs px-3 py-1 rounded-full font-medium
-                        ${
-                          bot.statut === "actif"
-                            ? "bg-[#D9F3F3] text-[#008080]"
-                            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-                        }
-                      `}
-                    >
-                      {bot.statut}
-                    </span>
+          <Link
+            href="/dashboard/chatbots"
+            className="text-sm text-[#008080] hover:underline flex items-center gap-1 shrink-0"
+          >
+            Voir tous
 
-                    <div className="flex gap-1">
-                      <Link
-                        href={`/employe/chatbots/${bot.id}/base-de-connaissance`}
-                        className="p-2 rounded-xl hover:bg-[#D9F3F3] text-[#008080] transition-colors"
-                        title="Base de connaissances"
-                      >
-                        <Database size={15} />
-                      </Link>
-                      <Link
-                        href={`/employe/chatbots/${bot.id}/test`}
-                        className="p-2 rounded-xl hover:bg-[#D9F3F3] text-[#008080] transition-colors"
-                        title="Tester"
-                      >
-                        <Play size={15} />
-                      </Link>
-                      <Link
-                        href={`/employe/chatbots/${bot.id}/deployment`}
-                        className="p-2 rounded-xl hover:bg-[#D9F3F3] text-[#008080] transition-colors"
-                        title="Déployer"
-                      >
-                        <Rocket size={15} />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+
         </div>
+
+        {/* LISTE DES CHATBOTS */}
+
+        {chatbots.length === 0 ? (
+
+          <div className="text-center py-8">
+
+            <Bot className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Aucun chatbot pour le moment.
+            </p>
+
+            <Link
+              href="/dashboard/chatbots/create"
+              className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-[#008080] text-white text-sm hover:bg-[#006666] transition"
+            >
+              <Plus className="w-4 h-4" />
+              Créer un chatbot
+            </Link>
+
+          </div>
+
+        ) : (
+
+          <div className="space-y-3">
+
+            {displayedChatbots.map((bot) => (
+              <ChatbotStatRow
+                key={bot.id}
+                bot={bot}
+              />
+            ))}
+
+          </div>
+
+        )}
+
+      </div>
       </main>
     </div>
   );
@@ -797,3 +992,5 @@ function ActionCard({
     </Link>
   );
 }
+
+
