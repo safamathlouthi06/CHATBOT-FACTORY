@@ -316,7 +316,7 @@ export default function ProfilePage() {
       )}
 
       <div className="max-w-5xl mx-auto">
-        {/* Header avec bouton retour */}
+        {/* Header  */}
         <div className="flex items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black text-[#0B3C3C] dark:text-white tracking-tight">Mon profil</h1>
