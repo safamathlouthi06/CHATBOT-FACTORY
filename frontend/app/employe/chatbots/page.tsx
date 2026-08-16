@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+
 import {
   Search,
   Plus,
@@ -23,8 +24,17 @@ import {
   Rocket,
   Check,
   Info,
+  FileText,
+  HelpCircle,
+  BarChart3,
+  MessageSquare,
 } from "lucide-react";
+
 import { API_URL } from "@/services/api";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type Chatbot = {
   id: string;
@@ -33,6 +43,35 @@ type Chatbot = {
   statut: string;
   entreprise_id: string;
   created_at: string;
+
+  // Statistiques
+  nombre_conversations: number;
+  nombre_messages: number;
+  nombre_documents: number;
+  nombre_faq: number;
+};
+
+type ChatbotStat = {
+  id: string;
+  nom: string;
+  statut: string;
+  employe_id: string | null;
+  nombre_conversations: number;
+  nombre_messages: number;
+  nombre_documents: number;
+  nombre_faq: number;
+};
+
+type Overview = {
+  totals: {
+    nombre_chatbots: number;
+    nombre_conversations: number;
+    nombre_messages: number;
+    nombre_documents: number;
+    nombre_faq: number;
+  };
+
+  chatbots: ChatbotStat[];
 };
 
 type Notification = {
@@ -42,15 +81,32 @@ type Notification = {
   message: string;
 };
 
-export default function ChatbotListPage() {
-  const [search, setSearch] = useState("");
-  const [chatbots, setChatbots] = useState<Chatbot[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+/* =========================================================
+   COMPONENT
+========================================================= */
 
-  // =====================================================
-  // DELETE MODAL
-  // =====================================================
+export default function ChatbotListPage() {
+  /* =======================================================
+     STATES
+  ======================================================= */
+
+  const [search, setSearch] = useState("");
+
+  const [chatbots, setChatbots] = useState<Chatbot[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  const [statsData, setStatsData] =
+    useState<Overview | null>(null);
+
+  const [openMenuId, setOpenMenuId] =
+    useState<string | null>(null);
+
+  /* =======================================================
+     DELETE MODAL
+  ======================================================= */
 
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -62,9 +118,9 @@ export default function ChatbotListPage() {
     botName: "",
   });
 
-  // =====================================================
-  // DETAILS MODAL
-  // =====================================================
+  /* =======================================================
+     DETAILS MODAL
+  ======================================================= */
 
   const [detailsModal, setDetailsModal] = useState<{
     isOpen: boolean;
@@ -74,9 +130,9 @@ export default function ChatbotListPage() {
     bot: null,
   });
 
-  // =====================================================
-  // EDIT MODAL
-  // =====================================================
+  /* =======================================================
+     EDIT MODAL
+  ======================================================= */
 
   const [editModal, setEditModal] = useState<{
     isOpen: boolean;
@@ -94,24 +150,29 @@ export default function ChatbotListPage() {
 
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // =====================================================
-  // NOTIFICATION POPUP
-  // =====================================================
+  /* =======================================================
+     NOTIFICATION
+  ======================================================= */
 
-  const [notification, setNotification] = useState<Notification>({
-    isOpen: false,
-    type: "info",
-    title: "",
-    message: "",
-  });
+  const [notification, setNotification] =
+    useState<Notification>({
+      isOpen: false,
+      type: "info",
+      title: "",
+      message: "",
+    });
+
+  /* =======================================================
+     MENU REFS
+  ======================================================= */
 
   const menuRefs = useRef<{
     [key: string]: HTMLDivElement | null;
   }>({});
 
-  // =====================================================
-  // SHOW NOTIFICATION
-  // =====================================================
+  /* =======================================================
+     NOTIFICATION FUNCTIONS
+  ======================================================= */
 
   const showNotification = (
     type: "success" | "error" | "info",
@@ -133,34 +194,132 @@ export default function ChatbotListPage() {
     }));
   };
 
-  // =====================================================
-  // FETCH CHATBOTS
-  // =====================================================
+  /* =======================================================
+     FETCH CHATBOTS + STATISTIQUES
+  ======================================================= */
 
   useEffect(() => {
-    const fetchChatbots = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+        setStatsLoading(true);
 
         const token = localStorage.getItem("token");
 
-        const res = await fetch(`${API_URL}/chatbot/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        if (!token) {
+          showNotification(
+            "error",
+            "Session expirée",
+            "Veuillez vous reconnecter."
+          );
 
-        const data = await res.json();
-        
+          return;
+        }
 
+        /* =================================================
+           1. RÉCUPÉRER LES CHATBOTS
+        ================================================= */
 
+        const chatbotResponse = await fetch(
+          `${API_URL}/chatbot/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        if (data.data && Array.isArray(data.data)) {
-          setChatbots(data.data);
-        } else if (Array.isArray(data)) {
-          setChatbots(data);
+        const chatbotData =
+          await chatbotResponse.json().catch(() => null);
+
+        if (!chatbotResponse.ok) {
+          throw new Error(
+            chatbotData?.detail ||
+              chatbotData?.message ||
+              "Impossible de récupérer les chatbots."
+          );
+        }
+
+        let bots: Chatbot[] = [];
+
+        if (
+          chatbotData?.data &&
+          Array.isArray(chatbotData.data)
+        ) {
+          bots = chatbotData.data;
+        } else if (Array.isArray(chatbotData)) {
+          bots = chatbotData;
+        }
+
+        /* =================================================
+           2. RÉCUPÉRER LES STATISTIQUES
+        ================================================= */
+
+        const statsResponse = await fetch(
+          `${API_URL}/statistiques/overview`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (statsResponse.ok) {
+          const statsJson: Overview =
+            await statsResponse.json();
+
+          setStatsData(statsJson);
+
+          /* ===============================================
+             3. FUSION CHATBOTS + STATISTIQUES
+          =============================================== */
+
+          const botsWithStats = bots.map((bot) => {
+            const stat = statsJson.chatbots?.find(
+              (item) => item.id === bot.id
+            );
+
+            return {
+              ...bot,
+
+              nombre_conversations:
+                stat?.nombre_conversations ?? 0,
+
+              nombre_messages:
+                stat?.nombre_messages ?? 0,
+
+              nombre_documents:
+                stat?.nombre_documents ?? 0,
+
+              nombre_faq:
+                stat?.nombre_faq ?? 0,
+            };
+          });
+
+          setChatbots(botsWithStats);
         } else {
-          setChatbots([]);
+          /* ===============================================
+             SI LES STATISTIQUES NE SONT PAS DISPONIBLES
+          =============================================== */
+
+          console.warn(
+            "Impossible de récupérer les statistiques."
+          );
+
+          setChatbots(
+            bots.map((bot) => ({
+              ...bot,
+
+              nombre_conversations: 0,
+              nombre_messages: 0,
+              nombre_documents: 0,
+              nombre_faq: 0,
+            }))
+          );
         }
       } catch (error) {
         console.error("Erreur API:", error);
@@ -170,27 +329,37 @@ export default function ChatbotListPage() {
         showNotification(
           "error",
           "Erreur",
-          "Impossible de récupérer la liste des chatbots."
+          error instanceof Error
+            ? error.message
+            : "Impossible de récupérer les données."
         );
       } finally {
         setLoading(false);
+        setStatsLoading(false);
       }
     };
 
-    fetchChatbots();
+    fetchData();
   }, []);
 
-  // =====================================================
-  // CLICK OUTSIDE MENU
-  // =====================================================
+  /* =======================================================
+     CLICK OUTSIDE MENU
+  ======================================================= */
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const isOutside = Object.values(menuRefs.current).every(
-        (ref) => ref && !ref.contains(event.target as Node)
+    const handleClickOutside = (
+      event: MouseEvent
+    ) => {
+      const target = event.target as Node;
+
+      const isInsideMenu = Object.values(
+        menuRefs.current
+      ).some(
+        (ref) =>
+          ref && ref.contains(target)
       );
 
-      if (isOutside) {
+      if (!isInsideMenu) {
         setOpenMenuId(null);
       }
     };
@@ -208,9 +377,9 @@ export default function ChatbotListPage() {
     };
   }, []);
 
-  // =====================================================
-  // SEARCH
-  // =====================================================
+  /* =======================================================
+     SEARCH
+  ======================================================= */
 
   const filtered = chatbots.filter((c) =>
     (c.nom || "")
@@ -218,9 +387,9 @@ export default function ChatbotListPage() {
       .includes(search.toLowerCase())
   );
 
-  // =====================================================
-  // DELETE
-  // =====================================================
+  /* =======================================================
+     DELETE
+  ======================================================= */
 
   const openDeleteModal = (
     botId: string,
@@ -247,7 +416,8 @@ export default function ChatbotListPage() {
     if (!deleteModal.botId) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       const res = await fetch(
         `${API_URL}/chatbot/${deleteModal.botId}`,
@@ -259,9 +429,10 @@ export default function ChatbotListPage() {
         }
       );
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
+      const data =
+        await res.json().catch(() => null);
 
+      if (!res.ok) {
         throw new Error(
           data?.detail ||
             data?.message ||
@@ -271,11 +442,13 @@ export default function ChatbotListPage() {
 
       setChatbots((prev) =>
         prev.filter(
-          (bot) => bot.id !== deleteModal.botId
+          (bot) =>
+            bot.id !== deleteModal.botId
         )
       );
 
-      const deletedName = deleteModal.botName;
+      const deletedName =
+        deleteModal.botName;
 
       closeDeleteModal();
 
@@ -302,11 +475,13 @@ export default function ChatbotListPage() {
     }
   };
 
-  // =====================================================
-  // DETAILS
-  // =====================================================
+  /* =======================================================
+     DETAILS
+  ======================================================= */
 
-  const openDetailsModal = (bot: Chatbot) => {
+  const openDetailsModal = (
+    bot: Chatbot
+  ) => {
     setOpenMenuId(null);
 
     setDetailsModal({
@@ -322,17 +497,20 @@ export default function ChatbotListPage() {
     });
   };
 
-  // =====================================================
-  // EDIT
-  // =====================================================
+  /* =======================================================
+     EDIT
+  ======================================================= */
 
-  const openEditModal = (bot: Chatbot) => {
+  const openEditModal = (
+    bot: Chatbot
+  ) => {
     setOpenMenuId(null);
 
     setEditForm({
       nom: bot.nom || "",
       domaine: bot.domaine || "",
-      statut: bot.statut || "brouillon",
+      statut:
+        bot.statut || "brouillon",
     });
 
     setEditModal({
@@ -350,16 +528,14 @@ export default function ChatbotListPage() {
     });
   };
 
-  // =====================================================
-  // SAVE EDIT
-  // =====================================================
+  /* =======================================================
+     SAVE EDIT
+  ======================================================= */
 
   const handleEditSubmit = async () => {
     if (!editModal.bot) return;
 
-    // -------------------------
-    // VALIDATION NOM
-    // -------------------------
+    /* VALIDATION NOM */
 
     if (!editForm.nom.trim()) {
       showNotification(
@@ -371,9 +547,7 @@ export default function ChatbotListPage() {
       return;
     }
 
-    // -------------------------
-    // VALIDATION DOMAINE
-    // -------------------------
+    /* VALIDATION DOMAINE */
 
     if (!editForm.domaine.trim()) {
       showNotification(
@@ -388,27 +562,40 @@ export default function ChatbotListPage() {
     try {
       setSavingEdit(true);
 
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       const res = await fetch(
         `${API_URL}/chatbot/${editModal.bot.id}`,
         {
           method: "PUT",
+
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
+
           body: JSON.stringify({
             nom: editForm.nom.trim(),
-            domaine: editForm.domaine.trim(),
-            statut: editForm.statut,
+
+            domaine:
+              editForm.domaine.trim(),
+
+            statut:
+              editForm.statut,
+
             entreprise_id:
-              editModal.bot.entreprise_id,
+              editModal.bot
+                .entreprise_id,
           }),
         }
       );
 
-      const data = await res.json().catch(() => null);
+      const data =
+        await res.json().catch(() => null);
 
       if (!res.ok) {
         throw new Error(
@@ -425,21 +612,31 @@ export default function ChatbotListPage() {
 
       setChatbots((prev) =>
         prev.map((bot) => {
-          if (bot.id !== editModal.bot?.id) {
+          if (
+            bot.id !==
+            editModal.bot?.id
+          ) {
             return bot;
           }
 
           return {
             ...bot,
             ...updatedBot,
-            nom: editForm.nom.trim(),
-            domaine: editForm.domaine.trim(),
-            statut: editForm.statut,
+
+            nom:
+              editForm.nom.trim(),
+
+            domaine:
+              editForm.domaine.trim(),
+
+            statut:
+              editForm.statut,
           };
         })
       );
 
-      const chatbotName = editForm.nom.trim();
+      const chatbotName =
+        editForm.nom.trim();
 
       setEditModal({
         isOpen: false,
@@ -469,47 +666,73 @@ export default function ChatbotListPage() {
     }
   };
 
-  // =====================================================
-  // DUPLICATE
-  // =====================================================
+  /* =======================================================
+     DUPLICATE
+  ======================================================= */
 
-  const handleDuplicate = async (bot: Chatbot) => {
+  const handleDuplicate = async (
+    bot: Chatbot
+  ) => {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
-      const res = await fetch(`${API_URL}/chatbot/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nom: `${bot.nom} (copie)`,
-          domaine: bot.domaine,
-          statut: "brouillon",
-          entreprise_id: bot.entreprise_id,
-        }),
-      });
+      const res = await fetch(
+        `${API_URL}/chatbot/`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            nom: `${bot.nom} (copie)`,
+
+            domaine:
+              bot.domaine,
+
+            statut:
+              "brouillon",
+
+            entreprise_id:
+              bot.entreprise_id,
+          }),
+        }
+      );
+
+      const data =
+        await res.json().catch(() => null);
 
       if (!res.ok) {
         throw new Error(
-          "Impossible de dupliquer le chatbot."
+          data?.detail ||
+            data?.message ||
+            "Impossible de dupliquer le chatbot."
         );
       }
 
-      const newBot = await res.json();
+      const newBot =
+        data?.data?.[0] ||
+        data?.data ||
+        data;
 
-      if (newBot.data && newBot.data[0]) {
-        setChatbots((prev) => [
-          ...prev,
-          newBot.data[0],
-        ]);
-      } else {
-        setChatbots((prev) => [
-          ...prev,
-          newBot,
-        ]);
-      }
+      setChatbots((prev) => [
+        ...prev,
+
+        {
+          ...newBot,
+
+          nombre_conversations: 0,
+          nombre_messages: 0,
+          nombre_documents: 0,
+          nombre_faq: 0,
+        },
+      ]);
 
       showNotification(
         "success",
@@ -534,9 +757,9 @@ export default function ChatbotListPage() {
     setOpenMenuId(null);
   };
 
-  // =====================================================
-  // RENDER
-  // =====================================================
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
@@ -548,6 +771,7 @@ export default function ChatbotListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
         <div>
+
           <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">
             Mes Chatbots
           </h1>
@@ -555,6 +779,7 @@ export default function ChatbotListPage() {
           <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mt-1">
             Gérez vos assistants conversationnels
           </p>
+
         </div>
 
         <Link
@@ -587,6 +812,12 @@ export default function ChatbotListPage() {
       </div>
 
       {/* =================================================
+          STATISTIQUES GLOBALES
+      ================================================= */}
+
+     
+
+      {/* =================================================
           LOADING
       ================================================= */}
 
@@ -601,13 +832,13 @@ export default function ChatbotListPage() {
 
               <div className="flex items-start gap-3">
 
-                <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-gray-700" />
+                <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-gray-700 animate-pulse" />
 
                 <div className="flex-1">
 
-                  <div className="h-4 w-32 bg-[#D9F3F3] dark:bg-gray-700 rounded mb-2" />
+                  <div className="h-4 w-32 bg-[#D9F3F3] dark:bg-gray-700 rounded mb-2 animate-pulse" />
 
-                  <div className="h-3 w-24 bg-[#D9F3F3] dark:bg-gray-700 rounded" />
+                  <div className="h-3 w-24 bg-[#D9F3F3] dark:bg-gray-700 rounded animate-pulse" />
 
                 </div>
 
@@ -623,219 +854,333 @@ export default function ChatbotListPage() {
           EMPTY
       ================================================= */}
 
-      {!loading && chatbots.length === 0 && (
-        <div className="text-center py-12 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
+      {!loading &&
+        chatbots.length === 0 && (
+          <div className="text-center py-12 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
 
-          <Bot className="w-12 h-12 mx-auto text-[#00A8A8] mb-3" />
+            <Bot className="w-12 h-12 mx-auto text-[#00A8A8] mb-3" />
 
-          <h2 className="text-lg font-semibold text-[#0B3C3C] dark:text-white mb-1">
-            Aucun chatbot
-          </h2>
+            <h2 className="text-lg font-semibold text-[#0B3C3C] dark:text-white mb-1">
+              Aucun chatbot
+            </h2>
 
-          <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mb-4">
-            Créez votre premier assistant IA
-          </p>
+            <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mb-4">
+              Créez votre premier assistant IA
+            </p>
 
-          <Link
-            href="/employe/chatbots/create"
-            className="inline-flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-4 py-2 rounded-lg text-sm transition"
-          >
-            <Plus className="w-4 h-4" />
-            Créer un chatbot
-          </Link>
+            <Link
+              href="/employe/chatbots/create"
+              className="inline-flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-4 py-2 rounded-lg text-sm transition"
+            >
+              <Plus className="w-4 h-4" />
+              Créer un chatbot
+            </Link>
 
-        </div>
-      )}
+          </div>
+        )}
 
       {/* =================================================
           CHATBOT LIST
       ================================================= */}
 
-      {!loading && filtered.length > 0 && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {!loading &&
+        filtered.length > 0 && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-          {filtered.map((bot) => (
-            <div
-              key={bot.id}
-              className="border border-[#B8E0E0] dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900 hover:shadow-md transition relative"
-            >
+            {filtered.map((bot) => (
+              <div
+                key={bot.id}
+                className="border border-[#B8E0E0] dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900 hover:shadow-md transition relative"
+              >
 
-              {/* CARD HEADER */}
+                {/* CARD HEADER */}
 
-              <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between">
 
-                <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3">
 
-                  <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-emerald-900/30 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-emerald-900/30 flex items-center justify-center">
 
-                    <Bot className="w-5 h-5 text-[#008080]" />
-
-                  </div>
-
-                  <div>
-
-                    <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
-                      {bot.nom}
-                    </h2>
-
-                    <p className="text-xs text-[#2F6F6F] dark:text-gray-400">
-                      {bot.domaine}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* MENU */}
-
-                <div
-                  className="relative"
-                  ref={(el) => {
-                    menuRefs.current[bot.id] =
-                      el;
-                  }}
-                >
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-
-                      setOpenMenuId(
-                        openMenuId === bot.id
-                          ? null
-                          : bot.id
-                      );
-                    }}
-                    className="p-1 rounded hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
-                  >
-                    <MoreVertical className="w-4 h-4 text-[#00A8A8]" />
-                  </button>
-
-                  {/* DROPDOWN */}
-
-                  {openMenuId === bot.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10 py-1">
-
-                      {/* EDIT */}
-
-                      <button
-                        onClick={() =>
-                          openEditModal(bot)
-                        }
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                      >
-                        <Pencil className="w-4 h-4" />
-                        Éditer
-                      </button>
-
-                      {/* DETAILS */}
-
-                      <button
-                        onClick={() =>
-                          openDetailsModal(bot)
-                        }
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Voir les détails
-                      </button>
-
-                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
-
-                      {/* DELETE */}
-
-                      <button
-                        onClick={() =>
-                          openDeleteModal(
-                            bot.id,
-                            bot.nom
-                          )
-                        }
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Supprimer
-                      </button>
+                      <Bot className="w-5 h-5 text-[#008080]" />
 
                     </div>
-                  )}
+
+                    <div>
+
+                      <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
+                        {bot.nom}
+                      </h2>
+
+                      <p className="text-xs text-[#2F6F6F] dark:text-gray-400">
+                        {bot.domaine}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  {/* MENU */}
+
+                  <div
+                    className="relative"
+                    ref={(el) => {
+                      menuRefs.current[bot.id] =
+                        el;
+                    }}
+                  >
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        setOpenMenuId(
+                          openMenuId === bot.id
+                            ? null
+                            : bot.id
+                        );
+                      }}
+                      className="p-1 rounded hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
+                    >
+
+                      <MoreVertical className="w-4 h-4 text-[#00A8A8]" />
+
+                    </button>
+
+                    {/* DROPDOWN */}
+
+                    {openMenuId === bot.id && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 py-1">
+
+                        {/* EDIT */}
+
+                        <button
+                          onClick={() =>
+                            openEditModal(bot)
+                          }
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                        >
+
+                          <Pencil className="w-4 h-4" />
+
+                          Éditer
+
+                        </button>
+
+                        {/* DETAILS */}
+
+                        <button
+                          onClick={() =>
+                            openDetailsModal(bot)
+                          }
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                        >
+
+                          <Eye className="w-4 h-4" />
+
+                          Voir les détails
+
+                        </button>
+
+                        <hr className="my-1 border-gray-200 dark:border-gray-700" />
+
+                        {/* DELETE */}
+
+                        <button
+                          onClick={() =>
+                            openDeleteModal(
+                              bot.id,
+                              bot.nom
+                            )
+                          }
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                        >
+
+                          <Trash2 className="w-4 h-4" />
+
+                          Supprimer
+
+                        </button>
+
+                      </div>
+                    )}
+
+                  </div>
+
+                </div>
+
+                {/* STATUS */}
+
+                <div className="mt-3 mb-4">
+
+                  <span
+                    className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${
+                      bot.statut === "actif"
+                        ? "bg-[#D9F3F3] text-[#008080] dark:bg-emerald-900/30 dark:text-emerald-400"
+                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                    }`}
+                  >
+
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        bot.statut === "actif"
+                          ? "bg-[#008080]"
+                          : "bg-gray-400"
+                      }`}
+                    />
+
+                    {bot.statut === "actif"
+                      ? "Actif"
+                      : "Brouillon"}
+
+                  </span>
+
+                </div>
+
+                {/* =================================================
+                    STATISTIQUES DU CHATBOT
+                ================================================= */}
+
+                <div className="flex flex-wrap gap-2 mt-3 mb-4">
+
+                  {/* CONVERSATIONS */}
+
+                  <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400">
+
+                    <MessageSquare className="w-3.5 h-3.5" />
+
+                    <span>
+                      {bot.nombre_conversations ?? 0}{" "}
+                      conversation
+                      {(bot.nombre_conversations ?? 0) !==
+                      1
+                        ? "s"
+                        : ""}
+                    </span>
+
+                  </div>
+
+                  {/* MESSAGES */}
+
+                  <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400">
+
+                    <BarChart3 className="w-3.5 h-3.5" />
+
+                    <span>
+                      {bot.nombre_messages ?? 0}{" "}
+                      message
+                      {(bot.nombre_messages ?? 0) !==
+                      1
+                        ? "s"
+                        : ""}
+                    </span>
+
+                  </div>
+
+                  {/* DOCUMENTS */}
+
+                  <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400">
+
+                    <FileText className="w-3.5 h-3.5" />
+
+                    <span>
+                      {bot.nombre_documents ?? 0}{" "}
+                      document
+                      {(bot.nombre_documents ?? 0) !==
+                      1
+                        ? "s"
+                        : ""}
+                    </span>
+
+                  </div>
+
+                  {/* FAQ */}
+
+                  <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
+
+                    <HelpCircle className="w-3.5 h-3.5" />
+
+                    <span>
+                      {bot.nombre_faq ?? 0} FAQ
+                    </span>
+
+                  </div>
+
+                </div>
+
+                {/* =================================================
+                    ACTIONS
+                ================================================= */}
+
+                <div className="flex gap-2">
+
+                  <Link
+                    href={`/employe/chatbots/${bot.id}/base-de-connaissance`}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-[#B8E0E0] dark:border-gray-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
+                  >
+
+                    <Database className="w-3 h-3 text-[#008080]" />
+
+                    <span className="text-[#0B3C3C] dark:text-gray-300">
+                      Base
+                    </span>
+
+                  </Link>
+
+                  <Link
+                    href={`/employe/chatbots/${bot.id}/test`}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-[#B8E0E0] dark:border-gray-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
+                  >
+
+                    <Play className="w-3 h-3 text-[#008080]" />
+
+                    <span className="text-[#0B3C3C] dark:text-gray-300">
+                      Tester
+                    </span>
+
+                  </Link>
+
+                  <Link
+                    href={`/employe/chatbots/${bot.id}/deployment`}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-[#008080] text-white rounded-lg hover:bg-[#005F5F] transition"
+                  >
+
+                    <Rocket className="w-3 h-3 text-white" />
+
+                    <span className="text-white">
+                      Déployer
+                    </span>
+
+                  </Link>
 
                 </div>
 
               </div>
+            ))}
 
-              {/* STATUS */}
+          </div>
+        )}
 
-              <div className="mt-3 mb-4">
+      {/* =================================================
+          SEARCH EMPTY
+      ================================================= */}
 
-                <span
-                  className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${
-                    bot.statut === "actif"
-                      ? "bg-[#D9F3F3] text-[#008080] dark:bg-emerald-900/30 dark:text-emerald-400"
-                      : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                  }`}
-                >
+      {!loading &&
+        chatbots.length > 0 &&
+        filtered.length === 0 && (
+          <div className="text-center py-12 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
 
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      bot.statut === "actif"
-                        ? "bg-[#008080]"
-                        : "bg-gray-400"
-                    }`}
-                  />
+            <Search className="w-12 h-12 mx-auto text-[#00A8A8] mb-3" />
 
-                  {bot.statut === "actif"
-                    ? "Actif"
-                    : "Brouillon"}
+            <h2 className="text-lg font-semibold text-[#0B3C3C] dark:text-white mb-1">
+              Aucun résultat
+            </h2>
 
-                </span>
+            <p className="text-sm text-[#2F6F6F] dark:text-gray-400">
+              Aucun chatbot ne correspond à votre recherche.
+            </p>
 
-              </div>
-
-              {/* ACTIONS */}
-
-              <div className="flex gap-2">
-
-                <Link
-                  href={`/employe/chatbots/${bot.id}/base-de-connaissance`}
-                  className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-[#B8E0E0] dark:border-gray-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
-                >
-                  <Database className="w-3 h-3 text-[#008080]" />
-
-                  <span className="text-[#0B3C3C] dark:text-gray-300">
-                    Base
-                  </span>
-                </Link>
-
-                <Link
-                  href={`/employe/chatbots/${bot.id}/test`}
-                  className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-[#B8E0E0] dark:border-gray-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
-                >
-                  <Play className="w-3 h-3 text-[#008080]" />
-
-                  <span className="text-[#0B3C3C] dark:text-gray-300">
-                    Tester
-                  </span>
-                </Link>
-
-                <Link
-                  href={`/employe/chatbots/${bot.id}/deployment`}
-                  className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-[#008080] text-white rounded-lg hover:bg-[#005F5F] transition"
-                >
-                  <Rocket className="w-3 h-3 text-white" />
-
-                  <span className="text-white">
-                    Déployer
-                  </span>
-                </Link>
-
-              </div>
-
-            </div>
-          ))}
-
-        </div>
-      )}
+          </div>
+        )}
 
       {/* =================================================
           DELETE MODAL
@@ -846,14 +1191,14 @@ export default function ChatbotListPage() {
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
 
-            {/* HEADER */}
-
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
 
               <div className="flex items-center gap-2">
 
                 <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+
                   <AlertTriangle className="w-5 h-5 text-red-500" />
+
                 </div>
 
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -866,12 +1211,12 @@ export default function ChatbotListPage() {
                 onClick={closeDeleteModal}
                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
               >
+
                 <X className="w-5 h-5 text-gray-500" />
+
               </button>
 
             </div>
-
-            {/* BODY */}
 
             <div className="p-5">
 
@@ -881,21 +1226,24 @@ export default function ChatbotListPage() {
                 le chatbot{" "}
 
                 <span className="font-semibold text-[#008080]">
+
                   "{deleteModal.botName}"
+
                 </span>
+
                 {" ?"}
 
               </p>
 
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+
                 Cette action est irréversible.
                 Toutes les données associées seront
                 perdues.
+
               </p>
 
             </div>
-
-            {/* FOOTER */}
 
             <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
 
@@ -934,8 +1282,6 @@ export default function ChatbotListPage() {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full mx-4 animate-in fade-in zoom-in duration-200">
 
-              {/* HEADER */}
-
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
 
                 <div className="flex items-center gap-2">
@@ -954,12 +1300,12 @@ export default function ChatbotListPage() {
                   }
                   className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
+
                   <X className="w-5 h-5 text-gray-500" />
+
                 </button>
 
               </div>
-
-              {/* BODY */}
 
               <div className="p-5 space-y-4">
 
@@ -968,7 +1314,9 @@ export default function ChatbotListPage() {
                 <div className="flex items-start gap-3">
 
                   <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
+
                     <Tag className="w-4 h-4 text-[#008080]" />
+
                   </div>
 
                   <div className="flex-1">
@@ -990,7 +1338,9 @@ export default function ChatbotListPage() {
                 <div className="flex items-start gap-3">
 
                   <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
+
                     <Activity className="w-4 h-4 text-[#008080]" />
+
                   </div>
 
                   <div className="flex-1">
@@ -1013,8 +1363,8 @@ export default function ChatbotListPage() {
 
                   <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
 
-                    {detailsModal.bot
-                      .statut === "actif" ? (
+                    {detailsModal.bot.statut ===
+                    "actif" ? (
                       <CheckCircle className="w-4 h-4 text-green-500" />
                     ) : (
                       <Clock className="w-4 h-4 text-orange-500" />
@@ -1039,15 +1389,15 @@ export default function ChatbotListPage() {
 
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          detailsModal.bot
-                            .statut === "actif"
+                          detailsModal.bot.statut ===
+                          "actif"
                             ? "bg-[#008080]"
                             : "bg-gray-400"
                         }`}
                       />
 
-                      {detailsModal.bot
-                        .statut === "actif"
+                      {detailsModal.bot.statut ===
+                      "actif"
                         ? "Actif"
                         : "Brouillon"}
 
@@ -1062,7 +1412,9 @@ export default function ChatbotListPage() {
                 <div className="flex items-start gap-3">
 
                   <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
+
                     <User className="w-4 h-4 text-[#008080]" />
+
                   </div>
 
                   <div className="flex-1">
@@ -1071,7 +1423,7 @@ export default function ChatbotListPage() {
                       ID du chatbot
                     </p>
 
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-gray-900 dark:text-white break-all">
                       {detailsModal.bot.id}
                     </p>
 
@@ -1084,7 +1436,9 @@ export default function ChatbotListPage() {
                 <div className="flex items-start gap-3">
 
                   <div className="p-2 bg-[#D9F3F3] dark:bg-emerald-900/30 rounded-lg">
+
                     <Calendar className="w-4 h-4 text-[#008080]" />
+
                   </div>
 
                   <div className="flex-1">
@@ -1094,8 +1448,11 @@ export default function ChatbotListPage() {
                     </p>
 
                     <p className="font-medium text-gray-900 dark:text-white">
-                    {detailsModal.bot.created_at
-                        ? new Date(detailsModal.bot.created_at).toLocaleString(
+
+                      {detailsModal.bot.created_at
+                        ? new Date(
+                            detailsModal.bot.created_at
+                          ).toLocaleString(
                             "fr-FR",
                             {
                               day: "2-digit",
@@ -1106,7 +1463,96 @@ export default function ChatbotListPage() {
                             }
                           )
                         : "Date inconnue"}
-                        </p>
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* =================================================
+                    STATISTIQUES DÉTAILS
+                ================================================= */}
+
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    Statistiques
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
+
+                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
+
+                      <div className="flex items-center gap-2">
+
+                        <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+
+                        <span className="text-xs text-green-700 dark:text-green-400">
+                          Conversations
+                        </span>
+
+                      </div>
+
+                      <p className="text-lg font-bold text-green-700 dark:text-green-400 mt-1">
+                        {detailsModal.bot.nombre_conversations ?? 0}
+                      </p>
+
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30">
+
+                      <div className="flex items-center gap-2">
+
+                        <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+
+                        <span className="text-xs text-purple-700 dark:text-purple-400">
+                          Messages
+                        </span>
+
+                      </div>
+
+                      <p className="text-lg font-bold text-purple-700 dark:text-purple-400 mt-1">
+                        {detailsModal.bot.nombre_messages ?? 0}
+                      </p>
+
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+
+                      <div className="flex items-center gap-2">
+
+                        <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+
+                        <span className="text-xs text-orange-700 dark:text-orange-400">
+                          Documents
+                        </span>
+
+                      </div>
+
+                      <p className="text-lg font-bold text-orange-700 dark:text-orange-400 mt-1">
+                        {detailsModal.bot.nombre_documents ?? 0}
+                      </p>
+
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-pink-50 dark:bg-pink-950/30">
+
+                      <div className="flex items-center gap-2">
+
+                        <HelpCircle className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+
+                        <span className="text-xs text-pink-700 dark:text-pink-400">
+                          FAQ
+                        </span>
+
+                      </div>
+
+                      <p className="text-lg font-bold text-pink-700 dark:text-pink-400 mt-1">
+                        {detailsModal.bot.nombre_faq ?? 0}
+                      </p>
+
+                    </div>
 
                   </div>
 
@@ -1195,7 +1641,9 @@ export default function ChatbotListPage() {
                   disabled={savingEdit}
                   className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50"
                 >
+
                   <X className="w-5 h-5 text-gray-500" />
+
                 </button>
 
               </div>
@@ -1242,7 +1690,8 @@ export default function ChatbotListPage() {
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        domaine: e.target.value,
+                        domaine:
+                          e.target.value,
                       })
                     }
                     disabled={savingEdit}
@@ -1261,11 +1710,14 @@ export default function ChatbotListPage() {
                   </label>
 
                   <select
-                    value={editForm.statut}
+                    value={
+                      editForm.statut
+                    }
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        statut: e.target.value,
+                        statut:
+                          e.target.value,
                       })
                     }
                     disabled={savingEdit}
@@ -1329,105 +1781,122 @@ export default function ChatbotListPage() {
           NOTIFICATION POPUP
       ================================================= */}
 
-{notification.isOpen && (
-  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100]">
+      {notification.isOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100]">
 
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
 
-      {/* HEADER */}
+            {/* HEADER */}
 
-      <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
 
-        <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
 
-          {/* SUCCESS */}
+                {/* SUCCESS */}
 
-          {notification.type === "success" && (
-            <div className="w-10 h-10 rounded-full bg-[#007A80]/10 flex items-center justify-center">
+                {notification.type ===
+                  "success" && (
+                  <div className="w-10 h-10 rounded-full bg-[#007A80]/10 flex items-center justify-center">
 
-              <Check className="w-5 h-5 text-[#007A80]" />
+                    <Check className="w-5 h-5 text-[#007A80]" />
+
+                  </div>
+                )}
+
+                {/* ERROR */}
+
+                {notification.type ===
+                  "error" && (
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+
+                    <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+
+                  </div>
+                )}
+
+                {/* INFO */}
+
+                {notification.type ===
+                  "info" && (
+                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+
+                  </div>
+                )}
+
+                {/* TITLE */}
+
+                <h2
+                  className={`text-lg font-semibold ${
+                    notification.type ===
+                    "success"
+                      ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] bg-clip-text text-transparent"
+                      : notification.type ===
+                        "error"
+                      ? "text-red-700 dark:text-red-400"
+                      : "text-blue-700 dark:text-blue-400"
+                  }`}
+                >
+
+                  {notification.title}
+
+                </h2>
+
+              </div>
+
+              <button
+                onClick={
+                  closeNotification
+                }
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              >
+
+                <X className="w-5 h-5 text-gray-500" />
+
+              </button>
 
             </div>
-          )}
 
-          {/* ERROR */}
+            {/* MESSAGE */}
 
-          {notification.type === "error" && (
-            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <div className="p-5">
 
-              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <p className="text-sm leading-6 text-gray-600 dark:text-gray-300">
 
-            </div>
-          )}
+                {notification.message}
 
-          {/* INFO */}
-
-          {notification.type === "info" && (
-            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-
-              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </p>
 
             </div>
-          )}
 
-          {/* TITLE */}
+            {/* FOOTER */}
 
-          <h2
-            className={`text-lg font-semibold ${
-              notification.type === "success"
-                ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] bg-clip-text text-transparent"
-                : notification.type === "error"
-                ? "text-red-700 dark:text-red-400"
-                : "text-blue-700 dark:text-blue-400"
-            }`}
-          >
-            {notification.title}
-          </h2>
+            <div className="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+
+              <button
+                onClick={
+                  closeNotification
+                }
+                className={`px-5 py-2 text-sm font-medium text-white rounded-lg transition ${
+                  notification.type ===
+                  "success"
+                    ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] hover:from-[#00666B] hover:to-[#009FA8]"
+                    : notification.type ===
+                      "error"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                OK
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
-
-        <button
-          onClick={closeNotification}
-          className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-        >
-          <X className="w-5 h-5 text-gray-500" />
-        </button>
-
-      </div>
-
-      {/* MESSAGE */}
-
-      <div className="p-5">
-
-        <p className="text-sm leading-6 text-gray-600 dark:text-gray-300">
-          {notification.message}
-        </p>
-
-      </div>
-
-      {/* FOOTER */}
-
-      <div className="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
-
-        <button
-          onClick={closeNotification}
-          className={`px-5 py-2 text-sm font-medium text-white rounded-lg transition ${
-            notification.type === "success"
-              ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] hover:from-[#00666B] hover:to-[#009FA8]"
-              : notification.type === "error"
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          OK
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
+      )}
 
     </div>
   );

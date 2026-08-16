@@ -267,15 +267,9 @@ export default function EntrepriseProfilePage() {
 
       const data = await res.json();
 
-      console.log(
-        "PROFILE ENTREPRISE :",
-        data
-      );
+     
 
-      console.log(
-        "CREATED_AT :",
-        data?.created_at
-      );
+      
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -530,10 +524,7 @@ export default function EntrepriseProfilePage() {
           secteurd_activite.trim() || null,
       };
 
-      console.log(
-        "DONNEES ENVOYEES POUR MODIFICATION :",
-        body
-      );
+     
 
       const res = await fetch(
         `${API_URL}/meEntreprise`,
@@ -554,10 +545,7 @@ export default function EntrepriseProfilePage() {
 
       const data = await res.json();
 
-      console.log(
-        "REPONSE MODIFICATION :",
-        data
-      );
+    
 
       if (!res.ok) {
         const message =
@@ -724,10 +712,7 @@ export default function EntrepriseProfilePage() {
       const data =
         await response.json();
 
-      console.log(
-        "REPONSE CHANGE PASSWORD :",
-        data
-      );
+     
 
       // ───────────────────────────────────────────
       // ERREUR BACKEND

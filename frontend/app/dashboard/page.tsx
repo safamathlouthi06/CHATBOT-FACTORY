@@ -3,17 +3,16 @@
 import {
   Bot,
   MessageSquare,
-  Users,
   Plus,
-  ArrowRight,
   Zap,
   BarChart3,
   Database,
-  Settings,
   ChevronRight,
   Sparkles,
   FileText,
   HelpCircle,
+  Play,
+  Rocket,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -49,29 +48,11 @@ ChartJS.register(
 /* TYPES */
 /* ========================================================= */
 
-type Chatbot = {
-  id: string;
-  nom: string;
-  description?: string;
-  statut: string;
-  employe_id?: string | null;
-};
-
 type ChatbotStat = {
   id: string;
   nom: string;
   statut: string;
   employe_id: string | null;
-  nombre_conversations: number;
-  nombre_messages: number;
-  nombre_documents: number;
-  nombre_faq: number;
-};
-
-type EmployeStat = {
-  employe_id: string | null;
-  nom: string;
-  nombre_chatbots: number;
   nombre_conversations: number;
   nombre_messages: number;
   nombre_documents: number;
@@ -88,8 +69,6 @@ type Overview = {
   };
 
   chatbots: ChatbotStat[];
-
-  par_employe?: EmployeStat[];
 };
 
 /* ========================================================= */
@@ -97,16 +76,12 @@ type Overview = {
 /* ========================================================= */
 
 export default function DashboardPage() {
-  const [chatbots, setChatbots] = useState<Chatbot[]>([]);
-
   const [data, setData] = useState<Overview | null>(null);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
 
   /* ======================================================= */
-  /* CHARGEMENT */
+  /* CHARGEMENT DES STATISTIQUES */
   /* ======================================================= */
 
   useEffect(() => {
@@ -120,6 +95,9 @@ export default function DashboardPage() {
 
     const loadStatistics = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
         const response = await fetch(
           `${API_URL}/statistiques/overview`,
           {
@@ -145,22 +123,7 @@ export default function DashboardPage() {
 
         const json: Overview = await response.json();
 
-        console.log("STATISTIQUES :", json);
-
         setData(json);
-
-        /* ================================================= */
-        /* CHATBOTS */
-        /* ================================================= */
-
-        setChatbots(
-          json.chatbots.map((bot) => ({
-            id: bot.id,
-            nom: bot.nom,
-            statut: bot.statut,
-            employe_id: bot.employe_id,
-          }))
-        );
       } catch (err) {
         console.error("Erreur statistiques :", err);
 
@@ -196,7 +159,7 @@ export default function DashboardPage() {
   /* ======================================================= */
 
   const activeChatbots = chatbotStats.filter(
-    (bot) => bot.statut === "actif"
+    (bot) => bot.statut?.toLowerCase() === "actif"
   ).length;
 
   const inactiveChatbots =
@@ -206,16 +169,31 @@ export default function DashboardPage() {
 
   const activePercentage =
     totalChatbots > 0
-      ? Math.round((activeChatbots / totalChatbots) * 100)
+      ? Math.round(
+          (activeChatbots / totalChatbots) * 100
+        )
       : 0;
 
   const inactivePercentage =
     totalChatbots > 0
-      ? Math.round((inactiveChatbots / totalChatbots) * 100)
+      ? Math.round(
+          (inactiveChatbots / totalChatbots) * 100
+        )
       : 0;
 
   /* ======================================================= */
-  /* DONNEES BAR CHART */
+  /* CHATBOTS AFFICHÉS */
+  /* ======================================================= */
+
+  const displayedChatbots = chatbotStats.slice(0, 5);
+
+  const remainingChatbots = Math.max(
+    chatbotStats.length - 5,
+    0
+  );
+
+  /* ======================================================= */
+  /* BAR CHART */
   /* ======================================================= */
 
   const chatbotLabels = chatbotStats.map(
@@ -241,6 +219,7 @@ export default function DashboardPage() {
         borderRadius: 6,
         borderSkipped: false,
       },
+
       {
         label: "Messages",
         data: messagesDataValues,
@@ -274,7 +253,6 @@ export default function DashboardPage() {
         ],
 
         borderWidth: 0,
-
         hoverOffset: 8,
       },
     ],
@@ -303,7 +281,6 @@ export default function DashboardPage() {
         ],
 
         borderWidth: 0,
-
         hoverOffset: 8,
       },
     ],
@@ -315,7 +292,6 @@ export default function DashboardPage() {
 
   const barOptions = {
     responsive: true,
-
     maintainAspectRatio: false,
 
     plugins: {
@@ -324,9 +300,7 @@ export default function DashboardPage() {
 
         labels: {
           usePointStyle: true,
-
           padding: 15,
-
           color: "#6B7280",
 
           font: {
@@ -337,13 +311,9 @@ export default function DashboardPage() {
 
       tooltip: {
         backgroundColor: "#0B3C3C",
-
         padding: 10,
-
         cornerRadius: 8,
-
         titleColor: "#FFFFFF",
-
         bodyColor: "#E0E0E0",
       },
     },
@@ -362,7 +332,6 @@ export default function DashboardPage() {
           },
 
           maxRotation: 45,
-
           minRotation: 0,
         },
       },
@@ -391,9 +360,7 @@ export default function DashboardPage() {
 
   const doughnutOptions = {
     responsive: true,
-
     maintainAspectRatio: false,
-
     cutout: "62%",
 
     plugins: {
@@ -402,9 +369,7 @@ export default function DashboardPage() {
 
         labels: {
           padding: 12,
-
           usePointStyle: true,
-
           color: "#6B7280",
 
           font: {
@@ -415,13 +380,9 @@ export default function DashboardPage() {
 
       tooltip: {
         backgroundColor: "#0B3C3C",
-
         padding: 10,
-
         cornerRadius: 8,
-
         titleColor: "#FFFFFF",
-
         bodyColor: "#E0E0E0",
       },
     },
@@ -436,13 +397,11 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-
             <div className="w-10 h-10 border-4 border-[#D9F3F3] border-t-[#008080] rounded-full animate-spin mx-auto mb-4" />
 
             <p className="text-sm text-gray-500">
               Chargement des statistiques...
             </p>
-
           </div>
         </div>
       </div>
@@ -456,9 +415,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-
         <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6">
-
           <h2 className="font-semibold text-red-600 dark:text-red-400">
             Erreur
           </h2>
@@ -466,9 +423,7 @@ export default function DashboardPage() {
           <p className="text-sm text-red-500 mt-2">
             {error}
           </p>
-
         </div>
-
       </div>
     );
   }
@@ -487,30 +442,22 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
         <div>
-
           <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white flex items-center gap-2">
-
             <Sparkles className="w-6 h-6 text-[#008080]" />
-
             Dashboard
-
           </h1>
 
           <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mt-1">
             Gérez vos assistants IA et suivez leurs performances
           </p>
-
         </div>
 
         <Link
           href="/dashboard/chatbots/create"
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#006666] transition"
         >
-
           <Plus className="w-4 h-4" />
-
           Nouveau chatbot
-
         </Link>
 
       </div>
@@ -564,22 +511,18 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* ================================================= */}
-        {/* ACTIVITE PAR CHATBOT */}
-        {/* ================================================= */}
+        {/* ACTIVITÉ PAR CHATBOT */}
 
         <div className="rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
 
           <div className="flex items-center justify-between mb-4">
 
             <div className="flex items-center gap-2">
-
               <BarChart3 className="w-5 h-5 text-indigo-500" />
 
               <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
                 Activité par chatbot
               </h2>
-
             </div>
 
             <span className="text-xs text-gray-400">
@@ -591,16 +534,12 @@ export default function DashboardPage() {
           <div className="h-[280px]">
 
             {chatbotStats.length > 0 ? (
-
               <Bar
                 data={chatbotActivityData}
                 options={barOptions}
               />
-
             ) : (
-
               <div className="h-full flex items-center justify-center">
-
                 <div className="text-center">
 
                   <Bot className="w-10 h-10 text-gray-300 mx-auto mb-2" />
@@ -610,18 +549,14 @@ export default function DashboardPage() {
                   </p>
 
                 </div>
-
               </div>
-
             )}
 
           </div>
 
         </div>
 
-        {/* ================================================= */}
-        {/* REPARTITION CHATBOTS */}
-        {/* ================================================= */}
+        {/* RÉPARTITION CHATBOTS */}
 
         <div className="rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
 
@@ -648,20 +583,14 @@ export default function DashboardPage() {
             <div className="h-[190px] w-[190px]">
 
               {totalChatbots > 0 ? (
-
                 <Doughnut
                   data={chatbotDistributionData}
                   options={doughnutOptions}
                 />
-
               ) : (
-
                 <div className="h-full w-full flex items-center justify-center">
-
                   <Bot className="w-10 h-10 text-gray-300" />
-
                 </div>
-
               )}
 
             </div>
@@ -748,9 +677,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* ================================================= */}
-        {/* DOCUMENTS / FAQ */}
-        {/* ================================================= */}
+        {/* BASE DE CONNAISSANCES */}
 
         <div className="rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
 
@@ -776,21 +703,18 @@ export default function DashboardPage() {
 
             <div className="h-[180px] w-[180px]">
 
-              {(totals.nombre_documents + totals.nombre_faq) > 0 ? (
-
+              {(
+                totals.nombre_documents +
+                totals.nombre_faq
+              ) > 0 ? (
                 <Doughnut
                   data={resourcesData}
                   options={doughnutOptions}
                 />
-
               ) : (
-
                 <div className="h-full flex items-center justify-center">
-
                   <Database className="w-10 h-10 text-gray-300" />
-
                 </div>
-
               )}
 
             </div>
@@ -854,9 +778,7 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* ================================================= */}
-        {/* RESUME ACTIVITE */}
-        {/* ================================================= */}
+        {/* RÉSUMÉ ACTIVITÉ */}
 
         <div className="rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
 
@@ -899,7 +821,9 @@ export default function DashboardPage() {
               </div>
 
               <span className="text-lg font-bold text-green-600">
-                {totals.nombre_conversations.toLocaleString("fr-FR")}
+                {totals.nombre_conversations.toLocaleString(
+                  "fr-FR"
+                )}
               </span>
 
             </div>
@@ -931,7 +855,9 @@ export default function DashboardPage() {
               </div>
 
               <span className="text-lg font-bold text-indigo-600">
-                {totals.nombre_messages.toLocaleString("fr-FR")}
+                {totals.nombre_messages.toLocaleString(
+                  "fr-FR"
+                )}
               </span>
 
             </div>
@@ -982,132 +908,98 @@ export default function DashboardPage() {
       </div>
 
       {/* ================================================== */}
-      {/* QUICK ACTIONS */}
-      {/* ================================================== */}
-
-      <div className="rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
-
-        <div className="flex items-center gap-2 mb-4">
-
-          <Zap className="w-5 h-5 text-[#008080]" />
-
-          <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
-            Actions rapides
-          </h2>
-
-        </div>
-
-        <div className="grid sm:grid-cols-3 gap-3">
-
-          <ActionCard
-            title="Gérer les employés"
-            icon={Users}
-            href="/dashboard/employes"
-            color="teal"
-          />
-
-          <ActionCard
-            title="Gérer les chatbots"
-            icon={Settings}
-            href="/dashboard/chatbots"
-            color="indigo"
-          />
-
-          <ActionCard
-            title="Voir les analytics"
-            icon={BarChart3}
-            href="/dashboard/stats"
-            color="amber"
-          />
-
-        </div>
-
-      </div>
-
-      {/* ================================================== */}
       {/* CHATBOTS */}
       {/* ================================================== */}
 
-      <div className="rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
+      <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
 
-        <div className="flex items-center justify-between mb-4">
+        {/* HEADER */}
 
-          <div className="flex items-center gap-2">
+        <div className="flex items-start justify-between gap-4 mb-5">
 
-            <Bot className="w-5 h-5 text-[#008080]" />
+          <div className="flex items-start gap-3">
 
-            <h2 className="font-semibold text-[#0B3C3C] dark:text-white">
-              Vos chatbots
-            </h2>
+            {/* 
+              ICÔNE SANS CADRE
+              Aucun bg, aucun border, aucun rounded container
+            */}
 
-            <span className="text-xs bg-[#D9F3F3] dark:bg-[#123D3D] text-[#008080] px-2 py-0.5 rounded-full">
-              {chatbots.length}
-            </span>
+            <Bot className="w-5 h-5 text-blue-500 mt-1 shrink-0" />
+
+            <div>
+
+              <div className="flex items-center gap-2">
+
+                <h2 className="font-semibold text-[#0B3C3C] dark:text-white text-lg">
+                  Vos chatbots
+                </h2>
+
+                <span className="text-xs bg-[#D9F3F3] dark:bg-[#123D3D] text-[#008080] px-2 py-0.5 rounded-full">
+                  {chatbotStats.length}
+                </span>
+
+              </div>
+
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Consultez les statistiques de vos chatbots
+              </p>
+
+              {remainingChatbots > 0 && (
+                <p className="text-xs text-[#2F6F6F] dark:text-gray-400 italic mt-1">
+                  Affichage des 5 premiers chatbots.{" "}
+                  {remainingChatbots} autres disponibles.
+                </p>
+              )}
+
+            </div>
 
           </div>
 
+          {/* VOIR TOUS */}
+
           <Link
             href="/dashboard/chatbots"
-            className="text-sm text-[#008080] hover:underline flex items-center gap-1"
+            className="text-sm text-[#008080] hover:underline flex items-center gap-1 shrink-0"
           >
             Voir tous
 
             <ChevronRight className="w-4 h-4" />
-
           </Link>
 
         </div>
 
-        {chatbots.length === 0 ? (
+        {/* LISTE DES CHATBOTS */}
 
-          <div className="text-center py-12">
+        {chatbotStats.length === 0 ? (
 
-            <Bot className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+          <div className="text-center py-8">
 
-            <p className="text-[#2F6F6F] dark:text-gray-400 text-sm mb-3">
-              Aucun chatbot pour le moment
+            <Bot className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Aucun chatbot pour le moment.
             </p>
 
             <Link
               href="/dashboard/chatbots/create"
-              className="inline-flex items-center gap-2 text-sm text-[#008080] hover:underline font-medium"
+              className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-[#008080] text-white text-sm hover:bg-[#006666] transition"
             >
-              Créer votre premier chatbot
-
-              <ArrowRight className="w-4 h-4" />
-
+              <Plus className="w-4 h-4" />
+              Créer un chatbot
             </Link>
 
           </div>
 
         ) : (
 
-          <div className="space-y-2">
+          <div className="space-y-3">
 
-            {chatbots
-              .slice(0, 5)
-              .map((bot) => (
-
-                <ChatbotRow
-                  key={bot.id}
-                  bot={bot}
-                />
-
-              ))}
-
-            {chatbots.length > 5 && (
-
-              <p className="text-xs text-[#2F6F6F] dark:text-gray-400 italic text-center pt-3 border-t border-[#B8E0E0] dark:border-gray-800">
-
-                Affichage des 5 premiers chatbots.
-                {" "}
-                {chatbots.length - 5}
-                {" "}
-                autres disponibles.
-
-              </p>
-
-            )}
+            {displayedChatbots.map((bot) => (
+              <ChatbotStatRow
+                key={bot.id}
+                bot={bot}
+              />
+            ))}
 
           </div>
 
@@ -1132,9 +1024,13 @@ function StatCard({
   title: string;
   value: number;
   icon: React.ElementType;
-  color: "teal" | "green" | "indigo" | "amber" | "rose";
+  color:
+    | "teal"
+    | "green"
+    | "indigo"
+    | "amber"
+    | "rose";
 }) {
-
   const colorClasses = {
     teal:
       "bg-[#008080]/5 border-[#008080]/20",
@@ -1196,15 +1092,11 @@ function StatCard({
       </div>
 
       <div className="text-2xl font-bold text-[#0B3C3C] dark:text-white">
-
         {value.toLocaleString("fr-FR")}
-
       </div>
 
       <div className="text-xs text-[#2F6F6F] dark:text-gray-400 mt-1">
-
         {title}
-
       </div>
 
     </div>
@@ -1212,147 +1104,185 @@ function StatCard({
 }
 
 /* ========================================================= */
-/* ACTION CARD */
+/* CHATBOT STAT ROW */
 /* ========================================================= */
 
-function ActionCard({
-  title,
-  icon: Icon,
-  href,
-  color = "teal",
-}: {
-  title: string;
-  icon: React.ElementType;
-  href: string;
-  color: "teal" | "indigo" | "amber";
-}) {
-
-  const colors = {
-
-    teal:
-      "hover:bg-[#008080]/5 border-[#008080]/20",
-
-    indigo:
-      "hover:bg-indigo-500/5 border-indigo-500/20",
-
-    amber:
-      "hover:bg-amber-500/5 border-amber-500/20",
-  };
-
-  return (
-
-    <Link href={href}>
-
-      <div
-        className={`
-          flex
-          items-center
-          gap-3
-          p-3
-          border
-          rounded-lg
-          ${colors[color]}
-          hover:shadow-sm
-          transition-all
-          duration-200
-          group
-        `}
-      >
-
-        <Icon
-          className="w-4 h-4 text-[#008080] group-hover:scale-110 transition-transform"
-        />
-
-        <span className="text-sm text-[#0B3C3C] dark:text-white">
-          {title}
-        </span>
-
-        <ChevronRight
-          className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-1 transition-transform"
-        />
-
-      </div>
-
-    </Link>
-  );
-}
-
-/* ========================================================= */
-/* CHATBOT ROW */
-/* ========================================================= */
-
-function ChatbotRow({
+function ChatbotStatRow({
   bot,
 }: {
-  bot: Chatbot;
+  bot: ChatbotStat;
 }) {
-
-  const statusColors = {
-
-    actif:
-      "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400",
-
-    inactif:
-      "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400",
-  };
-
-  const status =
-    bot.statut === "actif"
-      ? "actif"
-      : "inactif";
+  const isActive =
+    bot.statut?.toLowerCase() === "actif";
 
   return (
+    <div
+      className="
+        rounded-xl
+        p-4
+        bg-gray-50/50
+        dark:bg-gray-800/30
+        hover:bg-gray-100/50
+        dark:hover:bg-gray-800/50
+        transition-all
+        duration-200
+      "
+    >
 
-    <div className="flex items-center justify-between p-3 rounded-lg border border-[#B8E0E0] dark:border-gray-700 hover:border-[#008080]/30 hover:shadow-sm transition-all duration-200">
+      {/* ================================================= */}
+      {/* HEADER */}
+      {/* ================================================= */}
 
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center justify-between gap-4">
 
-        <div className="w-10 h-10 rounded-lg bg-[#D9F3F3] dark:bg-[#123D3D] flex items-center justify-center shrink-0">
+        {/* INFORMATIONS CHATBOT */}
 
-          <Bot className="w-5 h-5 text-[#008080]" />
+        <div className="flex items-center gap-3 min-w-0">
 
-        </div>
+          <div className="min-w-0">
 
-        <div className="min-w-0">
+            <div className="flex items-center gap-2">
 
-          <p className="font-medium text-[#0B3C3C] dark:text-white truncate">
-            {bot.nom}
-          </p>
+              <p className="font-medium text-[#0B3C3C] dark:text-white truncate">
+                {bot.nom}
+              </p>
 
-          <div className="flex items-center gap-2">
+              <span
+                className={`
+                  text-xs
+                  px-2
+                  py-0.5
+                  rounded-full
+                  ${
+                    isActive
+                      ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                  }
+                `}
+              >
+                {bot.statut}
+              </span>
 
-            <p className="text-xs text-[#2F6F6F] dark:text-gray-400 truncate">
-              {bot.description || "Aucune description"}
-            </p>
-
-            <span
-              className={`
-                text-xs
-                px-1.5
-                py-0.5
-                rounded-full
-                ${statusColors[status]}
-              `}
-            >
-              {status}
-            </span>
+            </div>
 
           </div>
 
         </div>
 
+        {/* ACTIONS */}
+
+        <div className="flex items-center gap-1 shrink-0">
+
+          {/* BASE DE CONNAISSANCES */}
+
+          <Link
+            href={`/employe/chatbots/${bot.id}/base-de-connaissance`}
+            className="
+              p-2
+              rounded-xl
+              hover:bg-[#D9F3F3]
+              dark:hover:bg-[#123D3D]
+              text-[#008080]
+              transition-colors
+            "
+            title="Base de connaissances"
+          >
+            <Database size={15} />
+          </Link>
+
+          {/* TESTER */}
+
+          <Link
+            href={`/employe/chatbots/${bot.id}/test`}
+            className="
+              p-2
+              rounded-xl
+              hover:bg-[#D9F3F3]
+              dark:hover:bg-[#123D3D]
+              text-[#008080]
+              transition-colors
+            "
+            title="Tester"
+          >
+            <Play size={15} />
+          </Link>
+
+          {/* DÉPLOYER */}
+
+          <Link
+            href={`/employe/chatbots/${bot.id}/deployment`}
+            className="
+              p-2
+              rounded-xl
+              hover:bg-[#D9F3F3]
+              dark:hover:bg-[#123D3D]
+              text-[#008080]
+              transition-colors
+            "
+            title="Déployer"
+          >
+            <Rocket size={15} />
+          </Link>
+
+        </div>
+
       </div>
 
-      <Link
-        href={`/dashboard/chatbots/${bot.id}`}
-        className="text-sm text-[#008080] hover:underline flex items-center gap-1 shrink-0"
-      >
+      {/* ================================================= */}
+      {/* STATISTIQUES */}
+      {/* ================================================= */}
 
-        Gérer
+      <div className="flex flex-wrap gap-2 mt-3">
 
-        <ChevronRight className="w-4 h-4" />
+        {/* CONVERSATIONS */}
 
-      </Link>
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400">
+
+          <MessageSquare className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_conversations} conversations
+          </span>
+
+        </div>
+
+        {/* MESSAGES */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400">
+
+          <BarChart3 className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_messages} messages
+          </span>
+
+        </div>
+
+        {/* DOCUMENTS */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400">
+
+          <FileText className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_documents} documents
+          </span>
+
+        </div>
+
+        {/* FAQ */}
+
+        <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
+
+          <HelpCircle className="w-3.5 h-3.5" />
+
+          <span>
+            {bot.nombre_faq} FAQ
+          </span>
+
+        </div>
+
+      </div>
 
     </div>
   );
