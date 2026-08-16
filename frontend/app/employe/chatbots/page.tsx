@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 import {
@@ -44,7 +44,6 @@ type Chatbot = {
   entreprise_id: string;
   created_at: string;
 
-  // Statistiques
   nombre_conversations: number;
   nombre_messages: number;
   nombre_documents: number;
@@ -161,14 +160,6 @@ export default function ChatbotListPage() {
       title: "",
       message: "",
     });
-
-  /* =======================================================
-     MENU REFS
-  ======================================================= */
-
-  const menuRefs = useRef<{
-    [key: string]: HTMLDivElement | null;
-  }>({});
 
   /* =======================================================
      NOTIFICATION FUNCTIONS
@@ -302,10 +293,6 @@ export default function ChatbotListPage() {
 
           setChatbots(botsWithStats);
         } else {
-          /* ===============================================
-             SI LES STATISTIQUES NE SONT PAS DISPONIBLES
-          =============================================== */
-
           console.warn(
             "Impossible de récupérer les statistiques."
           );
@@ -313,7 +300,6 @@ export default function ChatbotListPage() {
           setChatbots(
             bots.map((bot) => ({
               ...bot,
-
               nombre_conversations: 0,
               nombre_messages: 0,
               nombre_documents: 0,
@@ -343,23 +329,28 @@ export default function ChatbotListPage() {
   }, []);
 
   /* =======================================================
-     CLICK OUTSIDE MENU
+     CLICK OUTSIDE DU MENU
+     
+     IMPORTANT :
+     Si le clic est en dehors de la liste du menu,
+     le menu se ferme.
   ======================================================= */
 
   useEffect(() => {
-    const handleClickOutside = (
-      event: MouseEvent
-    ) => {
-      const target = event.target as Node;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
 
-      const isInsideMenu = Object.values(
-        menuRefs.current
-      ).some(
-        (ref) =>
-          ref && ref.contains(target)
-      );
+      // Aucun menu ouvert
+      if (!openMenuId) {
+        return;
+      }
 
-      if (!isInsideMenu) {
+      // Vérifie si le clic est dans le bouton/menu
+      const clickedInsideMenu =
+        target.closest("[data-chatbot-menu]");
+
+      // Si le clic est ailleurs -> fermer
+      if (!clickedInsideMenu) {
         setOpenMenuId(null);
       }
     };
@@ -375,7 +366,7 @@ export default function ChatbotListPage() {
         handleClickOutside
       );
     };
-  }, []);
+  }, [openMenuId]);
 
   /* =======================================================
      SEARCH
@@ -535,8 +526,6 @@ export default function ChatbotListPage() {
   const handleEditSubmit = async () => {
     if (!editModal.bot) return;
 
-    /* VALIDATION NOM */
-
     if (!editForm.nom.trim()) {
       showNotification(
         "error",
@@ -546,8 +535,6 @@ export default function ChatbotListPage() {
 
       return;
     }
-
-    /* VALIDATION DOMAINE */
 
     if (!editForm.domaine.trim()) {
       showNotification(
@@ -812,12 +799,6 @@ export default function ChatbotListPage() {
       </div>
 
       {/* =================================================
-          STATISTIQUES GLOBALES
-      ================================================= */}
-
-     
-
-      {/* =================================================
           LOADING
       ================================================= */}
 
@@ -888,14 +869,19 @@ export default function ChatbotListPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
 
             {filtered.map((bot) => (
+
               <div
                 key={bot.id}
                 className="border border-[#B8E0E0] dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900 hover:shadow-md transition relative"
               >
 
-                {/* CARD HEADER */}
+                {/* =================================================
+                    CARD HEADER
+                ================================================= */}
 
                 <div className="flex items-start justify-between">
+
+                  {/* CHATBOT INFO */}
 
                   <div className="flex items-start gap-3">
 
@@ -919,96 +905,151 @@ export default function ChatbotListPage() {
 
                   </div>
 
-                  {/* MENU */}
+                  {/* =================================================
+                      MENU
+                  ================================================= */}
 
-                  <div
-                    className="relative"
-                    ref={(el) => {
-                      menuRefs.current[bot.id] =
-                        el;
-                    }}
-                  >
+<div
+  className="relative"
+  data-chatbot-menu
+>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
 
-                        setOpenMenuId(
-                          openMenuId === bot.id
-                            ? null
-                            : bot.id
-                        );
-                      }}
-                      className="p-1 rounded hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
-                    >
+      setOpenMenuId(
+        (current) =>
+          current === bot.id
+            ? null
+            : bot.id
+      );
+    }}
+    className="p-1.5 rounded-xl hover:bg-[#E8FAFB] dark:hover:bg-[#1E293B] transition-all duration-200 group"
+    aria-label={`Menu du chatbot ${bot.nom}`}
+  >
 
-                      <MoreVertical className="w-4 h-4 text-[#00A8A8]" />
+    <MoreVertical className="w-4 h-4 text-[#6CAFB4] group-hover:text-[#007A80] dark:group-hover:text-[#00B7C2] transition-colors" />
 
-                    </button>
+  </button>
 
-                    {/* DROPDOWN */}
+  {/* =================================================
+      DROPDOWN AMÉLIORÉ
+  ================================================= */}
 
-                    {openMenuId === bot.id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 py-1">
+  {openMenuId === bot.id && (
+    <div
+      data-chatbot-menu
+      className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-[#D7F3F5] dark:border-[#1E293B] z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200"
+    >
 
-                        {/* EDIT */}
+      {/* ÉDITER */}
 
-                        <button
-                          onClick={() =>
-                            openEditModal(bot)
-                          }
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                        >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
 
-                          <Pencil className="w-4 h-4" />
+          setOpenMenuId(null);
 
-                          Éditer
+          openEditModal(bot);
+        }}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#134E52] dark:text-zinc-200 hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-200 group"
+      >
 
-                        </button>
+        <div className="w-7 h-7 rounded-lg bg-[#E8FAFB] dark:bg-[#111827] flex items-center justify-center group-hover:bg-[#007A80]/10 dark:group-hover:bg-[#007A80]/20 transition-colors">
 
-                        {/* DETAILS */}
+          <Pencil className="w-4 h-4 text-[#007A80]" />
 
-                        <button
-                          onClick={() =>
-                            openDetailsModal(bot)
-                          }
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                        >
+        </div>
 
-                          <Eye className="w-4 h-4" />
+        <div className="flex-1 text-left">
+          <span className="font-medium">Éditer</span>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+            Modifier les paramètres
+          </p>
+        </div>
 
-                          Voir les détails
+      </button>
 
-                        </button>
+      {/* DÉTAILS */}
 
-                        <hr className="my-1 border-gray-200 dark:border-gray-700" />
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
 
-                        {/* DELETE */}
+          setOpenMenuId(null);
 
-                        <button
-                          onClick={() =>
-                            openDeleteModal(
-                              bot.id,
-                              bot.nom
-                            )
-                          }
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                        >
+          openDetailsModal(bot);
+        }}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#134E52] dark:text-zinc-200 hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-200 group"
+      >
 
-                          <Trash2 className="w-4 h-4" />
+        <div className="w-7 h-7 rounded-lg bg-[#E8FAFB] dark:bg-[#111827] flex items-center justify-center group-hover:bg-[#007A80]/10 dark:group-hover:bg-[#007A80]/20 transition-colors">
 
-                          Supprimer
+          <Eye className="w-4 h-4 text-[#007A80]" />
 
-                        </button>
+        </div>
 
-                      </div>
-                    )}
+        <div className="flex-1 text-left">
+          <span className="font-medium">Voir les détails</span>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+            Informations complètes
+          </p>
+        </div>
 
-                  </div>
+      </button>
+
+      {/* SÉPARATEUR STYLISÉ */}
+
+      <div className="relative my-1.5 px-4">
+        <div className="border-t border-[#E5E7EB] dark:border-[#1E293B]"></div>
+      </div>
+
+      {/* SUPPRIMER */}
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+
+          setOpenMenuId(null);
+
+          openDeleteModal(
+            bot.id,
+            bot.nom
+          );
+        }}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
+      >
+
+        <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
+
+          <Trash2 className="w-4 h-4 text-red-500" />
+
+        </div>
+
+        <div className="flex-1 text-left">
+          <span className="font-medium">Supprimer</span>
+          <p className="text-[10px] text-red-400/60 dark:text-red-400/50">
+            Supprimer définitivement
+          </p>
+        </div>
+
+      </button>
+
+    </div>
+  )}
+
+</div>
 
                 </div>
 
-                {/* STATUS */}
+                {/* =================================================
+                    STATUS
+                ================================================= */}
 
                 <div className="mt-3 mb-4">
 
@@ -1037,7 +1078,7 @@ export default function ChatbotListPage() {
                 </div>
 
                 {/* =================================================
-                    STATISTIQUES DU CHATBOT
+                    STATISTIQUES
                 ================================================= */}
 
                 <div className="flex flex-wrap gap-2 mt-3 mb-4">
@@ -1115,6 +1156,9 @@ export default function ChatbotListPage() {
 
                   <Link
                     href={`/employe/chatbots/${bot.id}/base-de-connaissance`}
+                    onClick={() =>
+                      setOpenMenuId(null)
+                    }
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-[#B8E0E0] dark:border-gray-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
                   >
 
@@ -1128,6 +1172,9 @@ export default function ChatbotListPage() {
 
                   <Link
                     href={`/employe/chatbots/${bot.id}/test`}
+                    onClick={() =>
+                      setOpenMenuId(null)
+                    }
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-[#B8E0E0] dark:border-gray-700 rounded-lg hover:bg-[#D9F3F3] dark:hover:bg-gray-800 transition"
                   >
 
@@ -1141,6 +1188,9 @@ export default function ChatbotListPage() {
 
                   <Link
                     href={`/employe/chatbots/${bot.id}/deployment`}
+                    onClick={() =>
+                      setOpenMenuId(null)
+                    }
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-[#008080] text-white rounded-lg hover:bg-[#005F5F] transition"
                   >
 
@@ -1155,6 +1205,7 @@ export default function ChatbotListPage() {
                 </div>
 
               </div>
+
             ))}
 
           </div>
@@ -1167,6 +1218,7 @@ export default function ChatbotListPage() {
       {!loading &&
         chatbots.length > 0 &&
         filtered.length === 0 && (
+
           <div className="text-center py-12 border border-[#B8E0E0] dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
 
             <Search className="w-12 h-12 mx-auto text-[#00A8A8] mb-3" />
@@ -1187,7 +1239,15 @@ export default function ChatbotListPage() {
       ================================================= */}
 
       {deleteModal.isOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              closeDeleteModal();
+            }
+          }}
+        >
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
 
@@ -1211,9 +1271,7 @@ export default function ChatbotListPage() {
                 onClick={closeDeleteModal}
                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
               >
-
                 <X className="w-5 h-5 text-gray-500" />
-
               </button>
 
             </div>
@@ -1226,9 +1284,7 @@ export default function ChatbotListPage() {
                 le chatbot{" "}
 
                 <span className="font-semibold text-[#008080]">
-
                   "{deleteModal.botName}"
-
                 </span>
 
                 {" ?"}
@@ -1278,7 +1334,15 @@ export default function ChatbotListPage() {
 
       {detailsModal.isOpen &&
         detailsModal.bot && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) {
+                closeDetailsModal();
+              }
+            }}
+          >
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full mx-4 animate-in fade-in zoom-in duration-200">
 
@@ -1295,9 +1359,7 @@ export default function ChatbotListPage() {
                 </div>
 
                 <button
-                  onClick={
-                    closeDetailsModal
-                  }
+                  onClick={closeDetailsModal}
                   className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
 
@@ -1365,9 +1427,13 @@ export default function ChatbotListPage() {
 
                     {detailsModal.bot.statut ===
                     "actif" ? (
+
                       <CheckCircle className="w-4 h-4 text-green-500" />
+
                     ) : (
+
                       <Clock className="w-4 h-4 text-orange-500" />
+
                     )}
 
                   </div>
@@ -1470,93 +1536,67 @@ export default function ChatbotListPage() {
 
                 </div>
 
-                {/* =================================================
-                    STATISTIQUES DÉTAILS
-                ================================================= */}
+                {/* STATISTIQUES */}
 
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+<div className="border-t border-gray-100 dark:border-gray-700 pt-4">
 
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                    Statistiques
-                  </p>
+  <p className="text-sm font-semibold text-[#0B3C3C] dark:text-white mb-3">
+    Statistiques
+  </p>
 
-                  <div className="grid grid-cols-2 gap-3">
+  <div className="grid grid-cols-4 gap-2">
 
-                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
+    <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
 
-                      <div className="flex items-center gap-2">
+      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+        Conversations
+      </p>
 
-                        <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+      <p className="text-base font-bold text-green-600">
+        {detailsModal.bot.nombre_conversations}
+      </p>
 
-                        <span className="text-xs text-green-700 dark:text-green-400">
-                          Conversations
-                        </span>
+    </div>
 
-                      </div>
+    <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-center">
 
-                      <p className="text-lg font-bold text-green-700 dark:text-green-400 mt-1">
-                        {detailsModal.bot.nombre_conversations ?? 0}
-                      </p>
+      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+        Messages
+      </p>
 
-                    </div>
+      <p className="text-base font-bold text-purple-600">
+        {detailsModal.bot.nombre_messages}
+      </p>
 
-                    <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30">
+    </div>
 
-                      <div className="flex items-center gap-2">
+    <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/20 text-center">
 
-                        <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+        Documents
+      </p>
 
-                        <span className="text-xs text-purple-700 dark:text-purple-400">
-                          Messages
-                        </span>
+      <p className="text-base font-bold text-orange-600">
+        {detailsModal.bot.nombre_documents}
+      </p>
 
-                      </div>
+    </div>
 
-                      <p className="text-lg font-bold text-purple-700 dark:text-purple-400 mt-1">
-                        {detailsModal.bot.nombre_messages ?? 0}
-                      </p>
+    <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-950/20 text-center">
 
-                    </div>
+      <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+        FAQ
+      </p>
 
-                    <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+      <p className="text-base font-bold text-pink-600">
+        {detailsModal.bot.nombre_faq}
+      </p>
 
-                      <div className="flex items-center gap-2">
+    </div>
 
-                        <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+  </div>
 
-                        <span className="text-xs text-orange-700 dark:text-orange-400">
-                          Documents
-                        </span>
-
-                      </div>
-
-                      <p className="text-lg font-bold text-orange-700 dark:text-orange-400 mt-1">
-                        {detailsModal.bot.nombre_documents ?? 0}
-                      </p>
-
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-pink-50 dark:bg-pink-950/30">
-
-                      <div className="flex items-center gap-2">
-
-                        <HelpCircle className="w-4 h-4 text-pink-600 dark:text-pink-400" />
-
-                        <span className="text-xs text-pink-700 dark:text-pink-400">
-                          FAQ
-                        </span>
-
-                      </div>
-
-                      <p className="text-lg font-bold text-pink-700 dark:text-pink-400 mt-1">
-                        {detailsModal.bot.nombre_faq ?? 0}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </div>
+</div>
 
               </div>
 
@@ -1565,9 +1605,7 @@ export default function ChatbotListPage() {
               <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
 
                 <button
-                  onClick={
-                    closeDetailsModal
-                  }
+                  onClick={closeDetailsModal}
                   className="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition"
                 >
                   Fermer
@@ -1575,6 +1613,7 @@ export default function ChatbotListPage() {
 
                 <button
                   onClick={() => {
+
                     const bot =
                       detailsModal.bot;
 
@@ -1583,6 +1622,7 @@ export default function ChatbotListPage() {
                     if (bot) {
                       openEditModal(bot);
                     }
+
                   }}
                   className="px-4 py-2 text-sm font-medium bg-[#008080] hover:bg-[#005F5F] text-white rounded-lg transition flex items-center gap-2"
                 >
@@ -1606,7 +1646,15 @@ export default function ChatbotListPage() {
 
       {editModal.isOpen &&
         editModal.bot && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60]">
+
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60]"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) {
+                closeEditModal();
+              }
+            }}
+          >
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full mx-4 animate-in fade-in zoom-in duration-200">
 
@@ -1782,6 +1830,7 @@ export default function ChatbotListPage() {
       ================================================= */}
 
       {notification.isOpen && (
+
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100]">
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
@@ -1796,6 +1845,7 @@ export default function ChatbotListPage() {
 
                 {notification.type ===
                   "success" && (
+
                   <div className="w-10 h-10 rounded-full bg-[#007A80]/10 flex items-center justify-center">
 
                     <Check className="w-5 h-5 text-[#007A80]" />
@@ -1807,6 +1857,7 @@ export default function ChatbotListPage() {
 
                 {notification.type ===
                   "error" && (
+
                   <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
 
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -1818,6 +1869,7 @@ export default function ChatbotListPage() {
 
                 {notification.type ===
                   "info" && (
+
                   <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
 
                     <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
