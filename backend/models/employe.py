@@ -11,6 +11,7 @@ class EmployeCreate(BaseModel):
     prenom: str
     email_personnel: EmailStr   # 👈 email pour envoyer login
     password: Optional[str] = None  # peut être généré côté backend
+    created_at: Optional[str] = None  # peut être généré côté backend
 
 
 # =========================

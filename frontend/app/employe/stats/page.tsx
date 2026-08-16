@@ -431,7 +431,7 @@ export default function EmployeStatsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-[#008080]" />
+            
             Mes statistiques
           </h1>
 

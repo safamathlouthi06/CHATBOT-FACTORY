@@ -32,6 +32,7 @@ type Chatbot = {
   domaine: string;
   statut: string;
   entreprise_id: string;
+  created_at: string;
 };
 
 type Notification = {
@@ -150,6 +151,9 @@ export default function ChatbotListPage() {
         });
 
         const data = await res.json();
+        
+
+
 
         if (data.data && Array.isArray(data.data)) {
           setChatbots(data.data);
@@ -1067,7 +1071,7 @@ export default function ChatbotListPage() {
                       ID du chatbot
                     </p>
 
-                    <p className="font-mono text-xs text-gray-600 dark:text-gray-400 break-all">
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {detailsModal.bot.id}
                     </p>
 
@@ -1090,10 +1094,19 @@ export default function ChatbotListPage() {
                     </p>
 
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {new Date().toLocaleDateString(
-                        "fr-FR"
-                      )}
-                    </p>
+                    {detailsModal.bot.created_at
+                        ? new Date(detailsModal.bot.created_at).toLocaleString(
+                            "fr-FR",
+                            {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )
+                        : "Date inconnue"}
+                        </p>
 
                   </div>
 
