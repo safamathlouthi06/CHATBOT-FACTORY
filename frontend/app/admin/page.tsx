@@ -653,41 +653,7 @@ export default function AdminDashboardPage() {
       </div>
 
 
-{/* ================================================= */}
-{/* STATISTIQUES DÉTAILLÉES */}
-{/* ================================================= */}
 
-<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-  <StatCard
-    title="Conversations"
-    value={totals.nombre_conversations}
-    icon={MessageSquare}
-    color="green"
-  />
-
-  <StatCard
-    title="Messages"
-    value={totals.nombre_messages}
-    icon={Activity}
-    color="indigo"
-  />
-
-  <StatCard
-    title="Documents"
-    value={totals.nombre_documents}
-    icon={FileText}
-    color="amber"
-  />
-
-  <StatCard
-    title="FAQ"
-    value={totals.nombre_faq}
-    icon={HelpCircle}
-    color="rose"
-  />
-
-</div>
 
    
       {/* ================================================= */}

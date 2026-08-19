@@ -849,15 +849,7 @@ export default function EntrepriseProfilePage() {
 
           <div className="flex items-center gap-4 mb-8">
 
-            <button
-              onClick={() => router.back()}
-              className="p-2.5 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-[#B8E0E0] dark:border-zinc-700 hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 transition-all group"
-            >
-              <ArrowLeft
-                size={18}
-                className="text-[#008080] group-hover:-translate-x-0.5 transition-transform"
-              />
-            </button>
+         
 
             <div>
 

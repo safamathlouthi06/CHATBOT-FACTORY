@@ -776,7 +776,7 @@ export default function ChatbotListPage() {
         <div>
 
           <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">
-            Mes Chatbots
+            Mes chatbots
           </h1>
 
           <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mt-1">
@@ -1729,6 +1729,7 @@ export default function ChatbotListPage() {
             </div>
 
           </div>
+
 
           {/* BOUTON FERMER */}
           <button

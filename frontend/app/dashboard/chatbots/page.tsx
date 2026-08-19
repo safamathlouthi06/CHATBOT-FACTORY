@@ -588,7 +588,7 @@ export default function ChatbotListPage() {
         <div>
 
           <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white">
-            Chatbots par Employé
+            Chatbots par employé
           </h1>
 
           <p className="text-sm text-[#2F6F6F] dark:text-gray-400 mt-1">
@@ -597,13 +597,6 @@ export default function ChatbotListPage() {
 
         </div>
 
-        <Link
-          href="/dashboard/chatbots/create"
-          className="inline-flex items-center justify-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-4 py-2 rounded-lg text-sm transition"
-        >
-          <Plus className="w-4 h-4" />
-          Créer un chatbot
-        </Link>
 
       </div>
 
