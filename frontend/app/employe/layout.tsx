@@ -156,11 +156,7 @@ export default function AppLayout({
       label: "Statistiques",
       icon: BarChart3,
     },
-    {
-      href: "/employe/profile",
-      label: "Profile",
-      icon: User,
-    },
+   
   ];
 
   /* =========================================================

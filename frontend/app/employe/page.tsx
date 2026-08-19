@@ -621,7 +621,7 @@ export default function EmployeDashboard() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard
-            label="Mes chatbots"
+            label="Chatbots"
             value={stats.nombre_chatbots}
             icon={Bot}
             color="text-[#008080]"
@@ -662,40 +662,6 @@ export default function EmployeDashboard() {
           />
         </div>
 
-        {/* ================================================= */}
-        {/* ACTIONS RAPIDES */}
-        {/* ================================================= */}
-
-        <div className="bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 border border-[#B8E0E0]/50 dark:border-gray-700/50 rounded-3xl p-6 shadow-xl">
-          <h2 className="font-bold text-lg text-[#0B3C3C] dark:text-white flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-[#008080] fill-[#008080]/20" />
-            Actions rapides
-          </h2>
-
-          <div className="grid sm:grid-cols-3 gap-3">
-            <ActionCard
-              href="/employe/chatbots/create"
-              icon={Plus}
-              label="Créer un chatbot"
-              desc="Nouveau projet"
-              gradient="from-emerald-500/10 to-teal-500/10"
-            />
-            <ActionCard
-              href="/employe/chatbots"
-              icon={Bot}
-              label="Mes chatbots"
-              desc="Gérer les existants"
-              gradient="from-blue-500/10 to-indigo-500/10"
-            />
-            <ActionCard
-              href="/employe/stats"
-              icon={TrendingUp}
-              label="Statistiques"
-              desc="Performances"
-              gradient="from-purple-500/10 to-pink-500/10"
-            />
-          </div>
-        </div>
 
         {/* ================================================= */}
         {/* CHARTS */}
@@ -792,7 +758,7 @@ export default function EmployeDashboard() {
               <div className="flex items-center gap-2">
 
                 <h2 className="font-semibold text-[#0B3C3C] dark:text-white text-lg">
-                  Vos chatbots
+                  Mes chatbots
                 </h2>
 
                 <span className="text-xs bg-[#D9F3F3] dark:bg-[#123D3D] text-[#008080] px-2 py-0.5 rounded-full">
@@ -801,9 +767,7 @@ export default function EmployeDashboard() {
 
               </div>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                Consultez les statistiques de vos chatbots
-              </p>
+             
 
               {remainingChatbots > 0 && (
                 <p className="text-xs text-[#2F6F6F] dark:text-gray-400 italic mt-1">

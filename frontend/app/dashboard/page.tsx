@@ -443,7 +443,7 @@ export default function DashboardPage() {
 
         <div>
           <h1 className="text-2xl font-bold text-[#0B3C3C] dark:text-white flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-[#008080]" />
+          
             Dashboard
           </h1>
 
@@ -452,13 +452,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/chatbots/create"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#006666] transition"
-        >
-          <Plus className="w-4 h-4" />
-          Nouveau chatbot
-        </Link>
+       
 
       </div>
 
