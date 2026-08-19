@@ -1,16 +1,31 @@
 
 import os
+from dotenv import load_dotenv
 from openai import AzureOpenAI
+from core.config import (
+    AZURE_OPENAI_API_KEY,
+    AZURE_OPENAI_ENDPOINT,
+    AZURE_OPENAI_DEPLOYMENT,
+)
 
+load_dotenv()
 
 client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_key=AZURE_OPENAI_API_KEY,
     api_version="2024-02-15-preview",
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_endpoint=AZURE_OPENAI_ENDPOINT
 )
 
 DEFAULT_TON = "Professionnel"
 DEFAULT_ROLE = "assistant"
+
+TON_INSTRUCTIONS = {
+    "Professionnel": "Adopte un ton professionnel, clair et courtois.",
+    "Amical": "Adopte un ton chaleureux, amical et rassurant.",
+    "Fun": "Adopte un ton décontracté, dynamique et léger, sans être irrespectueux.",
+    "Formel": "Adopte un ton très formel, soutenu et respectueux.",
+}
+
 ROLE_INSTRUCTIONS = {
     "assistant": "Tu es un assistant virtuel généraliste, prêt à aider sur tout type de demande.",
     "support_client": "Tu es un agent de support client. Aide l'utilisateur à résoudre son problème rapidement et avec empathie.",
@@ -29,8 +44,8 @@ ROLE_INSTRUCTIONS = {
 }
 
 def generate_answer(context: str, question: str, ton: str = DEFAULT_TON, role: str = DEFAULT_ROLE) -> str:
-    tone_instruction = TON_INSTRUCTIONS.get(ton, TON_INSTRUCTIONS[DEFAULT_TON])
-    role_instruction = ROLE_INSTRUCTIONS.get(role, ROLE_INSTRUCTIONS[DEFAULT_ROLE])
+    tone_instruction = TON_INSTRUCTIONS.get(ton, TON_INSTRUCTIONS.get(DEFAULT_TON, ""))
+    role_instruction = ROLE_INSTRUCTIONS.get(role, ROLE_INSTRUCTIONS.get(DEFAULT_ROLE, ""))
     prompt = f"""
     {role_instruction}
     {tone_instruction}
@@ -48,9 +63,9 @@ def generate_answer(context: str, question: str, ton: str = DEFAULT_TON, role: s
     Réponse :
     """
     response = client.chat.completions.create(
-        model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        model=AZURE_OPENAI_DEPLOYMENT,
         messages=[
-            {"role": "system", "content": f"{role_instruction} {tone_instruction}"},
+            {"role": "system", "content": f"{role_instruction} {tone_instruction}".strip()},
             {"role": "user", "content": prompt}
         ],
         temperature=0.2,

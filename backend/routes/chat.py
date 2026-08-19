@@ -17,15 +17,17 @@ class ChatRequest(BaseModel):
 
 def _insert_conversation_row(payload: dict):
     """Insère un message dans `conversations`. Si la colonne session_id
-    n'existe pas encore (migration non appliquée), on retente sans elle
-    pour ne jamais casser l'envoi du message."""
+    n'existe pas encore (migration non appliquée) ou type incompatible,
+    on retente sans elle pour ne jamais casser l'envoi du message."""
     try:
         return supabase.table("conversations").insert(payload).execute()
-    except APIError as error:
-        message = str(error)
-        if "session_id" in message and "session_id" in payload:
-            payload = {k: v for k, v in payload.items() if k != "session_id"}
-            return supabase.table("conversations").insert(payload).execute()
+    except Exception as error:
+        if "session_id" in payload:
+            try:
+                fallback_payload = {k: v for k, v in payload.items() if k != "session_id"}
+                return supabase.table("conversations").insert(fallback_payload).execute()
+            except Exception:
+                pass
         raise
 
 
@@ -118,12 +120,16 @@ def chat(data: ChatRequest):
         except Exception as e:
             print("❌ ERREUR save:", e)
         # ✅ 4. récupérer historique complet ✅
-        history_res = supabase.table("conversations") \
-            .select("*") \
-            .eq("chatbot_id", data.chatbot_id) \
-            .order("created_at", desc=False) \
-            .execute()
-        history = history_res.data if history_res.data else []
+        history = []
+        try:
+            history_res = supabase.table("conversations") \
+                .select("*") \
+                .eq("chatbot_id", data.chatbot_id) \
+                .order("created_at", desc=False) \
+                .execute()
+            history = history_res.data if history_res.data else []
+        except Exception as e:
+            print("❌ ERREUR history:", e)
         # ✅ 5. retourner réponse + historique + session_id (à renvoyer
         # dans les appels suivants pour rester dans la même conversation)
         return {
