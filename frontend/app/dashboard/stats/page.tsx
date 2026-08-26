@@ -384,58 +384,6 @@ export default function StatsPage() {
 
       <PeriodFilter value={period} onChange={setPeriod} />
 
-      {/* =================================================
-          GLOBAL STATS
-      ================================================= */}
-
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-
-        <StatCard
-          title="Chatbots"
-          value={totals.nombre_chatbots}
-          icon={
-            <Bot className="w-6 h-6 text-[#008080]" />
-          }
-          color="teal"
-        />
-
-        <StatCard
-          title="Conversations"
-          value={totals.nombre_conversations}
-          icon={
-            <MessageSquare className="w-6 h-6 text-emerald-500" />
-          }
-          color="green"
-        />
-
-        <StatCard
-          title="Messages"
-          value={totals.nombre_messages}
-          icon={
-            <BarChart3 className="w-6 h-6 text-indigo-500" />
-          }
-          color="indigo"
-        />
-
-        <StatCard
-          title="Documents"
-          value={totals.nombre_documents}
-          icon={
-            <FileText className="w-6 h-6 text-amber-500" />
-          }
-          color="amber"
-        />
-
-        <StatCard
-          title="FAQ"
-          value={totals.nombre_faq}
-          icon={
-            <HelpCircle className="w-6 h-6 text-rose-500" />
-          }
-          color="rose"
-        />
-
-      </div>
 
       {/* =================================================
           PREMIER GRAPHIQUE
@@ -653,61 +601,7 @@ export default function StatsPage() {
 
       </div>
 
-      {/* =================================================
-          DETAILS PAR CHATBOT
-      ================================================= */}
-
-      <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-300">
-
-        <div className="flex items-center gap-3 mb-5">
-
-          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-            <Bot className="w-5 h-5 text-blue-500" />
-          </div>
-
-          <div>
-            <h2 className="font-semibold text-[#0B3C3C] dark:text-white text-lg">
-              Détails par chatbot
-            </h2>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Cliquez sur un chatbot pour consulter ses conversations
-            </p>
-          </div>
-
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full">
-            <Zap className="w-3.5 h-3.5" />
-            <span>{chatbots.length} chatbots</span>
-          </div>
-
-        </div>
-
-        {chatbots.length === 0 ? (
-
-          <div className="text-center py-8">
-            <Bot className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Aucun chatbot pour le moment.
-            </p>
-          </div>
-
-        ) : (
-
-          <div className="space-y-3">
-
-            {chatbots.map((bot) => (
-              <ChatbotStatRow
-                key={bot.id}
-                bot={bot}
-                period={period}
-              />
-            ))}
-
-          </div>
-
-        )}
-
-      </div>
+ 
 
     </div>
   );

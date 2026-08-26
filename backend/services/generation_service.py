@@ -68,7 +68,7 @@ def generate_answer(context: str, question: str, ton: str = DEFAULT_TON, role: s
             {"role": "system", "content": f"{role_instruction} {tone_instruction}".strip()},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.2,
+       
         max_completion_tokens=150
     )
     return response.choices[0].message.content.strip()

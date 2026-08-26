@@ -77,34 +77,7 @@ export default function SettingsPage() {
       {/* SETTINGS GRID */}
       <div className="grid md:grid-cols-2 gap-6">
 
-        {/* PROFIL */}
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#B8E0E0] dark:border-zinc-700">
-            <div className="p-1.5 bg-[#D9F3F3] dark:bg-zinc-800 rounded-lg">
-              <User className="w-4 h-4 text-[#008080]" />
-            </div>
-            <h2 className="font-semibold text-base text-[#0B3C3C] dark:text-white">Profil</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-[#0B3C3C] dark:text-zinc-200 mb-1">Nom</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 text-sm border border-[#B8E0E0] dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#008080]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-[#0B3C3C] dark:text-zinc-200 mb-1">Email</label>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 text-sm border border-[#B8E0E0] dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-[#0B3C3C] dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#008080]"
-              />
-            </div>
-          </div>
-        </div>
+      
 
         {/* SÉCURITÉ */}
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-[#B8E0E0] dark:border-zinc-700 p-5 shadow-sm">
