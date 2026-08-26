@@ -20,9 +20,11 @@ import {
   CheckCircle,
   User,
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [name, setName] = useState("Jean Dupont");
   const [email, setEmail] = useState("jean.dupont@entreprise.com");
   const [notifications, setNotifications] = useState({
@@ -31,7 +33,6 @@ export default function SettingsPage() {
     updates: true,
   });
   const [language, setLanguage] = useState("fr");
-  const [theme, setTheme] = useState("light");
   const [twoFactor, setTwoFactor] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);

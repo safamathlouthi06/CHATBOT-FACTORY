@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { API_URL } from "@/services/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function AppLayout({
   children,
@@ -255,6 +256,7 @@ export default function AppLayout({
             ================================================= */}
 
             <div className="flex items-center gap-2">
+              <ThemeToggle />
 
               {/* =================================================
                   USER MENU

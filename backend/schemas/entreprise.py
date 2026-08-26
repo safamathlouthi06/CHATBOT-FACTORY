@@ -9,3 +9,7 @@ class EntrepriseUpdate(BaseModel):
     adresse: Optional[str] = None
     site_web: Optional[str] = None
 
+
+class EntrepriseStatusUpdate(BaseModel):
+    statut: str
+

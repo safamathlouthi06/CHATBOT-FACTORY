@@ -8,7 +8,7 @@ import bcrypt
 import os
 
 from models.entreprise import Entreprise, LoginData 
-from schemas.entreprise import EntrepriseUpdate
+from schemas.entreprise import EntrepriseUpdate, EntrepriseStatusUpdate
 
 router = APIRouter()
 
@@ -245,7 +245,7 @@ def get_entreprises(authorization: str = Header(None)):
 @router.put("/admin/validate/{id}")
 def validate(id: str, authorization: str = Header(None)):
 
-    token = authorization.replace("Bearer ", "")
+    token = authorization.replace("Bearer ", "") if authorization else ""
     verify_admin(token)
 
     supabase.table("entreprise") \
@@ -254,6 +254,85 @@ def validate(id: str, authorization: str = Header(None)):
         .execute()
 
     return {"message": "Entreprise validée"}
+
+
+# =========================
+# ADMIN - UPDATE STATUS ENTREPRISE
+# =========================
+@router.put("/admin/entreprises/{id}/status")
+def update_entreprise_status(
+    id: str,
+    data: EntrepriseStatusUpdate,
+    authorization: str = Header(None)
+):
+    token = authorization.replace("Bearer ", "") if authorization else ""
+    verify_admin(token)
+
+    statut_lower = data.statut.lower().strip()
+    valid_statuts = {"approved", "pending", "rejected", "inactive", "actif", "suspendu"}
+    if statut_lower not in valid_statuts:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Statut invalide. Valeurs autorisées : {', '.join(sorted(valid_statuts))}"
+        )
+
+    res = (
+        supabase.table("entreprise")
+        .update({"statut": statut_lower})
+        .eq("id", id)
+        .execute()
+    )
+
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+
+    return {
+        "message": f"Statut mis à jour : {statut_lower}",
+        "data": res.data[0]
+    }
+
+
+# =========================
+# ADMIN - DELETE ENTREPRISE
+# =========================
+@router.delete("/admin/entreprises/{id}")
+def delete_entreprise(id: str, authorization: str = Header(None)):
+    token = authorization.replace("Bearer ", "") if authorization else ""
+    verify_admin(token)
+
+    # 1. Vérifier si l'entreprise existe
+    ent_res = supabase.table("entreprise").select("id, nomentreprise").eq("id", id).execute()
+    if not ent_res.data:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+
+    try:
+        # 2. Récupérer et nettoyer les chatbots liés
+        cb_res = supabase.table("chatbots").select("id").eq("entreprise_id", id).execute()
+        cb_ids = [c["id"] for c in (cb_res.data or [])]
+        if cb_ids:
+            for table_name in ["knowledge_chunks", "documents", "faq", "conversations"]:
+                try:
+                    supabase.table(table_name).delete().in_("chatbot_id", cb_ids).execute()
+                except Exception as e:
+                    print(f"Warn delete {table_name}:", e)
+
+            try:
+                supabase.table("chatbots").delete().eq("entreprise_id", id).execute()
+            except Exception as e:
+                print("Warn delete chatbots:", e)
+
+        # 3. Supprimer les employés de l'entreprise
+        try:
+            supabase.table("employe").delete().eq("entreprise_id", id).execute()
+        except Exception as e:
+            print("Warn delete employes:", e)
+
+        # 4. Supprimer l'entreprise
+        supabase.table("entreprise").delete().eq("id", id).execute()
+        return {"message": "Entreprise et ses données associées ont été supprimées avec succès"}
+    except Exception as e:
+        print("Erreur suppression entreprise:", e)
+        raise HTTPException(status_code=500, detail=f"Erreur suppression : {str(e)}")
 
 
 
