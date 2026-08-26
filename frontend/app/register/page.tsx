@@ -1248,7 +1248,7 @@ export default function RegisterPage() {
             <div className="flex items-center justify-center gap-4 flex-wrap">
 
               <span>
-                © 2024 ChatbotStudio
+                © 2024 Chatbot Factory
               </span>
 
               <span>•</span>
