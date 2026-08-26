@@ -315,7 +315,7 @@ else if (data.chatbot_id) {
       const code = `<script>
   (function() {
     var s = document.createElement('script');
-    s.src = 'https://cdn.chatbotstudio.com/widget.js';
+    s.src = 'https://cdn.chatbotfactory.com/widget.js';
     s.setAttribute('data-id', '${activeChatbotId}');
     document.body.appendChild(s);
   })();

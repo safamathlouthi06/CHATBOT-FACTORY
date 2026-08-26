@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -5,61 +6,165 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* ---- Insomea brand scale (fixed, identical in both themes) ---- */
+  --brand-950: #062626;
+  --brand-900: #0B3C3C;
+  --brand-800: #005F5F;
+  --brand-700: #008080;
+  --brand-600: #00A8A8;
+  --brand-500: #2F6F6F;
+  --brand-200: #B8E0E0;
+  --brand-100: #D9F3F3;
+  --brand-50:  #F0FDFC;
+
+  /* ---- Semantic surfaces (these flip in dark mode) ---- */
+  --surface:        #ffffff;
+  --surface-soft:   #F7FBFB;
+  --surface-sunken: #EEF6F6;
+  --line:           #E3EDED;
+  --line-soft:      #EFF5F5;
+  --ink:            #0B2020;
+  --ink-muted:      #5A7373;
+  --ink-subtle:     #8AA3A3;
+  --chip-bg:        #F0F7F7;
+
+  --glass:        rgb(255 255 255 / 0.7);
+  --glass-border: rgb(227 237 237 / 0.9);
 }
 
 .dark {
   --background: #0b1120;
   --foreground: #ededed;
+
+  --surface:        #0F172A;
+  --surface-soft:   #0D1526;
+  --surface-sunken: #131f36;
+  --line:           #1D2B42;
+  --line-soft:      #17233a;
+  --ink:            #EAF4F4;
+  --ink-muted:      #93A9AC;
+  --ink-subtle:     #6B8288;
+  --chip-bg:        rgb(0 128 128 / 0.12);
+
+  --glass:        rgb(15 23 42 / 0.6);
+  --glass-border: rgb(29 43 66 / 0.9);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-700);
+  --color-brand-600: var(--brand-600);
+  --color-brand-500: var(--brand-500);
+  --color-brand-200: var(--brand-200);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50:  var(--brand-50);
+
+  --color-surface:        var(--surface);
+  --color-surface-soft:   var(--surface-soft);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-line:           var(--line);
+  --color-line-soft:      var(--line-soft);
+  --color-ink:            var(--ink);
+  --color-ink-muted:      var(--ink-muted);
+  --color-ink-subtle:     var(--ink-subtle);
+  --color-chip:           var(--chip-bg);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Arial, Helvetica, sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * Display type. Deliberately Inter at semibold with negative tracking rather
+ * than a heavy geometric face — the black-weight display font is part of what
+ * makes a page read as generated.
+ */
+.font-display {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
 
+/* Small all-caps section label, replaces the pill-and-sparkle badge. */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+}
 
+/* ============================================================
+   Motion — kept minimal on purpose
+   ============================================================ */
 
-
-
-/* Ajoutez ceci à votre fichier CSS global pour les animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
 
 @keyframes slideInFromTop {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: slideInFromTop 0.3s ease-out; }
+
+/* Scroll reveal — IntersectionObserver adds .is-visible */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* Logo row */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 42s linear infinite; }
+
+/* Typing caret in the live conversation */
+@keyframes caretBlink {
+  0%, 45%   { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+.animate-caret { animation: caretBlink 1s steps(1) infinite; }
+
+/* Three dots while the agent is thinking */
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+.animate-dot { animation: dotBounce 1.3s ease-in-out infinite; }
+
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-dot {
+    animation: none !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
-
-.animate-in {
-  animation: slideInFromTop 0.3s ease-out;
-}
-
-

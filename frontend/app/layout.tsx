@@ -91,10 +91,12 @@ export default function RootLayout({
     }
   }, [pathname]);
 
+  // Every id here must exist as a section on the landing page, or the scroll
+  // silently does nothing.
   const navLinks = [
     { id: "features", label: "Fonctionnalités" },
+    { id: "how", label: "Comment ça marche" },
     { id: "pricing", label: "Tarifs" },
-    { id: "about", label: "À propos" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -106,7 +108,7 @@ export default function RootLayout({
       { label: "Intégrations", href: "/integrations" },
     ],
     Entreprise: [
-      { label: "À propos", href: "/#about", isInternal: true },
+      { label: "Comment ça marche", href: "/#how", isInternal: true },
       { label: "Blog", href: "/blog" },
       { label: "Carrières", href: "/careers" },
       { label: "Presse", href: "/press" },
@@ -134,11 +136,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-gradient-to-br from-[#F0FDFC] via-[#E6F7F5] to-[#DCF5F2] dark:from-[#0B1120] dark:via-[#0F172A] dark:to-[#0B1120]">
         <ThemeProvider>
-          {/* Decorative background elements - Insomea colors */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#008080] rounded-full mix-blend-multiply filter blur-3xl opacity-10 dark:opacity-5 "></div>
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#00A8A8] rounded-full mix-blend-multiply filter blur-3xl opacity-10 dark:opacity-5  delay-1000"></div>
-          </div>
+          {/* The two blurred mix-blend blobs that used to live here were removed:
+              a fixed, blurred element with mix-blend-multiply forces the browser
+              to re-composite the whole stacking context on every scroll frame,
+              and at 10%/5% opacity they were barely visible anyway. */}
 
           {/* NAVBAR PUBLIC - INSOMEA STYLE */}
           {!isDashboard && !isAuthPage && !isEmploye &&(
@@ -161,7 +162,7 @@ export default function RootLayout({
                         <Bot className="w-4 h-4" strokeWidth={1.5} />
                       </div>
                       <span className="font-bold text-lg bg-gradient-to-r from-[#0B3C3C] to-[#008080] bg-clip-text text-transparent dark:from-white dark:to-[#00A8A8]">
-                        ChatbotStudio
+                        Chatbot Factory
                       </span>
                     </Link>
 
@@ -251,8 +252,10 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
 
         {/* FOOTER PUBLIC - INSOMEA STYLE */}
+        {/* The footer drops backdrop-blur: nothing scrolls behind it, so it was
+            paying for a filter that had nothing to filter. */}
         {!isDashboard && !isAuthPage && !isEmploye && (
-          <footer className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-[#D0EAE8] dark:border-zinc-800">
+          <footer className="bg-white dark:bg-zinc-950 border-t border-[#D0EAE8] dark:border-zinc-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               
               {/* Footer Grid */}
@@ -319,7 +322,7 @@ export default function RootLayout({
                       <Bot className="w-3 h-3 text-white" />
                     </div>
                     <span className="text-sm text-[#008080]">
-                      © {new Date().getFullYear()} ChatbotStudio. Tous droits réservés.
+                      © {new Date().getFullYear()} Chatbot Factory. Tous droits réservés.
                     </span>
                   </div>
                   
