@@ -98,7 +98,7 @@ export default function RootLayout({
     { id: "contact", label: "Contact" },
   ];
 
-  const footerLinks = {
+  const footerLinks: Record<string, Array<{ label: string; href: string; isInternal?: boolean }>> = {
     Produit: [
       { label: "Fonctionnalités", href: "/#features", isInternal: true },
       { label: "Tarifs", href: "/#pricing", isInternal: true },

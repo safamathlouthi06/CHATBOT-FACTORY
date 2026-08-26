@@ -108,7 +108,7 @@ export default function AppLayout({
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/employes", label: "Employes", icon: FileText },
+    { href: "/dashboard/employes", label: "Employés", icon: FileText },
     { href: "/dashboard/chatbots", label: "Chatbots", icon: Bot },
     { href: "/dashboard/stats", label: "Statistiques", icon: BarChart3 },
   ];

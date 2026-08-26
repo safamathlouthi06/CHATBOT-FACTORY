@@ -662,14 +662,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-3">
           <PeriodFilter value={period} onChange={setPeriod} />
 
-          <button
-            onClick={fetchAdminData}
-            className="flex items-center gap-2 bg-[#008080] hover:bg-[#006666] text-white px-4 py-2 rounded-lg transition"
-          >
-            <RefreshCw className="w-4 h-4" />
-
-            Rafraîchir
-          </button>
+       
         </div>
 
       </div>

@@ -265,19 +265,7 @@ export default function AdminDashboard() {
           bg: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
           dot: "bg-amber-500",
         };
-      case "rejected":
-        return {
-          label: "Rejetée",
-          bg: "bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20",
-          dot: "bg-red-500",
-        };
-      case "inactive":
-      case "suspendu":
-        return {
-          label: "Désactivée",
-          bg: "bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
-          dot: "bg-gray-400",
-        };
+  
       default:
         return {
           label: statut || "Inconnu",
@@ -327,9 +315,7 @@ export default function AdminDashboard() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#007A80] to-[#00B7C2] shadow-lg shadow-[#007A80]/20">
-            <Building2 className="h-6 w-6 text-white" />
-          </div>
+         
           <div>
             <h1 className="text-2xl font-bold text-[#134E52] dark:text-white">
               Gestion des Entreprises
@@ -376,68 +362,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* STAT CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <button
-          onClick={() => setStatusFilter("all")}
-          className={`p-4 rounded-2xl border text-left transition-all ${
-            statusFilter === "all"
-              ? "border-[#007A80] bg-[#E8FAFB] dark:bg-[#007A80]/15 ring-2 ring-[#007A80]/20"
-              : "border-gray-200 dark:border-[#1E293B] bg-white dark:bg-[#0F172A] hover:border-[#007A80]/40"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Total</span>
-            <Building2 className="w-4 h-4 text-[#007A80]" />
-          </div>
-          <p className="text-2xl font-bold text-[#134E52] dark:text-white mt-2">{stats.total}</p>
-        </button>
-
-        <button
-          onClick={() => setStatusFilter("approved")}
-          className={`p-4 rounded-2xl border text-left transition-all ${
-            statusFilter === "approved"
-              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20"
-              : "border-gray-200 dark:border-[#1E293B] bg-white dark:bg-[#0F172A] hover:border-emerald-400"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Validées</span>
-            <CheckCircle className="w-4 h-4 text-emerald-500" />
-          </div>
-          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-2">{stats.approved}</p>
-        </button>
-
-        <button
-          onClick={() => setStatusFilter("pending")}
-          className={`p-4 rounded-2xl border text-left transition-all ${
-            statusFilter === "pending"
-              ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 ring-2 ring-amber-500/20"
-              : "border-gray-200 dark:border-[#1E293B] bg-white dark:bg-[#0F172A] hover:border-amber-400"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">En attente</span>
-            <Clock className="w-4 h-4 text-amber-500" />
-          </div>
-          <p className="text-2xl font-bold text-amber-700 dark:text-amber-300 mt-2">{stats.pending}</p>
-        </button>
-
-        <button
-          onClick={() => setStatusFilter("rejected")}
-          className={`p-4 rounded-2xl border text-left transition-all ${
-            statusFilter === "rejected"
-              ? "border-rose-500 bg-rose-50 dark:bg-rose-950/40 ring-2 ring-rose-500/20"
-              : "border-gray-200 dark:border-[#1E293B] bg-white dark:bg-[#0F172A] hover:border-rose-400"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">Rejetées</span>
-            <XCircle className="w-4 h-4 text-rose-500" />
-          </div>
-          <p className="text-2xl font-bold text-rose-700 dark:text-rose-300 mt-2">{stats.rejected}</p>
-        </button>
-      </div>
+  
 
       {/* SEARCH AND FILTERS */}
       <div className="bg-white dark:bg-[#0F172A] border border-gray-200 dark:border-[#1E293B] rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
@@ -457,8 +382,7 @@ export default function AdminDashboard() {
             { key: "all", label: "Toutes" },
             { key: "approved", label: "Validées" },
             { key: "pending", label: "En attente" },
-            { key: "rejected", label: "Rejetées" },
-            { key: "inactive", label: "Désactivées" },
+         
           ].map((t) => (
             <button
               key={t.key}
@@ -683,18 +607,7 @@ export default function AdminDashboard() {
                   desc: "Compte en cours de vérification, accès restreint.",
                   badgeBg: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
                 },
-                {
-                  value: "rejected",
-                  label: "Rejetée",
-                  desc: "Inscription refusée par l'administrateur.",
-                  badgeBg: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
-                },
-                {
-                  value: "inactive",
-                  label: "Désactivée (Suspendue)",
-                  desc: "Compte temporairement bloqué, connexion impossible.",
-                  badgeBg: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-                },
+                
               ].map((opt) => (
                 <label
                   key={opt.value}
@@ -926,8 +839,7 @@ export default function AdminDashboard() {
                   {[
                     { val: "approved", label: "Valider (Actif)", color: "bg-emerald-600 hover:bg-emerald-700 text-white" },
                     { val: "pending", label: "Mettre en attente", color: "bg-amber-600 hover:bg-amber-700 text-white" },
-                    { val: "rejected", label: "Rejeter", color: "bg-rose-600 hover:bg-rose-700 text-white" },
-                    { val: "inactive", label: "Désactiver", color: "bg-gray-600 hover:bg-gray-700 text-white" },
+                  
                   ].map((btn) => (
                     <button
                       key={btn.val}
