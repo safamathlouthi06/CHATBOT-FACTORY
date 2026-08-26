@@ -929,47 +929,8 @@ export default function EntrepriseProfilePage() {
 
                 <div className="space-y-2 pt-4 border-t border-[#E5F5F5] dark:border-zinc-700 flex-1">
 
-                  <button
-                    onClick={() =>
-                      setShowPasswordModal(true)
-                    }
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#2F6F6F] dark:text-zinc-300 hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 rounded-xl transition-all group"
-                  >
+                
 
-                    <div className="p-1.5 rounded-lg bg-[#D9F3F3]/50 dark:bg-zinc-800 group-hover:bg-[#008080]/20">
-
-                      <Lock
-                        size={15}
-                        className="text-[#008080]"
-                      />
-
-                    </div>
-
-                    Changer le mot de passe
-
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      router.push(
-                        "/dashboard/employes"
-                      )
-                    }
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#2F6F6F] dark:text-zinc-300 hover:bg-[#D9F3F3] dark:hover:bg-zinc-800 rounded-xl transition-all group"
-                  >
-
-                    <div className="p-1.5 rounded-lg bg-[#D9F3F3]/50 dark:bg-zinc-800 group-hover:bg-[#008080]/20">
-
-                      <Users
-                        size={15}
-                        className="text-[#008080]"
-                      />
-
-                    </div>
-
-                    Gérer les employés
-
-                  </button>
 
                 </div>
 

@@ -452,48 +452,7 @@ export default function EmployeStatsPage() {
 
       <PeriodFilter value={period} onChange={setPeriod} />
 
-      {/* ================================================== */}
-     { /* STATISTIQUES GLOBALES */}
-      {/* ================================================== */}
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-
-        <StatCard
-          title="Chatbots"
-          value={totals.nombre_chatbots}
-          icon={<Bot className="w-6 h-6 text-[#008080]" />}
-          color="teal"
-        />
-
-        <StatCard
-          title="Conversations"
-          value={totals.nombre_conversations}
-          icon={<MessageSquare className="w-6 h-6 text-emerald-500" />}
-          color="green"
-        />
-
-        <StatCard
-          title="Messages"
-          value={totals.nombre_messages}
-          icon={<BarChart3 className="w-6 h-6 text-indigo-500" />}
-          color="indigo"
-        />
-
-        <StatCard
-          title="Documents"
-          value={totals.nombre_documents}
-          icon={<FileText className="w-6 h-6 text-amber-500" />}
-          color="amber"
-        />
-
-        <StatCard
-          title="FAQ"
-          value={totals.nombre_faq}
-          icon={<HelpCircle className="w-6 h-6 text-rose-500" />}
-          color="rose"
-        />
-
-      </div>
 
       {/* ================================================== */}
       {/* GRAPHIQUES */}

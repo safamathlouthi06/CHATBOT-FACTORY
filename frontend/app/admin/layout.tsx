@@ -9,13 +9,13 @@ import {
   Bot,
   BarChart3,
   Settings,
-  User,
   LogOut,
   ChevronDown,
   Menu,
   X,
   Rocket,
 } from "lucide-react";
+
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function AppLayout({
@@ -28,7 +28,10 @@ export default function AppLayout({
 
   const pathname = usePathname() || "";
 
+  // ============================================================
   // REF DU MENU UTILISATEUR
+  // ============================================================
+
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // ============================================================
@@ -55,7 +58,7 @@ export default function AppLayout({
   }, [isUserMenuOpen]);
 
   // ============================================================
-  // COMPTE ADMIN FIXE
+  // COMPTE ADMIN
   // ============================================================
 
   const user = {
@@ -91,15 +94,11 @@ export default function AppLayout({
       label: "Statistiques",
       icon: BarChart3,
     },
-    {
-      href: "/admin/settings",
-      label: "Paramètres",
-      icon: Settings,
-    }
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7F8] dark:bg-[#0B1120]">
+
       {/* ========================================================
           BACKGROUND
       ======================================================== */}
@@ -115,17 +114,20 @@ export default function AppLayout({
       ======================================================== */}
 
       <nav className="sticky top-0 z-50 border-b border-[#D9E3E5] dark:border-[#1E293B] bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-xl">
+
         <div className="px-4 md:px-6">
+
           <div className="flex items-center justify-between h-16">
+
             {/* ==================================================
                 LOGO
             ================================================== */}
 
             <Link
-              href="/dashboard"
+              href="/admin"
               className="flex items-center gap-3"
             >
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#007A80] via-[#009CA6] to-[#00C7D1] flex items-center justify-center">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#007A80] via-[#009CA6] to-[#00C7D1] flex items-center justify-center shadow-sm">
                 <Bot className="w-4 h-4 text-white" />
               </div>
 
@@ -135,10 +137,11 @@ export default function AppLayout({
             </Link>
 
             {/* ==================================================
-                NAVIGATION
+                NAVIGATION DESKTOP
             ================================================== */}
 
             <div className="hidden md:flex items-center gap-2">
+
               {navItems.map((item) => {
                 const Icon = item.icon;
 
@@ -152,11 +155,17 @@ export default function AppLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${
-                      isActive
-                        ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] text-white"
-                        : "text-[#134E52] dark:text-zinc-300 hover:bg-[#E8FAFB] dark:hover:bg-[#111827]"
-                    }`}
+                    className={`
+                      flex items-center gap-2
+                      px-4 py-2
+                      rounded-2xl
+                      transition-all duration-300
+                      ${
+                        isActive
+                          ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] text-white shadow-sm"
+                          : "text-[#134E52] dark:text-zinc-300 hover:bg-[#E8FAFB] dark:hover:bg-[#111827]"
+                      }
+                    `}
                   >
                     <Icon className="w-4 h-4" />
 
@@ -166,13 +175,16 @@ export default function AppLayout({
                   </Link>
                 );
               })}
+
             </div>
 
             {/* ==================================================
-                RIGHT
+                RIGHT SIDE
             ================================================== */}
 
             <div className="flex items-center gap-2">
+
+              {/* THEME */}
               <ThemeToggle />
 
               {/* ==================================================
@@ -183,85 +195,256 @@ export default function AppLayout({
                 ref={userMenuRef}
                 className="relative"
               >
+
                 {/* BOUTON PROFIL */}
 
                 <button
+                  type="button"
                   onClick={() =>
                     setIsUserMenuOpen((prev) => !prev)
                   }
-                  className="flex items-center gap-2 p-1.5 rounded-2xl hover:bg-[#E8FAFB] dark:hover:bg-[#111827] transition-all duration-300"
+                  className="
+                    flex items-center gap-2
+                    p-1.5
+                    rounded-2xl
+                    hover:bg-[#E8FAFB]
+                    dark:hover:bg-[#111827]
+                    transition-all duration-300
+                  "
                 >
+
                   {/* AVATAR */}
 
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#007A80] to-[#00D5DF] flex items-center justify-center text-white text-sm font-bold">
+                  <div className="
+                    w-9 h-9
+                    rounded-xl
+                    bg-gradient-to-br
+                    from-[#007A80]
+                    to-[#00D5DF]
+                    flex items-center justify-center
+                    text-white
+                    text-sm
+                    font-bold
+                    shadow-sm
+                  ">
                     {user.avatar}
                   </div>
 
                   {/* USER INFOS */}
 
                   <div className="hidden lg:block text-left">
-                    <p className="text-sm font-semibold text-[#134E52] dark:text-white">
+
+                    <p className="
+                      text-sm
+                      font-semibold
+                      text-[#134E52]
+                      dark:text-white
+                    ">
                       {user.name}
                     </p>
 
-                    <p className="text-xs text-[#6CAFB4] dark:text-zinc-400">
+                    <p className="
+                      text-xs
+                      text-[#6CAFB4]
+                      dark:text-zinc-400
+                    ">
                       {user.role}
                     </p>
+
                   </div>
 
+                  {/* CHEVRON */}
+
                   <ChevronDown
-                    className={`hidden lg:block w-4 h-4 text-[#6CAFB4] transition-transform duration-200 ${
-                      isUserMenuOpen ? "rotate-180" : ""
-                    }`}
+                    className={`
+                      hidden lg:block
+                      w-4 h-4
+                      text-[#6CAFB4]
+                      transition-transform duration-200
+                      ${
+                        isUserMenuOpen
+                          ? "rotate-180"
+                          : ""
+                      }
+                    `}
                   />
+
                 </button>
 
                 {/* ==================================================
-                    DROPDOWN
+                    DROPDOWN USER
                 ================================================== */}
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-3 w-60 bg-white dark:bg-[#0F172A] rounded-3xl shadow-2xl border border-[#D7F3F5] dark:border-[#1E293B] overflow-hidden z-20">
-                    {/* HEADER */}
+                  <div
+                    className="
+                      absolute
+                      right-0
+                      mt-3
+                      w-64
+                      bg-white
+                      dark:bg-[#0F172A]
+                      rounded-2xl
+                      shadow-xl
+                      border
+                      border-gray-200
+                      dark:border-[#1E293B]
+                      overflow-hidden
+                      z-50
+                      animate-in
+                      fade-in
+                      slide-in-from-top-2
+                      duration-200
+                    "
+                  >
 
-                    <div className="p-4 border-b border-gray-100 dark:border-[#1E293B]">
-                      <p className="font-bold text-[#134E52] dark:text-white">
-                        {user.name}
-                      </p>
+                    {/* ==================================================
+                        USER HEADER
+                    ================================================== */}
 
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user.email}
-                      </p>
+                    <div className="px-4 py-3.5">
+
+                      <div className="flex items-center gap-3">
+
+                        {/* AVATAR */}
+
+                        <div
+                          className="
+                            w-10 h-10
+                            rounded-xl
+                            bg-gradient-to-br
+                            from-[#007A80]
+                            to-[#00B7C2]
+                            flex items-center justify-center
+                            text-white
+                            text-sm
+                            font-bold
+                            shrink-0
+                          "
+                        >
+                          {user.avatar}
+                        </div>
+
+                        {/* INFORMATIONS */}
+
+                        <div className="min-w-0">
+
+                          <p className="
+                            text-sm
+                            font-semibold
+                            text-gray-900
+                            dark:text-white
+                            truncate
+                          ">
+                            {user.name}
+                          </p>
+
+                          <p className="
+                            text-xs
+                            text-gray-500
+                            dark:text-zinc-400
+                            truncate
+                          ">
+                            {user.email}
+                          </p>
+
+                        </div>
+
+                      </div>
+
                     </div>
 
-                    {/* MENU */}
+                    {/* SEPARATOR */}
+
+                    <div className="
+                      border-t
+                      border-gray-100
+                      dark:border-[#1E293B]
+                    " />
+
+                    {/* ==================================================
+                        MENU ITEMS
+                    ================================================== */}
 
                     <div className="p-2">
-                      <button
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl hover:bg-gray-100 dark:hover:bg-[#111827] transition-all text-gray-700 dark:text-zinc-300"
-                        onClick={() => setIsUserMenuOpen(false)}
+
+                      {/* PARAMÈTRES */}
+
+                      <Link
+                        href="/admin/settings"
+                        onClick={() =>
+                          setIsUserMenuOpen(false)
+                        }
+                        className="
+                          flex items-center gap-3
+                          w-full
+                          px-3 py-2.5
+                          rounded-xl
+                          text-sm
+                          font-medium
+                          text-gray-700
+                          dark:text-zinc-300
+                          hover:bg-gray-100
+                          dark:hover:bg-[#111827]
+                          transition-colors duration-200
+                        "
                       >
-                        <User className="w-4 h-4" />
 
-                        Mon profil
-                      </button>
+                        <Settings className="
+                          w-4 h-4
+                          text-gray-500
+                          dark:text-zinc-400
+                        " />
 
-                    
+                        <span>
+                          Paramètres
+                        </span>
 
-                      <hr className="my-2 border-gray-200 dark:border-[#1E293B]" />
+                      </Link>
+
+                      {/* SEPARATOR */}
+
+                      <div className="
+                        my-1.5
+                        border-t
+                        border-gray-100
+                        dark:border-[#1E293B]
+                      " />
+
+                      {/* DÉCONNEXION */}
 
                       <Link
                         href="/"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                        onClick={() =>
+                          setIsUserMenuOpen(false)
+                        }
+                        className="
+                          flex items-center gap-3
+                          w-full
+                          px-3 py-2.5
+                          rounded-xl
+                          text-sm
+                          font-medium
+                          text-red-500
+                          hover:bg-red-50
+                          dark:hover:bg-red-500/10
+                          transition-colors duration-200
+                        "
                       >
+
                         <LogOut className="w-4 h-4" />
 
-                        Déconnexion
+                        <span>
+                          Déconnexion
+                        </span>
+
                       </Link>
+
                     </div>
+
                   </div>
                 )}
+
               </div>
 
               {/* ==================================================
@@ -269,19 +452,37 @@ export default function AppLayout({
               ================================================== */}
 
               <button
-                className="md:hidden p-2 rounded-xl hover:bg-[#E8FAFB] dark:hover:bg-[#111827]"
+                type="button"
+                aria-label={
+                  isMobileMenuOpen
+                    ? "Fermer le menu"
+                    : "Ouvrir le menu"
+                }
+                className="
+                  md:hidden
+                  p-2
+                  rounded-xl
+                  hover:bg-[#E8FAFB]
+                  dark:hover:bg-[#111827]
+                  transition-colors
+                "
                 onClick={() =>
                   setIsMobileMenuOpen((prev) => !prev)
                 }
               >
+
                 {isMobileMenuOpen ? (
-                  <X />
+                  <X className="w-5 h-5" />
                 ) : (
-                  <Menu />
+                  <Menu className="w-5 h-5" />
                 )}
+
               </button>
+
             </div>
+
           </div>
+
         </div>
 
         {/* ======================================================
@@ -289,9 +490,19 @@ export default function AppLayout({
         ====================================================== */}
 
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-[#D9E3E5] dark:border-[#1E293B] bg-white dark:bg-[#0F172A]">
+          <div className="
+            md:hidden
+            border-t
+            border-[#D9E3E5]
+            dark:border-[#1E293B]
+            bg-white
+            dark:bg-[#0F172A]
+          ">
+
             <div className="p-4 flex flex-col gap-2">
+
               {navItems.map((item) => {
+
                 const Icon = item.icon;
 
                 const isActive =
@@ -304,35 +515,54 @@ export default function AppLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
-                      isActive
-                        ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] text-white"
-                        : "text-[#134E52] dark:text-zinc-300 hover:bg-[#E8FAFB] dark:hover:bg-[#111827]"
-                    }`}
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    className={`
+                      flex items-center gap-3
+                      px-4 py-3
+                      rounded-2xl
+                      transition-all
+                      ${
+                        isActive
+                          ? "bg-gradient-to-r from-[#007A80] to-[#00B7C2] text-white shadow-sm"
+                          : "text-[#134E52] dark:text-zinc-300 hover:bg-[#E8FAFB] dark:hover:bg-[#111827]"
+                      }
+                    `}
                   >
+
                     <Icon className="w-5 h-5" />
 
                     <span className="font-semibold">
                       {item.label}
                     </span>
+
                   </Link>
                 );
+
               })}
+
             </div>
+
           </div>
         )}
+
       </nav>
 
       {/* ========================================================
           MAIN
       ======================================================== */}
 
-      <main className="flex-1 p-6 md:p-8 relative z-10">
+      <main className="
+        flex-1
+        p-6
+        md:p-8
+        relative
+        z-10
+      ">
         {children}
       </main>
+
     </div>
   );
 }
