@@ -858,7 +858,7 @@ export default function RegisterPage() {
                       value={tel}
                       onChange={setTel}
                       label="Téléphone"
-                      required={false}
+                      required={true}
                       showValidationHint={true}
                     />
 
@@ -869,7 +869,7 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300">
                         Adresse{" "}
                         <span className="text-xs text-gray-400">
-                          (optionnel)
+                          
                         </span>
                       </label>
 
@@ -900,7 +900,7 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium text-[#0B3C3C] dark:text-gray-300">
                         Site web{" "}
                         <span className="text-xs text-gray-400">
-                          (optionnel)
+                         
                         </span>
                       </label>
 

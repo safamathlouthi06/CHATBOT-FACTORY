@@ -974,13 +974,7 @@ export default function DashboardPage() {
               Aucun chatbot pour le moment.
             </p>
 
-            <Link
-              href="/dashboard/chatbots/create"
-              className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-[#008080] text-white text-sm hover:bg-[#006666] transition"
-            >
-              <Plus className="w-4 h-4" />
-              Créer un chatbot
-            </Link>
+           
 
           </div>
 
