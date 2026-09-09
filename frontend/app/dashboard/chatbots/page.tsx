@@ -638,16 +638,7 @@ export default function ChatbotListPage() {
               : "Créez votre premier assistant IA"}
           </p>
 
-          {!search && (
-            <Link
-              href="/dashboard/chatbots/create"
-              className="inline-flex items-center gap-2 bg-[#008080] hover:bg-[#005F5F] text-white px-4 py-2 rounded-lg text-sm transition"
-            >
-              <Plus className="w-4 h-4" />
-              Créer un chatbot
-            </Link>
-          )}
-
+        
         </div>
       )}
 
