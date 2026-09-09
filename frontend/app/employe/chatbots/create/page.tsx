@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -28,7 +28,7 @@ import { CHATBOT_ROLES, DEFAULT_ROLE } from "@/constants/roles";
 
 
 type Step = 1 | 2 | 3 | 4;
-export default function CreateChatbotPage() {
+function CreateChatbotContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlChatbotId = searchParams.get("id");
@@ -706,5 +706,13 @@ else if (data.chatbot_id) {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CreateChatbotPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Chargement...</div>}>
+      <CreateChatbotContent />
+    </Suspense>
   );
 }
