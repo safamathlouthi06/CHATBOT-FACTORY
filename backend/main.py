@@ -18,6 +18,7 @@ from routes.conversation import router as conversation_router
 from routes.employe import router as employe_router
 from routes.widget import router as widget_router
 from routes.statistiques import router as statistiques_router
+from routes.notification import router as notification_router
 
 from test import router as test_router
 
@@ -59,6 +60,7 @@ app.include_router(conversation_router)
 app.include_router(employe_router)
 app.include_router(widget_router)
 app.include_router(statistiques_router)
+app.include_router(notification_router)
 
 
 
