@@ -21,6 +21,8 @@ import {
 
 import { API_URL } from "@/services/api";
 import ThemeToggle from "@/components/ThemeToggle";
+import EmployeeNotificationPopup from "@/components/EmployeeNotificationPopup";
+import EmployeeNotificationBell from "@/components/EmployeeNotificationBell";
 
 export default function AppLayout({
   children,
@@ -256,6 +258,8 @@ export default function AppLayout({
             ================================================= */}
 
             <div className="flex items-center gap-2">
+              <EmployeeNotificationBell />
+              <EmployeeNotificationPopup />
               <ThemeToggle />
 
               {/* =================================================

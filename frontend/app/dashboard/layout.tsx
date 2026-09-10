@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { API_URL } from "@/services/api";
 import ThemeToggle from "@/components/ThemeToggle";
+import EntrepriseNotificationBell from "@/components/EntrepriseNotificationBell";
+import EntrepriseNotificationPopup from "@/components/EntrepriseNotificationPopup";
 
 export default function AppLayout({
   children,
@@ -167,6 +169,8 @@ export default function AppLayout({
 
             {/* RIGHT */}
             <div className="flex items-center gap-2">
+              <EntrepriseNotificationBell />
+              <EntrepriseNotificationPopup />
               <ThemeToggle />
 
               {/* USER MENU */}

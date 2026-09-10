@@ -202,7 +202,7 @@ def get_available_roles():
 @router.get("/{chatbot_id}")
 def get_chatbot(chatbot_id: str, current_user=Depends(get_current_user)):
     role = current_user.get("role")
-    query = supabase.table(TABLE).select("*").eq("id", chatbot_id)
+    query = supabase.table(TABLE).select("*, employe(id, nom, prenom, email)").eq("id", chatbot_id)
     # super admin bypass
     if role != "super_admin":
         f = get_chatbot_filter(current_user)
